@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { assess, parseRules, personalBand, tierFor } from './rules';
+import { assess, parseRules, personalBand, tierFor } from './rules.ts';
 
 const text = readFileSync('rules/rules.yaml', 'utf8');
 const rule = parseRules(text)[0];

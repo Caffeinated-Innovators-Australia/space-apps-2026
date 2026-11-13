@@ -10,7 +10,7 @@ function offline(): Plugin {
     name: 'offline-service-worker',
     apply: 'build',
     generateBundle(_, bundle) {
-      const files = ['', 'icon.svg', ...Object.keys(bundle)].map((f) => BASE + f);
+      const files = ['', 'icon.svg', 'icon-180.png', 'icon-192.png', 'icon-512.png', 'manifest.webmanifest', 'agents.md', ...Object.keys(bundle)].map((f) => BASE + f);
       const version = createHash('sha256').update(files.join('|')).digest('hex').slice(0, 12);
       const source = `// Generated at build time. Caches the whole app for offline use.
 const CACHE = 'crew-health-${version}';

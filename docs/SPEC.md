@@ -1,10 +1,12 @@
 # Technical spec: astronaut health decision support (working title)
 
-Version: v0.1 · Satisfies: docs/REQUIREMENTS.md v0.1 · Owner: Build lead
+Version: v0.3 · Satisfies: docs/REQUIREMENTS.md v0.3 · Owner: Build lead
 
 ## 1. Architecture (satisfies: NFR-01, PR-01)
 - Stack: a static single-page web app (Vite, React, TypeScript). No server, no accounts, no network calls on the demo path. Chosen because it deploys as plain files, works offline and suits a 48-hour build.
 - Hosting: GitHub Pages from this public repo.
+- Backend: none. The record lives on the device in IndexedDB, behind a small `Store` interface, so a shared store on a spacecraft network could replace it later.
+- Action layer: `src/core/` holds pure functions (state in, new state out) for every read and change. The screens, the command-line tool (`cli/crew-health.ts`) and agents all call it. See docs/MODULE_GUIDE.md.
 - Offline: a small service worker, written at build time, caches the built files; data and fonts are bundled.
 
 ```mermaid
@@ -21,8 +23,10 @@ flowchart LR
 | Entity | Fields (name: type, unit) | Source dataset (name, ID, link) | Real / SYNTHETIC |
 |--------|---------------------------|---------------------------------|------------------|
 | Crew blood count | subject, analyte, value, unit, lab range, timepoint (days from launch or return) | NASA OSDR, OSD-569, https://osdr.nasa.gov/bio/repo/data/studies/OSD-569 | Real |
-| Demo astronaut baseline | indicator, values, unit, dates | Made by us | SYNTHETIC |
-| Demo astronaut readings | indicator, value, unit, time | Entered in the demo | SYNTHETIC |
+| Crew profiles and baselines (`src/data/seed.json`) | crew id, sex (to pick the laboratory range), baseline and mission values per indicator | Made by us | SYNTHETIC |
+| Indicators (`src/data/seed.json`) | id, name, unit, laboratory reference range by sex | Ranges as reported in NASA OSDR, OSD-569 (LSDS-7) | Real ranges |
+| Device record (IndexedDB) | readings, symptom logs, queued and exported cases | Entered on the device | SYNTHETIC in the demo |
+| Solar particle events | time, instrument or model | NASA DONKI, https://ccmc.gsfc.nasa.gov/tools/DONKI/ | Real |
 
 ## 3. Rules engine contract (satisfies: SR-01, FR-03, FR-04, FR-05)
 - Rules live in `rules/rules.yaml`, not in code and not in a model prompt.

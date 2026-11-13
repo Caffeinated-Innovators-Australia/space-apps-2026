@@ -1,6 +1,6 @@
 # Requirements: astronaut health decision support (working title)
 
-Version: v0.2 · Status: building · Owner: Build lead · Last lint: 14 Nov 2026, see docs/DECISION_LOG.md
+Version: v0.3 · Status: building · Owner: Build lead · Last lint: 14 Nov 2026, see docs/DECISION_LOG.md
 
 > Source of truth for WHAT we build. Every build task cites an ID from here.
 
@@ -39,11 +39,18 @@ Priority: Must / Should / Could / Won't. Status: todo / building / done / verifi
 | FR-10 | Should | A radiation prompt driven by cached NASA DONKI space-weather events | Given the cached event file, when the home screen loads, then the latest event is shown with "Data: NASA DONKI" | C3, Q3 | relevance | n/a | Build lead | done |
 | FR-11 | Should | "Feeling off? Tell us in one tap" symptom entry | Given the home screen, when the button is tapped, then a symptom can be logged in one tap | R1 | impact | n/a | Build lead | done |
 | FR-12 | Could | The same screen shown in a remote-Australia setting for the video close | Given the settings, when Earth mode is chosen, then the delay and wording change | C2 | impact | n/a | Build lead | done |
+| FR-13 | Should | Several crew profiles; each reading is assessed against that person's own baseline | Given two crew members, when the same value is entered for each, then each result uses that person's baseline | R2 | validity, impact | n/a | Build lead | done |
+| FR-14 | Should | More than one indicator, added through data and rules files with no code change | Given the reading screen, when another blood measure is chosen, then it is assessed with its own unit, range and baseline | R1, R5 | relevance | n/a | Build lead | done |
+| FR-15 | Should | Cases queue on the device and export as one file when a link opens (store and forward) | Given two queued cases, when export is pressed, then one file holds both and they show as exported | R3, Q4 | impact, creativity | n/a | Build lead | done |
+| FR-16 | Should | One action layer serves the screens, a command-line tool and an agent-readable page | Given the same crew, indicator and value, when assessed on screen and from the command line, then the tier and why line match | U1 | validity | n/a | Build lead | done |
+| FR-17 | Should | A "Road to flight" page states what is built, what is placeholder and what real use needs | Given the app, when Road to flight is opened, then the three lists are shown | U1 | validity, presentation | n/a | Build lead | done |
+| NFR-03 | Should | Readings, logs and cases are stored on the device and survive a reload | Given a saved reading, when the page is reloaded with no network, then the reading is still listed | U1 | validity | n/a | Build lead | done |
+| NFR-04 | Should | The app can be installed and is usable at tablet and phone sizes | Given tablet and phone widths, when the journey is run, then nothing scrolls sideways | U1, C2 | presentation | n/a | Build lead | done |
 | NFR-02 | Should | Accessibility basics: contrast at least 4.5:1, keyboard focus visible, tier never by colour alone | Given the demo screens, when the accessibility check runs, then there are no serious contrast or focus failures | U1 | presentation | n/a | Build lead | todo |
 
 ## 4. Out of scope (explicit)
 - A language model at run time: explanations are written text filled from each rule's own values, so the demo is offline and rules decide.
-- Camera, ultrasound or device input; accounts; multiple crew; gamification.
+- Camera, ultrasound or device input; accounts; gamification; a server or shared record across devices.
 - Any diagnosis, and any clinical accuracy claim.
 
 ## 5. Assumptions and open questions
@@ -55,4 +62,5 @@ Priority: Must / Should / Could / Won't. Status: todo / building / done / verifi
 | Version | Time | Change | Decision log # |
 |---------|------|--------|----------------|
 | v0.1 | 14 Nov 2026, morning AEDT | First draft from the confirmed concept | D-001 |
+| v0.3 | 14 Nov 2026, AEDT | Mission-ready foundation added as Should items FR-13 to FR-17, NFR-03, NFR-04 | D-010 |
 | v0.2 | 14 Nov 2026, morning AEDT | Must-haves built; FR-09, FR-10 and FR-11 built at the team lead's request | D-008 |

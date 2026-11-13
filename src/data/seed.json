@@ -1,0 +1,719 @@
+{
+ "synthetic": true,
+ "note": "SYNTHETIC. Every crew value in this file was made up by the team for the demo. No real person. Laboratory reference ranges are the ranges reported in NASA OSDR, OSD-569 (LSDS-7).",
+ "missionDay": 142,
+ "crew": [
+  {
+   "id": "crew-1",
+   "name": "Crew member 1",
+   "sex": "F",
+   "baseline": {
+    "haemoglobin": [
+     {
+      "t": "L-90",
+      "value": 13.1
+     },
+     {
+      "t": "L-45",
+      "value": 13.4
+     },
+     {
+      "t": "L-5",
+      "value": 13.0
+     }
+    ],
+    "haematocrit": [
+     {
+      "t": "L-90",
+      "value": 39.5
+     },
+     {
+      "t": "L-45",
+      "value": 40.2
+     },
+     {
+      "t": "L-5",
+      "value": 39.0
+     }
+    ],
+    "red-cells": [
+     {
+      "t": "L-90",
+      "value": 4.35
+     },
+     {
+      "t": "L-45",
+      "value": 4.42
+     },
+     {
+      "t": "L-5",
+      "value": 4.3
+     }
+    ],
+    "white-cells": [
+     {
+      "t": "L-90",
+      "value": 6.1
+     },
+     {
+      "t": "L-45",
+      "value": 5.8
+     },
+     {
+      "t": "L-5",
+      "value": 6.4
+     }
+    ]
+   },
+   "mission": {
+    "haemoglobin": [
+     {
+      "t": "Day 30",
+      "value": 13.2
+     },
+     {
+      "t": "Day 60",
+      "value": 13.0
+     },
+     {
+      "t": "Day 90",
+      "value": 13.1
+     },
+     {
+      "t": "Day 120",
+      "value": 12.9
+     }
+    ],
+    "haematocrit": [
+     {
+      "t": "Day 30",
+      "value": 39.8
+     },
+     {
+      "t": "Day 60",
+      "value": 39.2
+     },
+     {
+      "t": "Day 90",
+      "value": 39.4
+     },
+     {
+      "t": "Day 120",
+      "value": 38.9
+     }
+    ],
+    "red-cells": [
+     {
+      "t": "Day 30",
+      "value": 4.38
+     },
+     {
+      "t": "Day 60",
+      "value": 4.31
+     },
+     {
+      "t": "Day 90",
+      "value": 4.33
+     },
+     {
+      "t": "Day 120",
+      "value": 4.28
+     }
+    ],
+    "white-cells": [
+     {
+      "t": "Day 30",
+      "value": 6.0
+     },
+     {
+      "t": "Day 60",
+      "value": 6.3
+     },
+     {
+      "t": "Day 90",
+      "value": 5.9
+     },
+     {
+      "t": "Day 120",
+      "value": 6.2
+     }
+    ]
+   }
+  },
+  {
+   "id": "crew-2",
+   "name": "Crew member 2",
+   "sex": "M",
+   "baseline": {
+    "haemoglobin": [
+     {
+      "t": "L-90",
+      "value": 14.6
+     },
+     {
+      "t": "L-45",
+      "value": 14.9
+     },
+     {
+      "t": "L-5",
+      "value": 14.7
+     }
+    ],
+    "haematocrit": [
+     {
+      "t": "L-90",
+      "value": 43.8
+     },
+     {
+      "t": "L-45",
+      "value": 44.6
+     },
+     {
+      "t": "L-5",
+      "value": 44.1
+     }
+    ],
+    "red-cells": [
+     {
+      "t": "L-90",
+      "value": 4.86
+     },
+     {
+      "t": "L-45",
+      "value": 4.95
+     },
+     {
+      "t": "L-5",
+      "value": 4.9
+     }
+    ],
+    "white-cells": [
+     {
+      "t": "L-90",
+      "value": 5.6
+     },
+     {
+      "t": "L-45",
+      "value": 5.9
+     },
+     {
+      "t": "L-5",
+      "value": 5.4
+     }
+    ]
+   },
+   "mission": {
+    "haemoglobin": [
+     {
+      "t": "Day 30",
+      "value": 14.5
+     },
+     {
+      "t": "Day 60",
+      "value": 14.2
+     },
+     {
+      "t": "Day 90",
+      "value": 14.0
+     },
+     {
+      "t": "Day 120",
+      "value": 13.9
+     }
+    ],
+    "haematocrit": [
+     {
+      "t": "Day 30",
+      "value": 43.5
+     },
+     {
+      "t": "Day 60",
+      "value": 42.8
+     },
+     {
+      "t": "Day 90",
+      "value": 42.2
+     },
+     {
+      "t": "Day 120",
+      "value": 41.9
+     }
+    ],
+    "red-cells": [
+     {
+      "t": "Day 30",
+      "value": 4.84
+     },
+     {
+      "t": "Day 60",
+      "value": 4.76
+     },
+     {
+      "t": "Day 90",
+      "value": 4.7
+     },
+     {
+      "t": "Day 120",
+      "value": 4.66
+     }
+    ],
+    "white-cells": [
+     {
+      "t": "Day 30",
+      "value": 5.7
+     },
+     {
+      "t": "Day 60",
+      "value": 5.5
+     },
+     {
+      "t": "Day 90",
+      "value": 5.8
+     },
+     {
+      "t": "Day 120",
+      "value": 5.6
+     }
+    ]
+   }
+  },
+  {
+   "id": "crew-3",
+   "name": "Crew member 3",
+   "sex": "M",
+   "baseline": {
+    "haemoglobin": [
+     {
+      "t": "L-90",
+      "value": 16.4
+     },
+     {
+      "t": "L-45",
+      "value": 16.7
+     },
+     {
+      "t": "L-5",
+      "value": 16.5
+     }
+    ],
+    "haematocrit": [
+     {
+      "t": "L-90",
+      "value": 48.0
+     },
+     {
+      "t": "L-45",
+      "value": 48.9
+     },
+     {
+      "t": "L-5",
+      "value": 48.4
+     }
+    ],
+    "red-cells": [
+     {
+      "t": "L-90",
+      "value": 5.4
+     },
+     {
+      "t": "L-45",
+      "value": 5.52
+     },
+     {
+      "t": "L-5",
+      "value": 5.46
+     }
+    ],
+    "white-cells": [
+     {
+      "t": "L-90",
+      "value": 7.8
+     },
+     {
+      "t": "L-45",
+      "value": 8.2
+     },
+     {
+      "t": "L-5",
+      "value": 7.5
+     }
+    ]
+   },
+   "mission": {
+    "haemoglobin": [
+     {
+      "t": "Day 30",
+      "value": 16.5
+     },
+     {
+      "t": "Day 60",
+      "value": 16.3
+     },
+     {
+      "t": "Day 90",
+      "value": 16.4
+     },
+     {
+      "t": "Day 120",
+      "value": 16.2
+     }
+    ],
+    "haematocrit": [
+     {
+      "t": "Day 30",
+      "value": 48.2
+     },
+     {
+      "t": "Day 60",
+      "value": 47.9
+     },
+     {
+      "t": "Day 90",
+      "value": 48.1
+     },
+     {
+      "t": "Day 120",
+      "value": 47.6
+     }
+    ],
+    "red-cells": [
+     {
+      "t": "Day 30",
+      "value": 5.44
+     },
+     {
+      "t": "Day 60",
+      "value": 5.4
+     },
+     {
+      "t": "Day 90",
+      "value": 5.42
+     },
+     {
+      "t": "Day 120",
+      "value": 5.37
+     }
+    ],
+    "white-cells": [
+     {
+      "t": "Day 30",
+      "value": 7.9
+     },
+     {
+      "t": "Day 60",
+      "value": 7.6
+     },
+     {
+      "t": "Day 90",
+      "value": 8.0
+     },
+     {
+      "t": "Day 120",
+      "value": 7.7
+     }
+    ]
+   }
+  },
+  {
+   "id": "crew-4",
+   "name": "Crew member 4",
+   "sex": "F",
+   "baseline": {
+    "haemoglobin": [
+     {
+      "t": "L-90",
+      "value": 12.2
+     },
+     {
+      "t": "L-45",
+      "value": 12.5
+     },
+     {
+      "t": "L-5",
+      "value": 12.3
+     }
+    ],
+    "haematocrit": [
+     {
+      "t": "L-90",
+      "value": 37.0
+     },
+     {
+      "t": "L-45",
+      "value": 37.8
+     },
+     {
+      "t": "L-5",
+      "value": 37.3
+     }
+    ],
+    "red-cells": [
+     {
+      "t": "L-90",
+      "value": 4.05
+     },
+     {
+      "t": "L-45",
+      "value": 4.12
+     },
+     {
+      "t": "L-5",
+      "value": 4.08
+     }
+    ],
+    "white-cells": [
+     {
+      "t": "L-90",
+      "value": 4.9
+     },
+     {
+      "t": "L-45",
+      "value": 5.2
+     },
+     {
+      "t": "L-5",
+      "value": 4.7
+     }
+    ]
+   },
+   "mission": {
+    "haemoglobin": [
+     {
+      "t": "Day 30",
+      "value": 12.3
+     },
+     {
+      "t": "Day 60",
+      "value": 12.4
+     },
+     {
+      "t": "Day 90",
+      "value": 12.2
+     },
+     {
+      "t": "Day 120",
+      "value": 12.3
+     }
+    ],
+    "haematocrit": [
+     {
+      "t": "Day 30",
+      "value": 37.2
+     },
+     {
+      "t": "Day 60",
+      "value": 37.5
+     },
+     {
+      "t": "Day 90",
+      "value": 37.0
+     },
+     {
+      "t": "Day 120",
+      "value": 37.1
+     }
+    ],
+    "red-cells": [
+     {
+      "t": "Day 30",
+      "value": 4.07
+     },
+     {
+      "t": "Day 60",
+      "value": 4.1
+     },
+     {
+      "t": "Day 90",
+      "value": 4.04
+     },
+     {
+      "t": "Day 120",
+      "value": 4.06
+     }
+    ],
+    "white-cells": [
+     {
+      "t": "Day 30",
+      "value": 5.0
+     },
+     {
+      "t": "Day 60",
+      "value": 4.8
+     },
+     {
+      "t": "Day 90",
+      "value": 5.1
+     },
+     {
+      "t": "Day 120",
+      "value": 4.9
+     }
+    ]
+   }
+  }
+ ],
+ "indicators": [
+  {
+   "id": "haemoglobin",
+   "name": "Haemoglobin",
+   "region": "Blood",
+   "unit": "g/dL",
+   "dp": 1,
+   "ref": {
+    "M": {
+     "min": 13.2,
+     "max": 17.1
+    },
+    "F": {
+     "min": 11.7,
+     "max": 15.5
+    }
+   },
+   "refSource": "Laboratory reference range as reported in NASA OSDR, OSD-569 (LSDS-7)",
+   "whyCheck": "Placeholder, awaiting clinician wording (CR-03). Background: NASA Human Research Program, Risks of Human Spaceflight.",
+   "howMeasured": "Placeholder, awaiting clinician wording (CR-03)."
+  },
+  {
+   "id": "haematocrit",
+   "name": "Haematocrit",
+   "region": "Blood",
+   "unit": "%",
+   "dp": 1,
+   "ref": {
+    "M": {
+     "min": 38.5,
+     "max": 50
+    },
+    "F": {
+     "min": 35,
+     "max": 45
+    }
+   },
+   "refSource": "Laboratory reference range as reported in NASA OSDR, OSD-569 (LSDS-7)",
+   "whyCheck": "Placeholder, awaiting clinician wording (CR-03). Background: NASA Human Research Program, Risks of Human Spaceflight.",
+   "howMeasured": "Placeholder, awaiting clinician wording (CR-03)."
+  },
+  {
+   "id": "red-cells",
+   "name": "Red blood cell count",
+   "region": "Blood",
+   "unit": "million/µL",
+   "dp": 2,
+   "ref": {
+    "M": {
+     "min": 4.2,
+     "max": 5.8
+    },
+    "F": {
+     "min": 3.8,
+     "max": 5.1
+    }
+   },
+   "refSource": "Laboratory reference range as reported in NASA OSDR, OSD-569 (LSDS-7)",
+   "whyCheck": "Placeholder, awaiting clinician wording (CR-03). Background: NASA Human Research Program, Risks of Human Spaceflight.",
+   "howMeasured": "Placeholder, awaiting clinician wording (CR-03)."
+  },
+  {
+   "id": "white-cells",
+   "name": "White blood cell count",
+   "region": "Blood",
+   "unit": "thousand/µL",
+   "dp": 1,
+   "ref": {
+    "M": {
+     "min": 3.8,
+     "max": 10.8
+    },
+    "F": {
+     "min": 3.8,
+     "max": 10.8
+    }
+   },
+   "refSource": "Laboratory reference range as reported in NASA OSDR, OSD-569 (LSDS-7)",
+   "whyCheck": "Placeholder, awaiting clinician wording (CR-03). Background: NASA Human Research Program, Risks of Human Spaceflight.",
+   "howMeasured": "Placeholder, awaiting clinician wording (CR-03)."
+  }
+ ],
+ "settings": [
+  {
+   "id": "mars-far",
+   "label": "Mars, farthest",
+   "kicker": "Mars, farthest from Earth · Mission day 142",
+   "replySeconds": 2676,
+   "gapLabel": "Earth reply possible in",
+   "nowLabel": "Earth reply possible now",
+   "detail": "One-way delay 22 min 18 s",
+   "basis": "Light-time arithmetic: about 401 million km at the speed of light, there and back. Relay and processing time would add to this.",
+   "advice": "No one on Earth can answer for about 45 minutes. Start the steps now. Do not wait.",
+   "scenarioSynthetic": false
+  },
+  {
+   "id": "mars-near",
+   "label": "Mars, closest",
+   "kicker": "Mars, closest to Earth · Mission day 142",
+   "replySeconds": 364,
+   "gapLabel": "Earth reply possible in",
+   "nowLabel": "Earth reply possible now",
+   "detail": "One-way delay 3 min 2 s",
+   "basis": "Light-time arithmetic: about 54.6 million km at the speed of light, there and back. Relay and processing time would add to this.",
+   "advice": "No one on Earth can answer for about 6 minutes. Start the steps now.",
+   "scenarioSynthetic": false
+  },
+  {
+   "id": "moon",
+   "label": "Moon",
+   "kicker": "Lunar surface · Mission day 142",
+   "replySeconds": 2.6,
+   "gapLabel": "Earth reply possible in",
+   "nowLabel": "Earth can answer now",
+   "detail": "One-way delay 1.3 s",
+   "basis": "Light-time arithmetic: about 384,400 km at the speed of light, there and back.",
+   "advice": "Earth can answer within seconds. Call the flight surgeon and do the steps together.",
+   "scenarioSynthetic": false
+  },
+  {
+   "id": "earth",
+   "label": "Remote Australia",
+   "kicker": "Very remote Australia · 7 hours by road from hospital",
+   "replySeconds": 3600,
+   "gapLabel": "Retrieval team can reach you in",
+   "nowLabel": "Retrieval team can reach you now",
+   "detail": "Nearest hospital: 7 hours by road",
+   "basis": "SYNTHETIC scenario for a very remote property: an aeromedical retrieval one hour away.",
+   "advice": "A doctor can talk you through this by phone now. Hands-on help is an hour away. Start the steps.",
+   "scenarioSynthetic": true,
+   "words": {
+    "your crew medic": "your remote area nurse",
+    "Earth": "the on-call doctor",
+    "pre-flight": "usual",
+    "Before launch": "Before this season",
+    "This mission": "This season"
+   },
+   "tierWords": {
+    "amber": "Remote nurse"
+   }
+  }
+ ],
+ "symptoms": {
+  "status": "Placeholder list, awaiting clinician review (CR-10)",
+  "options": [
+   "Headache",
+   "Tired",
+   "Dizzy",
+   "Nauseous",
+   "Poor sleep",
+   "Low mood"
+  ]
+ },
+ "radiationPrompt": {
+  "status": "Placeholder step, awaiting clinician review (CR-09)",
+  "step": "Log your personal dosimeter reading."
+ },
+ "settingStatus": "Placeholder guidance lines and Earth-mode wording, awaiting clinician review (CR-11)",
+ "earthBenefit": {
+  "figure": "252 vs 88",
+  "text": "potentially avoidable deaths per 100,000 people in very remote Australia compared with major cities (2022 to 2024, age-standardised).",
+  "source": "Australian Institute of Health and Welfare, Deaths in Australia",
+  "link": "https://www.aihw.gov.au/reports/life-expectancy-deaths/deaths-in-australia/contents/variations-between-population-groups/remoteness-area"
+ }
+}

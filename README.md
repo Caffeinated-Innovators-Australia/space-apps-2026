@@ -28,6 +28,10 @@ Each ask in the challenge statement is mapped to a screen in `docs/CHALLENGE.md`
 - Every synthetic value in the app is labelled SYNTHETIC.
 - Full list: `REFERENCES.md` and `docs/DATA_DICTIONARY.md`.
 
+## How it is built
+
+There is no server. Everything runs on the device, so it keeps working with no link to Earth. Readings are saved in the browser's own database. One action layer (`src/core/`) serves the screens, a command-line tool and AI agents. What is built, what is placeholder and what real use would need is set out in `docs/ROAD_TO_FLIGHT.md`. Teammates adding a module: see `docs/MODULE_GUIDE.md`. AI agents: see `public/agents.md`.
+
 ## Use of AI
 
 We used AI tools (Claude Code) to help write code and documents. The idea is the team's own. Every use is logged in `AI_USE.md`.
@@ -38,12 +42,13 @@ Every threshold shows its source. Each one is to be written and signed off by a 
 
 ## Run it
 
-Needs Node 22 or later (built with Node 24).
+Needs Node 24 or later.
 
 ```
 npm install
 npm run dev      # local development
-npm test         # rules engine tests
+npm test         # rules engine and action layer tests
+npm run crew-health -- assess --crew crew-2 --indicator haemoglobin --value 13.4   # same rules, from the command line
 npm run build    # production build in dist/
 python3 scripts/fetch_osd569.py   # refresh the bundled NASA data (optional)
 python3 .claude/skills/judge-evals/scripts/run_evals.py auto --repo . --out evals/runs/quick

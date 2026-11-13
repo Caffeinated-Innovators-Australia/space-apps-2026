@@ -1,5 +1,5 @@
 // Simple body figure drawn in code by the team's build assistant (AI-assisted code, see AI_USE.md).
-import type { Tier } from '../engine/rules';
+import type { Tier } from '../core/rules.ts';
 import { useContext } from 'react';
 import { TierWords } from './ui';
 

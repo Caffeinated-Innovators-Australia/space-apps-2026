@@ -12,8 +12,9 @@ Evidence grades: **A** physics or a published standard; **B** real data from a s
 | Band margin | 5% of the pre-flight mean | Invented for the build so the journey could be shown | None | A demo parameter, not a clinical threshold. Shown on screen as "Placeholder rule" with confidence Low |
 | Tier logic | Inside band: Self-manage. Outside band, inside laboratory range: Crew medic. Outside both: Urgent | Team design choice | None | Placeholder. A single reading can raise a tier; whether a repeat reading should be required first is a clinician decision (CR-12) |
 | Laboratory reference range, haemoglobin | 13.2 to 17.1 g/dL (male crew), 11.7 to 15.5 g/dL (female crew) | As reported by the laboratory in NASA OSDR, OSD-569 (LSDS-7) | D | An Earth laboratory range. Not tested for in-flight use |
+| Laboratory reference ranges, other blood measures | Haematocrit 38.5 to 50% (male), 35 to 45% (female); red cells 4.2 to 5.8 (male), 3.8 to 5.1 (female) million/µL; white cells 3.8 to 10.8 thousand/µL | As reported by the laboratory in NASA OSDR, OSD-569 (LSDS-7) | D | Earth laboratory ranges. Not tested for in-flight use |
 | Real crew blood counts | Four crew, three draws before launch, four after return | NASA OSDR, OSD-569, Inspiration4 | B | Four people, a three-day mission, no in-flight draws. Shown as pre-flight and post-flight only |
-| Demo astronaut baseline and readings | All values | Made up by the team | None | SYNTHETIC, labelled on screen. Shows that the workflow runs, nothing more |
+| Demo crew baselines and readings (four crew) | All values | Made up by the team | None | SYNTHETIC, labelled on screen. Shows that the workflow runs, nothing more |
 | One-way signal delay, Moon | about 1.3 s | Arithmetic: about 384,400 km at the speed of light | A | Light time only; relay and processing add to it |
 | One-way signal delay, Mars | about 3 min (closest, 54.6 million km) to about 22 min (farthest, 401 million km) | Arithmetic from published distance ranges | A | Light time only; near solar conjunction links can be lost altogether |
 | Remote Australia retrieval time | 60 minutes | SYNTHETIC scenario | None | Labelled SYNTHETIC on screen |

@@ -1,7 +1,7 @@
 // Shared components, written during the hackathon to the team design system.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { createContext, useContext, type ReactNode } from 'react';
-import type { Assessment, Tier } from '../engine/rules';
+import type { Assessment, Tier } from '../core/rules.ts';
 
 export const TIER_WORD: Record<Tier, string> = { green: 'Self-manage', amber: 'Crew medic', red: 'Urgent' };
 

@@ -1,6 +1,6 @@
 // Trend chart: shaded personal-baseline band, dashed laboratory reference lines, points with tier shapes.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
-import type { Band, Tier } from '../engine/rules';
+import type { Band, Tier } from '../core/rules.ts';
 
 export interface ChartPoint {
   label: string;

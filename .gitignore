@@ -5,3 +5,4 @@ dist/
 .DS_Store
 evals/runs/
 evals/COMPETITOR_ARCHETYPES.md
+.crew-health-state.json
