@@ -102,7 +102,7 @@ export function tierFor(value: number, band: Band, refMin: number, refMax: numbe
 }
 
 function fmt(n: number, dp: number): string {
-  return round(n, dp).toFixed(dp).replace(/\.0+$/, (m) => (dp > 0 && m.length - 1 === dp ? '' : m));
+  return round(n, dp).toFixed(dp);
 }
 
 function fill(template: string, vars: Record<string, string>): string {
