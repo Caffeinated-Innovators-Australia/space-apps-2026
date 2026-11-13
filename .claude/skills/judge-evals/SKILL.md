@@ -48,7 +48,7 @@ The MAIN session runs this, because subagents can't spawn subagents.
    requirement ID in docs/REQUIREMENTS.md (spec-writer scope guard). If it doesn't, either add the
    requirement via change control or drop the fix.
 
-Score interpretation: 3 = typical decent hackathon entry; 4 = strong local winner; 5 = Global Nominee.
+Score interpretation (ours, not official): the official guide describes only what a 5 looks like and publishes no weights, caps or pass mark. We read 3 as a typical decent entry and 4 as a strong local entry. The weighted percentage and the 80% target are our own planning aids.
 Targets: ≥ 60% at h12 (demo story runs), ≥ 75% at h24, ≥ 80% at h36 and h46 with all gates passing.
 
 ## Mode 3: Self-check (every agent, before marking any task done)

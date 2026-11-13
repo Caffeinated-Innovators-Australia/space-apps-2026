@@ -1,19 +1,20 @@
 # Space Apps 2026 judging rubric: used by the judge-evals skill (run_evals.py)
+# v1.1 (14 Nov 2026): audited against the live official guides. Official wording is now separated from team advice; score caps that the official guide does not contain are removed.
 # v1.0 (14 Nov 2026): criteria, scale, limits and consequences updated from the official 2026 Judging & Awards Guide
 # and Project Submission Guide (both dated 12 Nov 2026). Wording below is paraphrased from those guides.
 meta:
-  version: "1.0"
+  version: "1.1"
   challenge: "Create Health Monitoring Software for Astronauts on Space Missions (NASA Space Apps 2026)"
   judge_context_files: [evals/WINNING_TRAITS.md, evals/COMPETITOR_ARCHETYPES.md, evals/PRIOR_ART.md, evals/HUMAN_FACTORS.md, docs/CHALLENGE.md, docs/RULES.md]
   year: 2026
-  criteria_source: "Official 2026 Judging & Awards Guide (12 Nov 2026): five criteria, each scored 1-5, at every level of judging"
+  criteria_source: "Official 2026 Judging & Awards Guide and Project Submission Guide, read on the live site on 14 Nov 2026: five criteria, each scored 1-5, at every level of judging. No weights are published."
   target_score: 80
   # Weight profiles: the 2026 guide scores all five criteria 1-5 at every level (local, global, executive)
   # and publishes no weights, so local and global are both equal.
   weight_profiles:
     local:  {impact: 20, creativity: 20, validity: 20, relevance: 20, presentation: 20}
     global: {impact: 20, creativity: 20, validity: 20, relevance: 20, presentation: 20}          # % weighted score we aim to hold from h24 onwards
-  scale: "1-5 per criterion; 3 = typical decent hackathon entry; 5 = Global Nominee standard"
+  scale: "1-5 per criterion, as in the official guide. The official guide describes only what a 5 looks like; the 1-4 anchors are our gradations of that descriptor."
 
 auto_config:
   kickoff_utc: "2026-11-13T22:00:00Z"   # Sat 14 Nov 2026, 9:00 am AEDT (submission opens)
@@ -80,116 +81,136 @@ gates:
     name: "AI-use disclosed"
     auto: [A5_ai_disclosure]
     consequence: "2026: SI (AI) use must be described; AI may not generate the idea; AI images/video need a visible watermark; AI audio, code and data acknowledged in text and metadata; no NASA branding in AI content"
+  - id: G9
+    name: "Team eligibility: every member registered, on the Members tab, at the same Local Event, not waitlisted; six members or fewer; Submit for Judging pressed before the deadline"
+    auto: []
+    judge_items: [W10]
+    consequence: "2026 guide: not eligible for Global Judging. A person on the team must check this; it cannot be seen from the repository"
+  - id: G10
+    name: "No image, video, audio or other likeness of anyone under 18"
+    auto: []
+    judge_items: [W25]
+    consequence: "2026 Submission Guide and Terms: rules breach"
+  # Not modelled, needs a person: both tick-boxes on the submission form (terms; original work and all external
+  # resources listed in References), and NASA's review for prohibited bilateral activity with China or a
+  # Chinese-owned entity, which NASA decides at its sole discretion before Global Judging.
 
 criteria:
+  # v1.1 (14 Nov 2026 audit): each criterion now separates what the official 2026 Judging & Awards Guide says
+  # (official_wording, look_for) from our own advice (team_guidance, concerns). The official guide defines each
+  # criterion and describes only a score of 5; it gives no anchors for 1-4, no weights and no score caps.
+  # The anchors below are our gradations of the official score-5 descriptor.
   - id: impact
     name: "Impact"
     weight: 20
-    source: "2026 Judging & Awards Guide"
-    official_wording: 'Paraphrase of the 2026 guide: how big a problem the project addresses and how far its effect reaches. A 5 addresses a significant problem, with extensive reach that benefits or inspires a large audience.'
+    source: "2026 Judging & Awards Guide, read 14 Nov 2026"
+    official_wording: 'Paraphrase of the official text. Criterion: the project addresses a minor or a major problem, which shapes the quality and quantity of its effect; how far it inspires or helps others ranges from a select few to a broad audience. Score of 5 (Outstanding Impact): exceptional impact, a significant problem with proposed solutions; reach is extensive, inspiring, benefits a large audience or could change the world; quality and effectiveness far exceed expectations.'
     personas: [nasa_sme, storyteller]
     look_for:
-      - "A named primary user with a real, specific pain point"
-      - "Value shown across mission contexts and a credible Earth benefit"
-      - "Evidence of the size of the problem (sourced numbers)"
+      - "How significant the problem is (minor to major)"
+      - "How far the effect reaches: who is helped or inspired, a select few or a broad audience"
+      - "The quality and effectiveness of the proposed solution"
+    team_guidance:
+      - "A named primary user with a specific pain point helps a judge see the problem"
+      - "Sourced figures for the size of the problem, and a credible Earth benefit, widen the reach a judge can credit"
     anchors:
-      1: "No clear user or problem; impact asserted, not shown"
-      2: "Generic user; benefit plausible but vague"
-      3: "Clear user and problem; benefit shown for one context"
-      4: "Specific user, sourced problem size, benefit demonstrated in the demo, plausible Earth spin-off"
-      5: "Compelling, quantified value for crews AND on Earth; judges can picture it being adopted"
-    red_flags: ["Impact claims with no source", "Solves a problem the challenge didn't ask about"]
-    evidence: ["README", "docs/PROJECT_BRIEF.md", "pitch/ slides or video script", "the running demo"]
+      1: "A minor problem or none evident; helps very few; little sign the solution would be effective"
+      2: "A real but narrow problem; limited reach; effectiveness plausible but not shown"
+      3: "A clear problem of moderate significance; helps a defined group; effectiveness reasonably shown"
+      4: "A significant problem; broad or inspiring reach; a solution that looks effective"
+      5: "A significant problem; extensive, inspiring reach that benefits a large audience or could change the world; quality far exceeds expectations"
+    concerns: ["Impact claims with no support", "Solves a problem the challenge did not ask about"]
+    evidence: ["pitch/PROJECT_PAGE.md (the project page text judges read)", "the demo (pitch/ video or slides)", "the final project link: the running app and README"]
   - id: creativity
-    name: "Creativity / originality"
+    name: "Creativity"
     weight: 20
-    source: "2026 Judging & Awards Guide"
-    official_wording: 'Paraphrase of the 2026 guide: originality and innovation, either a concept not attempted before or a meaningful improvement on existing ideas. A 5 is a groundbreaking, original approach that stands out in its field.'
+    source: "2026 Judging & Awards Guide, read 14 Nov 2026"
+    official_wording: 'Paraphrase of the official text. Criterion: originality and innovation; a novel concept not attempted before, or a meaningful improvement on existing ideas; a fresh perspective or inventive execution. Score of 5 (Highly Creative and Innovative): remarkable creativity, a groundbreaking approach never attempted before; challenges conventional methods; an original, inventive solution that stands out in its field.'
     personas: [nasa_sme, technologist, storyteller]
     look_for:
-      - "A distinctive idea that differs from the obvious dashboard/chatbot answer"
-      - "A cross-domain borrowing or insight judges haven't seen ten times"
-      - "Originality in the interaction, not just the visuals"
-      - "Compare against evals/COMPETITOR_ARCHETYPES.md: what does this do that the common 2026 archetypes don't?"
+      - "A novel concept, or a meaningful improvement on existing ideas"
+      - "A fresh perspective or inventive execution"
+      - "Whether it challenges conventional methods and stands out in its field"
+    team_guidance:
+      - "evals/COMPETITOR_ARCHETYPES.md describes what the 2026 field is building. Use it as context for 'has this been seen before'. Its ceilings are our estimates, not official rules, and are not caps"
+      - "A meaningful improvement on existing ideas counts as creative under the official wording, not only something never attempted"
     anchors:
-      1: "The obvious solution, done generically"
-      2: "Obvious solution with a cosmetic twist"
-      3: "One genuinely novel element"
-      4: "A clearly novel framing that changes how the problem is solved"
-      5: "Memorable, original concept that judges will repeat in deliberations"
-    red_flags: ["Indistinguishable from a generic vitals dashboard", "An LLM chatbot as the whole idea",
-                "Headline novelty is a commodity phrase from COMPETITOR_ARCHETYPES.md with no distinct execution"]
-    evidence: ["README", "pitch", "demo", "evals/COMPETITOR_ARCHETYPES.md"]
+      1: "A conventional approach with no evident originality"
+      2: "A familiar approach with a small twist"
+      3: "A meaningful improvement on existing ideas, or one clearly original element"
+      4: "A fresh perspective and inventive execution that stands out among similar projects"
+      5: "A groundbreaking approach not attempted before; challenges conventional methods; a true innovation"
+    concerns: ["Indistinguishable from a generic vitals dashboard", "An LLM chatbot as the whole idea"]
+    evidence: ["pitch/PROJECT_PAGE.md", "the demo", "the final project link: the running app and README", "evals/COMPETITOR_ARCHETYPES.md (context only)"]
   - id: validity
-    name: "Validity (scientific and technical)"
+    name: "Validity"
     weight: 20
-    source: "2026 Judging & Awards Guide"
-    official_wording: 'Paraphrase of the 2026 guide: grounded in scientific principles; technically, functionally or logically feasible; complete; usable and user-friendly. A 5 is scientifically sound, fully developed and ready for real-world use.'
+    source: "2026 Judging & Awards Guide, read 14 Nov 2026"
+    official_wording: 'Paraphrase of the official text. Criterion: grounded in scientific principles; technically, functionally or logically feasible; designed to achieve its intended purpose with potential to function in real-world applications; completeness varies from fully developed to needing significant refinement; usability and user-friendliness affect practicality and accessibility. Score of 5 (Highly Valid and Feasible): scientifically sound and technically feasible, aligned with established principles; fully developed and ready for real-world implementation; highly usable and user-friendly.'
     personas: [nasa_sme, sceptic, technologist]
     look_for:
-      - "Every threshold and claim traced to a cited source with evidence strength shown"
-      - "Data used correctly; limitations stated (sample size, synthetic data)"
-      - "The demo actually works end to end on real or properly labelled data"
-      - "Clinical safety: assessment not diagnosis; rules decide, AI explains"
-      - "Honest positioning against real NASA/CSA systems (evals/PRIOR_ART.md); no claims from its 'avoid' list"
-      - "Alerts follow the human-factors principles (evals/HUMAN_FACTORS.md): every alert has an action; confidence shown; no nuisance alerts"
+      - "Grounded in scientific principles; aligned with established knowledge"
+      - "Technically, functionally or logically feasible; does it achieve its intended purpose"
+      - "How complete it is: fully developed, or still needing significant refinement"
+      - "Usability and user-friendliness: practical and accessible for the intended user"
+      - "Potential to function in a real-world application"
+    team_guidance:
+      - "For a health tool, sourced thresholds, stated limitations and honest labelling of synthetic data are how scientific grounding shows"
+      - "Assessment rather than diagnosis; rules decide and AI only explains"
+      - "evals/PRIOR_ART.md and evals/HUMAN_FACTORS.md give domain context a specialist judge would bring"
     anchors:
-      1: "Doesn't work, or makes scientifically wrong claims"
-      2: "Partially works; sources missing or misused"
-      3: "Works for the demo path; most claims sourced"
-      4: "Works robustly; all numbers sourced and graded; limitations explicit"
-      5: "Expert judges would trust it; honest, rigorous, safe by design"
-    red_flags: ["Claims 'first', 'validated', or NASA integration (see PRIOR_ART.md)", "Invented thresholds", "Synthetic data presented as real", "Accuracy claimed from synthetic data", "Diagnosis stated as fact"]
-    evidence: ["docs/EVIDENCE.md", "docs/DATA_DICTIONARY.md", "docs/HAZARD_LOG.md", "rules/ files", "demo"]
-    auto_caps:
-      - {check: A4_synthetic_labelled, cap: 2}
-      - {check: A2_agency_data, cap: 3}
-      - {check: A19_no_overclaims, cap: 3}
+      1: "Not scientifically grounded, or does not work"
+      2: "Partly feasible; significant gaps in science, function or usability"
+      3: "Sound in principle and working for its main purpose; needs significant refinement before real use"
+      4: "Scientifically sound and feasible; largely complete; usable and user-friendly"
+      5: "Scientifically sound and technically feasible; fully developed and ready for real-world implementation; highly usable and user-friendly"
+    concerns: ["Claims 'first', 'validated' or NASA integration (see PRIOR_ART.md)", "Clinical values with no source", "Synthetic data presented as real", "Accuracy claimed from synthetic data", "Diagnosis stated as fact"]
+    evidence: ["pitch/PROJECT_PAGE.md", "the demo", "the final project link: the running app and README", "repository documents a judge might open: docs/EVIDENCE.md, rules/ files"]
   - id: relevance
     name: "Relevance"
     weight: 20
-    source: "2026 Judging & Awards Guide"
-    official_wording: 'Paraphrase of the 2026 guide: fully and directly addresses the challenge, and integrates NASA data as a core component rather than a superficial addition. A 5 has NASA data integral to the solution and well executed.'
+    source: "2026 Judging & Awards Guide, read 14 Nov 2026"
+    official_wording: 'Paraphrase of the official text. Criterion: fully and directly addresses the challenge it was submitted to, aligned with its objectives; meaningfully integrates NASA data as a core component rather than a superficial addition; depth of engagement with the data adds credibility and effectiveness. Score of 5 (Highly Relevant and Strong NASA Data Integration): thoroughly engages with the challenge, deeply connected to its goals; NASA data is integral to the project''s success and drives the innovation; the use of data is well executed.'
     personas: [nasa_sme, sceptic]
     look_for:
-      - "Every Must objective and guiding question in the statement visibly answered"
-      - "Uses the challenge's suggested resources where sensible"
-      - "NASA data drives something visible in the product and is named in the demo and the NASA Data field"
-      - "Traceability: judges can map statement to feature quickly"
+      - "Fully and directly addresses the challenge and its stated objectives"
+      - "NASA data integrated as a core component, not a superficial addition"
+      - "Depth of engagement with the data; the use of data is well executed"
+    team_guidance:
+      - "The challenge's objective is a visual tool that gathers health indicators and lets astronauts evaluate and act on their health. The 'questions worth considering' and 'potential considerations' in the statement are optional; answering them strengthens the case but is not required"
+      - "The NASA Data field on the project page is where a judge checks which data was used and how"
     anchors:
-      1: "Off-challenge"
-      2: "Touches the challenge but misses key objectives"
-      3: "Addresses the main objective; some guiding questions unanswered"
-      4: "All objectives and most guiding questions answered visibly"
-      5: "Every objective and guiding question answered, mapped explicitly, using the challenge's resources"
-    red_flags: ["Key verb of the statement (e.g. 'act on') not delivered", "NASA data only listed in references, not used in the product"]
-    evidence: ["docs/CHALLENGE.md traceability table", "docs/REQUIREMENTS.md", "demo"]
-    auto_caps:
-      - {check: A13_spec_lint, cap: 3}
+      1: "Does not address the challenge"
+      2: "Touches the challenge but misses its objectives, or NASA data is absent or only listed"
+      3: "Addresses the main objective; NASA data is used but is not central"
+      4: "Directly addresses the challenge objectives; NASA data is a core component"
+      5: "Thoroughly engages with the challenge; NASA data is integral, well executed and drives the solution"
+    concerns: ["A key verb of the statement (gather, evaluate, act) is not delivered", "NASA data only listed in references, not used in the product"]
+    evidence: ["pitch/PROJECT_PAGE.md, especially the NASA Data field", "the demo", "the final project link: the running app", "docs/CHALLENGE.md"]
   - id: presentation
     name: "Presentation"
     weight: 20
-    source: "2026 Judging & Awards Guide; 2026 Project Submission Guide"
-    official_wording: 'Paraphrase of the 2026 guide: how clearly and engagingly the team conveyed the challenge, the solution and its significance. Judges use the demo and the full project page to compute this score.'
+    source: "2026 Judging & Awards Guide and 2026 Project Submission Guide, read 14 Nov 2026"
+    official_wording: 'Paraphrase of the official text. Criterion: the team communicated the project effectively, conveying the challenge, the proposed solution and its significance; storytelling engaging and well structured; clarity, organisation and delivery make the ideas compelling. Judges evaluate the demo and the full project to compute this score. Score of 5 (Exceptional Communication and Storytelling): a well-structured, compelling presentation that clearly articulates the challenge, the solution and its importance; engaging storytelling; polished, structured and highly effective delivery. The Submission Guide adds: the demo counts, but most of the evaluation rests on the project submission page.'
     personas: [storyteller, technologist]
     look_for:
-      - "A hook in the first 5 seconds; one end-to-end demo story"
-      - "Follows the official '30 Seconds of Glory' order (see evals/WINNING_TRAITS.md); shows the real working software"
-      - "Voice-over ~62-80 words for 30 s; product on screen >= 80% of runtime; data source shown as an on-screen label"
-      - "Project page (2026 fields): Project Name, High-Level Summary, demo link, final project link, Detailed Description, Use of SI (AI), NASA Data, Space Agency Partner Data and Other References, all filled"
-      - "Within the submission limits; project page complete; repo has a clear README"
-      - "Professional but honest; SYNTHETIC labels visible; Australian English"
+      - "Clearly conveys the challenge, the proposed solution and its significance"
+      - "Engaging, well-structured storytelling; clear, organised, polished delivery"
+      - "Judged on the demo and the full project together; most weight on the project page"
+      - "A reader with no context or technical background can follow it (Submission Guide)"
+    team_guidance:
+      - "Official suggested video outline (Submission Guide): 0:00 introduce yourself, your name and team name; 0:02 the challenge and what inspired the choice; 0:05 project title and tagline; 0:10 how it works, with images or a prototype, a user's experience, and how NASA and partner data made it possible; 0:20 to 0:30 the future, what it could do for people and the world. It is a suggestion, not a scored requirement"
+      - "A slide demo should carry the team name, member names and the challenge selected (Submission Guide)"
+      - "Our own advice, not official: about 62 to 80 spoken words in 30 seconds; show the working product for most of the runtime; name the data source on screen"
+      - "The Use of SI field is collected for data purposes and is not shown to judges; judges do see watermarks, descriptive text and metadata in the project"
     anchors:
-      1: "Confusing or incomplete submission"
-      2: "Understandable but flat; over the limits or missing parts"
-      3: "Clear and complete"
-      4: "Clear, engaging, well-paced; demo shown working"
-      5: "Memorable story judges retell; flawless within the format"
-    red_flags: ["Over the time/slide limit (ineligible for Global Judging)", "Demo not shown", "Wall of text slides", "NASA logo or branding used", "AI-generated image or video without a visible watermark", "Any image, voice, name or likeness of a person under 18", "Third-party footage or photos that are not openly licensed"]
-    evidence: ["pitch/", "project page text", "README", "video"]
-    auto_caps:
-      - {check: A14_slide_limit, cap: 2}
-      - {check: A15_video_limit, cap: 2}
+      1: "Confusing or incomplete; the challenge, solution or significance cannot be made out"
+      2: "Understandable with effort; weak structure; key parts missing"
+      3: "Clear and complete; conveys the challenge, solution and significance"
+      4: "Clear, engaging and well structured; a reader with no context follows it easily"
+      5: "Compelling, polished storytelling; the significance and potential impact are fully grasped"
+    concerns: ["No demo, or a demo over 30 seconds or 7 slides: this is an eligibility failure for Global Judging, handled by gate G5, not a score cap", "NASA logo or branding used", "AI-generated image or video without a visible watermark", "Any image, video, audio or likeness of a person under 18", "Third-party material that is not openly licensed or cited"]
+    evidence: ["pitch/PROJECT_PAGE.md", "the demo in pitch/", "the final project link: the running app and README"]
 
   - id: winning_traits
     name: "Winning-traits checklist (diagnostic, not an official criterion)"
@@ -206,5 +227,5 @@ criteria:
       3: "60–74% pass"
       4: "75–89% pass, and W1–W4, W8 and W11–W14 all pass"
       5: "90% or more pass, including every rules item (W1, W2, W4, W8–W12, W25)"
-    red_flags: ["W1 fails (wrong track), which makes it ineligible for global judging", "W2 fails (no NASA data or resource), so it is not eligible for a Global Award", "W4 fails (demo over the limit), which makes it ineligible for global judging"]
+    concerns: ["W1 fails (wrong track), which makes it ineligible for global judging", "W2 fails (no NASA data or resource), so it is not eligible for a Global Award", "W4 fails (demo over the limit), which makes it ineligible for global judging"]
     evidence: ["evals/WINNING_TRAITS.md", "README / project page text", "pitch/", "demo", "docs/"]

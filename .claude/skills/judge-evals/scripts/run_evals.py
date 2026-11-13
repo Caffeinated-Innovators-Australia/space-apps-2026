@@ -303,27 +303,37 @@ PROMPT_TMPL = """You are acting as a NASA Space Apps Challenge judge: {persona_n
 {persona_brief}
 
 Challenge being judged: **{challenge}**. Repository root: `{repo}`.
-Before scoring, read for calibration: {context_files}
+Background you may read for context (ours, not official): {context_files}
 
-Score ONE criterion only: **{name}** (id: `{cid}`, weight {weight}).
-Official wording ({source}): "{official}"
+Score ONE criterion only: **{name}** (id: `{cid}`).
+The official guide scores each criterion from 1 to 5 and publishes no weights and no score caps.
 
-What judges look for:
+OFFICIAL CRITERION ({source}): "{official}"
+
+What the official criterion asks a judge to weigh:
 {look_for}
 
-Scoring anchors (use integers 1–5, be strict; 3 = a typical decent hackathon entry):
+The team's own guidance (not official; use it as context, never as a rule or a cap):
+{team_guidance}
+
+Scoring scale (integers 1-5). The official guide describes only what a 5 looks like; 1-4 below are gradations
+of that descriptor. Score what the criterion describes, neither stricter nor more generous than its wording:
 {anchors}
 
-Red flags that cap the score at 2:
+Concerns to weigh if you find them (not official caps; say how much each affected your score):
 {red_flags}
 
-Evidence you MUST inspect before scoring (read the actual files, run the demo if it is runnable):
+What a real judge sees. Judges review the project submission page; the Submission Guide says most of the
+evaluation rests on that page, with the demo counting towards Presentation. They may also open the final
+project link. Give most weight to what is visible there:
 {evidence}
+Internal working files (task lists, review lists, logs) are not part of what judges are shown: do not mark
+the project down for candour in them, and do not credit claims that appear only there.
 
 Rules for you:
-- Judge only what is shown. Plans, roadmaps and intentions score nothing unless the criterion says so.
-- Quote file paths / screen names as evidence. No evidence means no credit.
-- Judges see the submission for only a few minutes: if something important is hard to find, penalise it.
+- Judge only what is shown. Plans and intentions score nothing unless the criterion says so.
+- Quote file paths or screen names as evidence. No evidence means no credit.
+- Judges have limited time: if something important is hard to find, say so.
 - Don't edit any files apart from writing your answer.
 
 Write ONLY this JSON to `{outfile}` and also return it as your final message:
@@ -351,10 +361,11 @@ def write_prompts(rubric, out, repo="."):
             outfile = out / "judge" / f"{c['id']}__{p['id']}.json"
             txt = PROMPT_TMPL.format(
                 persona_name=p["name"], persona_brief=p.get("brief", ""), name=c["name"], cid=c["id"],
-                weight=c.get("weight", 0), source=c.get("source", "rubric"), official=c.get("official_wording", ""),
+                source=c.get("source", "rubric"), official=c.get("official_wording", ""),
                 look_for="\n".join(f"- {x}" for x in c.get("look_for", [])),
                 anchors="\n".join(f"- {k}: {v}" for k, v in sorted(c.get("anchors", {}).items())),
-                red_flags="\n".join(f"- {x}" for x in c.get("red_flags", [])) or "- (none)",
+                red_flags="\n".join(f"- {x}" for x in (c.get("concerns") or c.get("red_flags") or [])) or "- (none)",
+                team_guidance="\n".join(f"- {x}" for x in c.get("team_guidance", [])) or "- (none)",
                 evidence="\n".join(f"- {x}" for x in c.get("evidence", [])), outfile=outfile, pid=p["id"],
                 challenge=meta.get("challenge", "see docs/CHALLENGE.md"), repo=repo,
                 context_files=", ".join(f"`{x}`" for x in ctx) or "(none found)")
