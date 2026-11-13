@@ -140,3 +140,4 @@ button { font: inherit; color: inherit; }
 
 .links { display: flex; flex-direction: column; gap: 4px; font-size: 14px; padding-left: 0; list-style: none; }
 .links a, .caption a { color: var(--advisory); }
+.chart text.val { paint-order: stroke; stroke: var(--surface-100); stroke-width: 4px; stroke-linejoin: round; }

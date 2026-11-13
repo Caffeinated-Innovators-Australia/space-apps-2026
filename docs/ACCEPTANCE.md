@@ -16,3 +16,5 @@ One test per Must requirement. Each runs in under 2 minutes.
 | AT-10 | DR-02 | Walk every demo screen | SYNTHETIC label on each synthetic card; unit on every number | | | |
 | AT-11 | NFR-01 | Load once; disable network; reload; run the demo story | Story completes | | | |
 | AT-12 | PR-01 | Run the quick judge check; open the URL in a private window | No gate errors; app loads with no sign-in | | | |
+
+First run, 14 Nov 2026 (automated, on the public URL in a fresh browser): AT-01 to AT-07 and AT-09 to AT-12 pass, including with the network disabled. AT-08 passes as a unit test. SR-01 stays open until clinicians sign the rules off.
