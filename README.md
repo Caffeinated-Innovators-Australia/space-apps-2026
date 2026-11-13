@@ -33,7 +33,7 @@ Every threshold shows its source. Clinicians on the team write and sign off each
 
 ## Run it
 
-Needs Node 22 or later.
+Needs Node 22 or later (built with Node 24).
 
 ```
 npm install
