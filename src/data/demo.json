@@ -8,6 +8,14 @@
     "oneWaySeconds": 680,
     "basis": "Light-time arithmetic for an Earth to Mars distance in the published range (about 3 to 22 minutes one way). The distance used is a SYNTHETIC scenario."
   },
+  "symptoms": {
+    "status": "Placeholder list, awaiting clinician review (CR-10)",
+    "options": ["Headache", "Tired", "Dizzy", "Nauseous", "Poor sleep", "Low mood"]
+  },
+  "radiationPrompt": {
+    "status": "Placeholder step, awaiting clinician review (CR-09)",
+    "step": "Log your personal dosimeter reading."
+  },
   "indicator": {
     "region": "Blood",
     "name": "Haemoglobin",

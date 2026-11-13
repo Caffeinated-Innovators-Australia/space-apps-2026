@@ -6,9 +6,13 @@ import { BaselineChart, ChartLegend, type ChartPoint } from './components/Baseli
 import { BodyFigure } from './components/BodyFigure';
 import { AlertCard, ReadingTile, SyntheticTag, TierPill, TIER_WORD } from './components/ui';
 import demo from './data/demo.json';
+import donki from './data/donki_sep.json';
 import osd from './data/osd569_cbc.json';
 import resources from './data/resources.json';
 import { assess, parseRules, personalBand, tierFor, type Rule, type Tier } from './engine/rules';
+
+interface Symptom { label: string; at: number }
+const hhmm = (t: number) => new Date(t).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: false });
 
 type Route = 'home' | 'reading' | 'result' | 'gap' | 'crew';
 const ROUTES: Route[] = ['home', 'reading', 'result', 'gap', 'crew'];
@@ -54,10 +58,18 @@ export function App() {
   const [theme, setTheme] = useState<string>(() => store('theme', 'cabin'));
   const [value, setValue] = useState<number | null>(() => store<number | null>('reading', null));
   const [sentAt, setSentAt] = useState<number | null>(() => store<number | null>('sentAt', null));
+  const [symptoms, setSymptoms] = useState<Symptom[]>(() => store<Symptom[]>('symptoms', []));
+  const [doneSteps, setDoneSteps] = useState<string[]>(() => store<string[]>('doneSteps', []));
+  const [doseLogged, setDoseLogged] = useState<boolean>(() => store('doseLogged', false));
 
   useEffect(() => { document.documentElement.dataset.theme = theme; save('theme', theme); }, [theme]);
   useEffect(() => { save('reading', value); }, [value]);
   useEffect(() => { save('sentAt', sentAt); }, [sentAt]);
+  useEffect(() => { save('symptoms', symptoms); }, [symptoms]);
+  useEffect(() => { save('doneSteps', doneSteps); }, [doneSteps]);
+  useEffect(() => { save('doseLogged', doseLogged); }, [doseLogged]);
+  const toggleSymptom = (label: string) => setSymptoms((cur) => (cur.some((x) => x.label === label) ? cur.filter((x) => x.label !== label) : [...cur, { label, at: Date.now() }]));
+  const toggleStep = (step: string) => setDoneSteps((cur) => (cur.includes(step) ? cur.filter((x) => x !== step) : [...cur, step]));
 
   const loaded = useMemo<{ rule?: Rule; error?: string }>(() => {
     try { return { rule: parseRules(rulesText)[0] }; } catch (e) { return { error: (e as Error).message }; }
@@ -68,7 +80,7 @@ export function App() {
     ? assess(loaded.rule, { region: ind.region, indicator: ind.name, unit: ind.unit, value, baseline, refMin: ind.refMin, refMax: ind.refMax })
     : null;
 
-  const reset = () => { setValue(null); setSentAt(null); go('home'); };
+  const reset = () => { setValue(null); setSentAt(null); setSymptoms([]); setDoneSteps([]); setDoseLogged(false); go('home'); };
 
   return (
     <div className="app">
@@ -91,13 +103,13 @@ export function App() {
         ) : route === 'crew' ? (
           <CrewData rule={loaded.rule!} />
         ) : route === 'reading' ? (
-          <Reading initial={value} onSave={(v) => { setValue(v); setSentAt(null); go('result'); }} onBack={() => go('home')} />
+          <Reading initial={value} onSave={(v) => { setValue(v); setSentAt(null); setDoneSteps([]); go('result'); }} onBack={() => go('home')} />
         ) : route === 'result' && result ? (
           <Result value={value!} result={result} onSend={() => { setSentAt(Date.now()); go('gap'); }} onDone={() => go('home')} onAgain={() => go('reading')} />
         ) : route === 'gap' && result && sentAt ? (
-          <Gap result={result} sentAt={sentAt} onBack={() => go('result')} onDone={() => go('home')} />
+          <Gap value={value!} result={result} sentAt={sentAt} symptoms={symptoms} doneSteps={doneSteps} onToggleStep={toggleStep} onBack={() => go('result')} onDone={() => go('home')} />
         ) : (
-          <Home value={value} tier={result?.tier} deltaText={result?.deltaText} onOpen={() => go('reading')} onResult={() => go('result')} onCrew={() => go('crew')} onReset={reset} />
+          <Home value={value} tier={result?.tier} deltaText={result?.deltaText} onOpen={() => go('reading')} onResult={() => go('result')} onCrew={() => go('crew')} onReset={reset} symptoms={symptoms} onSymptom={toggleSymptom} doseLogged={doseLogged} onDose={() => setDoseLogged(!doseLogged)} />
         )}
       </main>
 
@@ -119,7 +131,7 @@ function Context() {
   );
 }
 
-function Home({ value, tier, deltaText, onOpen, onResult, onCrew, onReset }: { value: number | null; tier?: Tier; deltaText?: string; onOpen: () => void; onResult: () => void; onCrew: () => void; onReset: () => void }) {
+function Home({ value, tier, deltaText, onOpen, onResult, onCrew, onReset, symptoms, onSymptom, doseLogged, onDose }: { value: number | null; tier?: Tier; deltaText?: string; onOpen: () => void; onResult: () => void; onCrew: () => void; onReset: () => void; symptoms: Symptom[]; onSymptom: (label: string) => void; doseLogged: boolean; onDose: () => void }) {
   const last = ind.mission[ind.mission.length - 1];
   return (
     <>
@@ -144,8 +156,26 @@ function Home({ value, tier, deltaText, onOpen, onResult, onCrew, onReset }: { v
               <button className="btn" onClick={onOpen}>{value !== null ? 'Take another reading' : 'Take a reading'}</button>
               {value !== null ? <button className="btn secondary" onClick={onResult}>See result</button> : null}
             </div>
-            {value !== null ? <button className="link" onClick={onReset}>Reset the demo</button> : null}
+            {value !== null || symptoms.length > 0 || doseLogged ? <button className="link" onClick={onReset}>Reset the demo</button> : null}
           </div>
+          <div className="card">
+            <div className="card-head">
+              <h2 className="title">Feeling off? Tell us in one tap</h2>
+              <SyntheticTag />
+            </div>
+            <div className="chips" role="group" aria-label="How you feel">
+              {demo.symptoms.options.map((o) => (
+                <button key={o} className="chip chip-toggle" aria-pressed={symptoms.some((x) => x.label === o)} onClick={() => onSymptom(o)}>{o}</button>
+              ))}
+            </div>
+            {symptoms.length > 0 ? (
+              <p aria-live="polite">Logged: {symptoms.map((x) => `${x.label.toLowerCase()} at ${hhmm(x.at)}`).join(', ')}. This goes in your next case to Earth.</p>
+            ) : (
+              <p className="muted">Nothing logged today. One tap is enough.</p>
+            )}
+            <span className="placeholder">{demo.symptoms.status}</span>
+          </div>
+          <SpaceWeather doseLogged={doseLogged} onDose={onDose} />
           <div className="card">
             <h2 className="title">The same rule, on real crew data</h2>
             <p className="muted">See four real crew members' blood counts measured against their own pre-flight baselines.</p>
@@ -245,7 +275,7 @@ function Result({ value, result, onSend, onDone, onAgain }: { value: number; res
   );
 }
 
-function Gap({ result, sentAt, onBack, onDone }: { result: ReturnType<typeof assess>; sentAt: number; onBack: () => void; onDone: () => void }) {
+function Gap({ value, result, sentAt, symptoms, doneSteps, onToggleStep, onBack, onDone }: { value: number; result: ReturnType<typeof assess>; sentAt: number; symptoms: Symptom[]; doneSteps: string[]; onToggleStep: (s: string) => void; onBack: () => void; onDone: () => void }) {
   const total = demo.delay.oneWaySeconds * 2;
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -253,6 +283,7 @@ function Gap({ result, sentAt, onBack, onDone }: { result: ReturnType<typeof ass
     return () => window.clearInterval(id);
   }, []);
   const left = total - (now - sentAt) / 1000;
+  const meanwhile = result.steps.filter((st) => !/send the case/i.test(st));
   return (
     <>
       <Context />
@@ -270,14 +301,32 @@ function Gap({ result, sentAt, onBack, onDone }: { result: ReturnType<typeof ass
               <span className="why-label">Meanwhile</span>
               <TierPill tier={result.tier} />
             </div>
-            <ol className="steps">
-              {result.steps.filter((s) => !/send the case/i.test(s)).map((s) => <li key={s}>{s}</li>)}
-            </ol>
+            <ul className="checks">
+              {meanwhile.map((st) => (
+                <li key={st}>
+                  <button className="check" role="checkbox" aria-checked={doneSteps.includes(st)} onClick={() => onToggleStep(st)}>
+                    <span className="box" aria-hidden="true">{doneSteps.includes(st) ? '\u2713' : ''}</span>
+                    <span>{st}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p className="caption">Tick each step as you do it. Earth sees what you have done.</p>
             <span className="placeholder">Placeholder steps, awaiting clinician review</span>
           </div>
           <div className="card">
-            <h2 className="title">Case sent to Earth</h2>
-            <p className="muted">Included: today's reading, your trend and baseline, the rule that fired and its source, and the steps you were given.</p>
+            <div className="card-head">
+              <h2 className="title">Case pack sent to Earth</h2>
+              <SyntheticTag />
+            </div>
+            <dl className="pack">
+              <dt>Reading</dt><dd>{ind.name} {value.toFixed(1)} {ind.unit} ({result.deltaText})</dd>
+              <dt>Trend</dt><dd>Baseline {ind.baseline.map((b) => b.value.toFixed(1)).join(', ')}; this mission {ind.mission.map((m) => m.value.toFixed(1)).join(', ')}, {value.toFixed(1)} {ind.unit}</dd>
+              <dt>Assessment</dt><dd>{TIER_WORD[result.tier]}. Rule {result.ruleId}. {result.source}</dd>
+              <dt>Done so far</dt><dd>{doneSteps.length > 0 ? doneSteps.join(' ') : 'Nothing ticked yet.'}</dd>
+              <dt>How you feel</dt><dd>{symptoms.length > 0 ? symptoms.map((x) => `${x.label} (${hhmm(x.at)})`).join(', ') : 'Nothing logged today.'}</dd>
+            </dl>
+            <p className="caption">Sent at {hhmm(sentAt)}. Anything you tick or log later goes with the next link to Earth.</p>
             <div className="btn-row">
               <button className="btn secondary" onClick={onBack}>Back to result</button>
               <button className="btn secondary" onClick={onDone}>Home</button>
@@ -341,5 +390,28 @@ function CrewData({ rule }: { rule: Rule }) {
         </p>
       </div>
     </>
+  );
+}
+
+function SpaceWeather({ doseLogged, onDose }: { doseLogged: boolean; onDose: () => void }) {
+  const latest = donki.events[0];
+  const same = donki.events.filter((e) => e.time === latest.time);
+  const when = new Date(latest.time).toLocaleString('en-AU', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' });
+  return (
+    <div className="card">
+      <h2 className="title">Space weather: radiation check</h2>
+      <p>
+        Latest solar particle event on record: <strong>{when} UTC</strong>. {donki.eventDaysInPeriod} days with events in the past {donki.periodDays} days.
+      </p>
+      <p className="caption">Recorded near Earth by: {same.map((e) => e.instruments.join(', ')).join('; ')}. Real events, bundled on {donki.fetched}.</p>
+      <button className="check" role="checkbox" aria-checked={doseLogged} onClick={onDose}>
+        <span className="box" aria-hidden="true">{doseLogged ? '\u2713' : ''}</span>
+        <span>{demo.radiationPrompt.step}</span>
+      </button>
+      <span className="placeholder">{demo.radiationPrompt.status}</span>
+      <p className="caption">
+        {donki.credit}. {donki.source}. <a href={donki.link}>{donki.link}</a>
+      </p>
+    </div>
   );
 }

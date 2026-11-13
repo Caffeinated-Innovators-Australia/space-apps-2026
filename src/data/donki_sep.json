@@ -1,0 +1,109 @@
+{
+ "source": "NASA DONKI, Community Coordinated Modeling Center (CCMC), NASA Goddard Space Flight Center",
+ "credit": "Data: NASA DONKI",
+ "link": "https://ccmc.gsfc.nasa.gov/tools/DONKI/",
+ "synthetic": false,
+ "fetched": "2026-11-14",
+ "note": "Real solar energetic particle events recorded by spacecraft near Earth. Bundled at build time.",
+ "periodDays": 385,
+ "recordsInPeriod": 58,
+ "eventDaysInPeriod": 16,
+ "events": [
+  {
+   "id": "2026-09-05T16:30:00-SEP-001",
+   "time": "2026-09-05T16:30Z",
+   "instruments": [
+    "MODEL: REleASE:ACE/EPAM 15.8-39.8 MeV"
+   ],
+   "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/48554/-1"
+  },
+  {
+   "id": "2026-09-05T16:30:00-SEP-002",
+   "time": "2026-09-05T16:30Z",
+   "instruments": [
+    "MODEL: REleASE:SOHO/EPHIN 15.8-39.8 MeV"
+   ],
+   "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/48555/-1"
+  },
+  {
+   "id": "2026-09-05T16:30:00-SEP-003",
+   "time": "2026-09-05T16:30Z",
+   "instruments": [
+    "MODEL: REleASE:SOHO/EPHIN 28.2-50.1 MeV"
+   ],
+   "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/48556/-1"
+  },
+  {
+   "id": "2026-09-05T16:30:00-SEP-004",
+   "time": "2026-09-05T16:30Z",
+   "instruments": [
+    "MODEL: REleASE:ACE/EPAM 28.2-50.1 MeV"
+   ],
+   "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/48557/-1"
+  },
+  {
+   "id": "2026-09-05T16:18:00-SEP-001",
+   "time": "2026-09-05T16:18Z",
+   "instruments": [
+    "SOHO: COSTEP 15.8-39.8 MeV"
+   ],
+   "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/48562/-1"
+  },
+  {
+   "id": "2026-09-05T16:18:00-SEP-002",
+   "time": "2026-09-05T16:18Z",
+   "instruments": [
+    "SOHO: COSTEP 28.2-50.1 MeV"
+   ],
+   "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/48564/-1"
+  },
+  {
+   "id": "2026-09-05T16:15:00-SEP-001",
+   "time": "2026-09-05T16:15Z",
+   "instruments": [
+    "GOES-P: SEISS >10 MeV"
+   ],
+   "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/48558/-1"
+  },
+  {
+   "id": "2026-09-05T15:45:00-SEP-001",
+   "time": "2026-09-05T15:45Z",
+   "instruments": [
+    "GOES-P: SEISS >100 MeV"
+   ],
+   "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/48551/-1"
+  },
+  {
+   "id": "2026-08-22T22:28:00-SEP-001",
+   "time": "2026-08-22T22:28Z",
+   "instruments": [
+    "STEREO A: IMPACT 13-100 MeV"
+   ],
+   "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/48231/-1"
+  },
+  {
+   "id": "2026-08-21T17:33:00-SEP-001",
+   "time": "2026-08-21T17:33Z",
+   "instruments": [
+    "STEREO A: IMPACT 13-100 MeV"
+   ],
+   "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/48198/-1"
+  },
+  {
+   "id": "2026-08-20T20:23:00-SEP-001",
+   "time": "2026-08-20T20:23Z",
+   "instruments": [
+    "STEREO A: IMPACT 13-100 MeV"
+   ],
+   "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/48176/-1"
+  },
+  {
+   "id": "2026-07-30T20:58:00-SEP-001",
+   "time": "2026-07-30T20:58Z",
+   "instruments": [
+    "SOHO: COSTEP 28.2-50.1 MeV"
+   ],
+   "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/47887/-1"
+  }
+ ]
+}

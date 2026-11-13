@@ -9,3 +9,4 @@
 | D-005 | 14 Nov 2026, morning | OSD-569 is shown as pre-flight and post-flight data only, because the dataset has no in-flight draws | Build assistant (AI), for team review |
 | D-006 | 14 Nov 2026, morning | Haemoglobin is the build's placeholder demo indicator, pending the clinicians' choice (CR-01) | Build assistant (AI), for team review |
 | D-007 | 14 Nov 2026, morning | Components are written fresh in this repo to the team design system; nothing built before kick-off is copied in | Build assistant (AI), for team review |
+| D-008 | 14 Nov 2026, morning | Build the case pack, the space-weather prompt (NASA DONKI) and the one-tap symptom log before drafting the project page | Team lead |

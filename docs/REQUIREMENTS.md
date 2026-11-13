@@ -1,6 +1,6 @@
 # Requirements: astronaut health decision support (working title)
 
-Version: v0.1 · Status: draft, awaiting the build lead's go · Owner: Build lead · Last lint: 14 Nov 2026, see docs/DECISION_LOG.md
+Version: v0.2 · Status: building · Owner: Build lead · Last lint: 14 Nov 2026, see docs/DECISION_LOG.md
 
 > Source of truth for WHAT we build. Every build task cites an ID from here.
 
@@ -35,9 +35,9 @@ Priority: Must / Should / Could / Won't. Status: todo / building / done / verifi
 | NFR-01 | Must | The demo story runs offline from local data, with fonts and data bundled | Given the deployed app loaded once, when the network is disabled and the page reloaded, then the full demo story still runs | U1 | presentation, validity | n/a | Build lead | done |
 | PR-01 | Must | Submission compliance: public URL that opens in a private window with no sign-in; Apache 2.0 licence; REFERENCES.md and AI_USE.md current; no NASA logo; no banned claims; all judge-evals gates pass | Given the repo and the deployed URL, when the quick judge check runs and the URL is opened in a private window, then there are no gate errors and the app loads | U1 | presentation, relevance | n/a | Build lead | done |
 | FR-08 | Should | Each indicator shows how it is measured in flight, with a source | Given the reading screen, when "How is this measured?" is opened, then one sourced sentence is shown | Q1, C5 | relevance | n/a | Clinicians | todo |
-| FR-09 | Should | One-tap case pack: bundles the alert, the trend, what the crew did and a checklist, queued for the next link to Earth | Given a result, when "Send to Earth" is tapped, then a case summary is shown as queued | R3, Q4 | impact | n/a | Build lead | todo |
-| FR-10 | Should | A radiation prompt driven by cached NASA DONKI space-weather events | Given the cached event file, when the home screen loads, then the latest event is shown with "Data: NASA DONKI" | C3, Q3 | relevance | n/a | Build lead | todo |
-| FR-11 | Should | "Feeling off? Tell us in one tap" symptom entry | Given the home screen, when the button is tapped, then a symptom can be logged in one tap | R1 | impact | n/a | Build lead | todo |
+| FR-09 | Should | One-tap case pack: bundles the alert, the trend, what the crew did and a checklist, queued for the next link to Earth | Given a result, when "Send to Earth" is tapped, then a case summary is shown as queued | R3, Q4 | impact | n/a | Build lead | done |
+| FR-10 | Should | A radiation prompt driven by cached NASA DONKI space-weather events | Given the cached event file, when the home screen loads, then the latest event is shown with "Data: NASA DONKI" | C3, Q3 | relevance | n/a | Build lead | done |
+| FR-11 | Should | "Feeling off? Tell us in one tap" symptom entry | Given the home screen, when the button is tapped, then a symptom can be logged in one tap | R1 | impact | n/a | Build lead | done |
 | FR-12 | Could | The same screen shown in a remote-Australia setting for the video close | Given the settings, when Earth mode is chosen, then the delay and wording change | C2 | impact | n/a | Build lead | todo |
 | NFR-02 | Should | Accessibility basics: contrast at least 4.5:1, keyboard focus visible, tier never by colour alone | Given the demo screens, when the accessibility check runs, then there are no serious contrast or focus failures | U1 | presentation | n/a | Build lead | todo |
 
@@ -55,3 +55,4 @@ Priority: Must / Should / Could / Won't. Status: todo / building / done / verifi
 | Version | Time | Change | Decision log # |
 |---------|------|--------|----------------|
 | v0.1 | 14 Nov 2026, morning AEDT | First draft from the confirmed concept | D-001 |
+| v0.2 | 14 Nov 2026, morning AEDT | Must-haves built; FR-09, FR-10 and FR-11 built at the team lead's request | D-008 |

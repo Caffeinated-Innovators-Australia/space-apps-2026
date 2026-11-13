@@ -12,5 +12,7 @@ Nothing here is clinical advice until a clinician signs it off. The build uses e
 | CR-06 | Role wording for the review badge ("Reviewed by our ...") | No badge shown | Team design system | Needs clinician decision |
 | CR-07 | Laboratory reference range for the demo astronaut | 13.2 to 17.1 g/dL, the range the source laboratory reported for male crew in OSD-569 | NASA OSDR, OSD-569 (LSDS-7) | Needs clinician decision |
 | CR-08 | Confidence label for the rule (High, Medium, Low) | Low | Team design system | Needs clinician decision |
+| CR-09 | The action shown beside a solar particle event | "Log your personal dosimeter reading." | NASA DONKI event list; Canadian Space Agency radiation monitoring article | Needs clinician decision |
+| CR-10 | The one-tap symptom list | Headache, Tired, Dizzy, Nauseous, Poor sleep, Low mood | Written for the build | Needs clinician decision |
 
 All of the above live in `rules/rules.yaml` and `src/data/demo.json`. To sign a rule off, replace `signed_off_by: placeholder` with the reviewing clinician's role.
