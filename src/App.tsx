@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import rulesText from '../rules/rules.yaml?raw';
 import { BaselineChart, ChartLegend, type ChartPoint } from './components/BaselineChart';
 import { BodyFigure } from './components/BodyFigure';
-import { AlertCard, ReadingTile, SyntheticTag, TierPill, TIER_WORD } from './components/ui';
+import { AlertCard, ReadingTile, SyntheticTag, TierPill, TIER_WORD, TierWords } from './components/ui';
 import demo from './data/demo.json';
 import donki from './data/donki_sep.json';
 import osd from './data/osd569_cbc.json';
@@ -17,6 +17,17 @@ const hhmm = (t: number) => new Date(t).toLocaleTimeString('en-AU', { hour: '2-d
 type Route = 'home' | 'reading' | 'result' | 'gap' | 'crew';
 const ROUTES: Route[] = ['home', 'reading', 'result', 'gap', 'crew'];
 const ind = demo.indicator;
+
+interface Ctx { id: string; label: string; kicker: string; replySeconds: number; gapLabel: string; nowLabel: string; detail: string; basis: string; advice: string; scenarioSynthetic: boolean; words?: Record<string, string>; tierWords?: Partial<Record<Tier, string>> }
+const CONTEXTS = demo.contexts as Ctx[];
+/** Swap setting-specific words (for example "Earth" becomes "the on-call doctor" in the remote Australia setting). */
+function say(text: string, ctx: Ctx): string {
+  let out = text;
+  for (const [from, to] of Object.entries(ctx.words ?? {})) out = out.split(from).join(to);
+  return out;
+}
+function cap(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1); }
+
 
 function useRoute(): [Route, (r: Route) => void] {
   const read = (): Route => {
@@ -46,9 +57,6 @@ function clock(totalSeconds: number): string {
   const s = Math.max(0, Math.ceil(totalSeconds));
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
-function minSec(s: number): string {
-  return `${Math.floor(s / 60)} min ${s % 60} s`;
-}
 function decimals(values: number[]): number {
   return Math.min(2, Math.max(...values.map((v) => (String(v).split('.')[1] ?? '').length)));
 }
@@ -60,6 +68,9 @@ export function App() {
   const [sentAt, setSentAt] = useState<number | null>(() => store<number | null>('sentAt', null));
   const [symptoms, setSymptoms] = useState<Symptom[]>(() => store<Symptom[]>('symptoms', []));
   const [doneSteps, setDoneSteps] = useState<string[]>(() => store<string[]>('doneSteps', []));
+  const [ctxId, setCtxId] = useState<string>(() => store('context', CONTEXTS[0].id));
+  const ctx = CONTEXTS.find((c) => c.id === ctxId) ?? CONTEXTS[0];
+  const pickCtx = (id: string) => { setCtxId(id); if (sentAt) setSentAt(Date.now()); };
   const [doseLogged, setDoseLogged] = useState<boolean>(() => store('doseLogged', false));
 
   useEffect(() => { document.documentElement.dataset.theme = theme; save('theme', theme); }, [theme]);
@@ -68,6 +79,7 @@ export function App() {
   useEffect(() => { save('symptoms', symptoms); }, [symptoms]);
   useEffect(() => { save('doneSteps', doneSteps); }, [doneSteps]);
   useEffect(() => { save('doseLogged', doseLogged); }, [doseLogged]);
+  useEffect(() => { save('context', ctxId); }, [ctxId]);
   const toggleSymptom = (label: string) => setSymptoms((cur) => (cur.some((x) => x.label === label) ? cur.filter((x) => x.label !== label) : [...cur, { label, at: Date.now() }]));
   const toggleStep = (step: string) => setDoneSteps((cur) => (cur.includes(step) ? cur.filter((x) => x !== step) : [...cur, step]));
 
@@ -76,13 +88,16 @@ export function App() {
   }, []);
 
   const baseline = ind.baseline.map((b) => b.value);
-  const result = loaded.rule && value !== null
+  const raw = loaded.rule && value !== null
     ? assess(loaded.rule, { region: ind.region, indicator: ind.name, unit: ind.unit, value, baseline, refMin: ind.refMin, refMax: ind.refMax })
     : null;
+  const result = raw ? { ...raw, why: say(raw.why, ctx), title: say(raw.title, ctx), steps: raw.steps.map((x) => cap(say(x, ctx))) } : null;
+  const tierWords = { ...TIER_WORD, ...(ctx.tierWords ?? {}) };
 
   const reset = () => { setValue(null); setSentAt(null); setSymptoms([]); setDoneSteps([]); setDoseLogged(false); go('home'); };
 
   return (
+    <TierWords.Provider value={tierWords}>
     <div className="app">
       <header className="top">
         <button className="brand" onClick={() => go('home')}>Crew health check</button>
@@ -103,13 +118,13 @@ export function App() {
         ) : route === 'crew' ? (
           <CrewData rule={loaded.rule!} />
         ) : route === 'reading' ? (
-          <Reading initial={value} onSave={(v) => { setValue(v); setSentAt(null); setDoneSteps([]); go('result'); }} onBack={() => go('home')} />
+          <Reading ctx={ctx} initial={value} onSave={(v) => { setValue(v); setSentAt(null); setDoneSteps([]); go('result'); }} onBack={() => go('home')} />
         ) : route === 'result' && result ? (
-          <Result value={value!} result={result} onSend={() => { setSentAt(Date.now()); go('gap'); }} onDone={() => go('home')} onAgain={() => go('reading')} />
+          <Result ctx={ctx} value={value!} result={result} onSend={() => { setSentAt(Date.now()); go('gap'); }} onDone={() => go('home')} onAgain={() => go('reading')} />
         ) : route === 'gap' && result && sentAt ? (
-          <Gap value={value!} result={result} sentAt={sentAt} symptoms={symptoms} doneSteps={doneSteps} onToggleStep={toggleStep} onBack={() => go('result')} onDone={() => go('home')} />
+          <Gap ctx={ctx} onPick={pickCtx} value={value!} result={result} sentAt={sentAt} symptoms={symptoms} doneSteps={doneSteps} onToggleStep={toggleStep} onBack={() => go('result')} onDone={() => go('home')} />
         ) : (
-          <Home value={value} tier={result?.tier} deltaText={result?.deltaText} onOpen={() => go('reading')} onResult={() => go('result')} onCrew={() => go('crew')} onReset={reset} symptoms={symptoms} onSymptom={toggleSymptom} doseLogged={doseLogged} onDose={() => setDoseLogged(!doseLogged)} />
+          <Home ctx={ctx} onPick={pickCtx} value={value} tier={result?.tier} deltaText={result?.deltaText} onOpen={() => go('reading')} onResult={() => go('result')} onCrew={() => go('crew')} onReset={reset} symptoms={symptoms} onSymptom={toggleSymptom} doseLogged={doseLogged} onDose={() => setDoseLogged(!doseLogged)} />
         )}
       </main>
 
@@ -119,24 +134,37 @@ export function App() {
         <span>Caffeinated Innovators Australia · NASA Space Apps Challenge 2026 · <a href="https://github.com/Caffeinated-Innovators-Australia/space-apps-2026">Source and references</a></span>
       </footer>
     </div>
+    </TierWords.Provider>
   );
 }
 
-function Context() {
+function Context({ ctx }: { ctx: Ctx }) {
   return (
     <div className="context">
-      <span className="kicker">{demo.astronaut} · {demo.location} · Mission day {demo.missionDay}</span>
+      <span className="kicker">{ctx.kicker}</span>
       <SyntheticTag />
     </div>
   );
 }
 
-function Home({ value, tier, deltaText, onOpen, onResult, onCrew, onReset, symptoms, onSymptom, doseLogged, onDose }: { value: number | null; tier?: Tier; deltaText?: string; onOpen: () => void; onResult: () => void; onCrew: () => void; onReset: () => void; symptoms: Symptom[]; onSymptom: (label: string) => void; doseLogged: boolean; onDose: () => void }) {
+function Where({ ctx, onPick }: { ctx: Ctx; onPick: (id: string) => void }) {
+  return (
+    <div className="where">
+      <span className="caption">Where are you?</span>
+      <div className="seg" role="group" aria-label="Where are you?">
+        {CONTEXTS.map((c) => <button key={c.id} aria-pressed={c.id === ctx.id} onClick={() => onPick(c.id)}>{c.label}</button>)}
+      </div>
+    </div>
+  );
+}
+
+function Home({ ctx, onPick, value, tier, deltaText, onOpen, onResult, onCrew, onReset, symptoms, onSymptom, doseLogged, onDose }: { ctx: Ctx; onPick: (id: string) => void; value: number | null; tier?: Tier; deltaText?: string; onOpen: () => void; onResult: () => void; onCrew: () => void; onReset: () => void; symptoms: Symptom[]; onSymptom: (label: string) => void; doseLogged: boolean; onDose: () => void }) {
   const last = ind.mission[ind.mission.length - 1];
   return (
     <>
-      <Context />
+      <Context ctx={ctx} />
       <h1 className="display">Which part of you are we checking today?</h1>
+      <Where ctx={ctx} onPick={onPick} />
       <div className="grid">
         <div className="card">
           <BodyFigure onOpen={onOpen} tier={tier} />
@@ -169,13 +197,20 @@ function Home({ value, tier, deltaText, onOpen, onResult, onCrew, onReset, sympt
               ))}
             </div>
             {symptoms.length > 0 ? (
-              <p aria-live="polite">Logged: {symptoms.map((x) => `${x.label.toLowerCase()} at ${hhmm(x.at)}`).join(', ')}. This goes in your next case to Earth.</p>
+              <p aria-live="polite">Logged: {symptoms.map((x) => `${x.label.toLowerCase()} at ${hhmm(x.at)}`).join(', ')}. {say('This goes in your next case to Earth.', ctx)}</p>
             ) : (
               <p className="muted">Nothing logged today. One tap is enough.</p>
             )}
             <span className="placeholder">{demo.symptoms.status}</span>
           </div>
-          <SpaceWeather doseLogged={doseLogged} onDose={onDose} />
+          {ctx.id === 'earth' ? null : <SpaceWeather doseLogged={doseLogged} onDose={onDose} />}
+          <div className="card">
+            <h2 className="title">The same problem, back on Earth</h2>
+            <p><span className="num stat">{demo.earthBenefit.figure}</span> {demo.earthBenefit.text}</p>
+            <p className="muted">A crew far from Earth and a family hours from a hospital need the same thing: care that starts before the expert arrives.</p>
+            <p className="caption">Source: <a href={demo.earthBenefit.link}>{demo.earthBenefit.source}</a>.</p>
+            <div><button className="btn secondary" onClick={() => onPick(ctx.id === 'earth' ? 'mars-far' : 'earth')}>{ctx.id === 'earth' ? 'Back to Mars' : 'See it in remote Australia'}</button></div>
+          </div>
           <div className="card">
             <h2 className="title">The same rule, on real crew data</h2>
             <p className="muted">See four real crew members' blood counts measured against their own pre-flight baselines.</p>
@@ -188,13 +223,13 @@ function Home({ value, tier, deltaText, onOpen, onResult, onCrew, onReset, sympt
   );
 }
 
-function Reading({ initial, onSave, onBack }: { initial: number | null; onSave: (v: number) => void; onBack: () => void }) {
+function Reading({ ctx, initial, onSave, onBack }: { ctx: Ctx; initial: number | null; onSave: (v: number) => void; onBack: () => void }) {
   const [text, setText] = useState(initial !== null ? String(initial) : '');
   const n = Number(text);
   const valid = text.trim() !== '' && Number.isFinite(n) && n > 0 && n < 30;
   return (
     <>
-      <Context />
+      <Context ctx={ctx} />
       <h1 className="display">{ind.region}: {ind.name.toLowerCase()}</h1>
       <div className="grid">
         <form className="card" onSubmit={(e) => { e.preventDefault(); if (valid) onSave(Math.round(n * 10) / 10); }}>
@@ -229,7 +264,7 @@ function Reading({ initial, onSave, onBack }: { initial: number | null; onSave: 
           </div>
           <div className="card">
             <span className="why-label">Your baseline</span>
-            <p>Before launch you measured {ind.baseline.map((b) => b.value.toFixed(1)).join(', ')} {ind.unit}. Every reading is compared with your own numbers, not only with a population range.</p>
+            <p>{say('Before launch', ctx)} you measured {ind.baseline.map((b) => b.value.toFixed(1)).join(', ')} {ind.unit}. Every reading is compared with your own numbers, not only with a population range.</p>
           </div>
         </div>
       </div>
@@ -237,7 +272,7 @@ function Reading({ initial, onSave, onBack }: { initial: number | null; onSave: 
   );
 }
 
-function Result({ value, result, onSend, onDone, onAgain }: { value: number; result: ReturnType<typeof assess>; onSend: () => void; onDone: () => void; onAgain: () => void }) {
+function Result({ ctx, value, result, onSend, onDone, onAgain }: { ctx: Ctx; value: number; result: ReturnType<typeof assess>; onSend: () => void; onDone: () => void; onAgain: () => void }) {
   const band = result.band;
   const points: ChartPoint[] = [
     ...ind.baseline.map((b) => ({ label: b.t, value: b.value, kind: 'baseline' as const })),
@@ -246,7 +281,7 @@ function Result({ value, result, onSend, onDone, onAgain }: { value: number; res
   ];
   return (
     <>
-      <Context />
+      <Context ctx={ctx} />
       <div className="grid wide-left">
         <div className="stack">
           <ReadingTile label={`${ind.name}, today`} value={value.toFixed(1)} unit={ind.unit} delta={result.deltaText} />
@@ -255,8 +290,8 @@ function Result({ value, result, onSend, onDone, onAgain }: { value: number; res
               <h2 className="title">Against your own baseline</h2>
               <SyntheticTag />
             </div>
-            <BaselineChart points={points} band={band} refMin={ind.refMin} refMax={ind.refMax} unit={ind.unit} title={`${ind.name} over time against your pre-flight baseline. Today: ${value.toFixed(1)} ${ind.unit}, ${TIER_WORD[result.tier]}.`} />
-            <ChartLegend />
+            <BaselineChart points={points} band={band} refMin={ind.refMin} refMax={ind.refMax} unit={ind.unit} baselineLabel={`${say('Before launch', ctx)} (your baseline)`} readingLabel={say('This mission', ctx)} title={`${ind.name} over time against your ${say('pre-flight', ctx)} baseline. Today: ${value.toFixed(1)} ${ind.unit}, ${TIER_WORD[result.tier]}.`} />
+            <ChartLegend bandLabel={say('Own pre-flight range', ctx)} />
             <p className="caption">{ind.refSource}.</p>
           </div>
         </div>
@@ -265,7 +300,7 @@ function Result({ value, result, onSend, onDone, onAgain }: { value: number; res
             {result.tier === 'green' ? (
               <button className="btn" onClick={onDone}>Log and finish</button>
             ) : (
-              <button className="btn" onClick={onSend}>Send case to Earth</button>
+              <button className="btn" onClick={onSend}>{say('Send case to Earth', ctx)}</button>
             )}
             <button className="btn secondary" onClick={onAgain}>Repeat the reading</button>
           </div>
@@ -275,8 +310,8 @@ function Result({ value, result, onSend, onDone, onAgain }: { value: number; res
   );
 }
 
-function Gap({ value, result, sentAt, symptoms, doneSteps, onToggleStep, onBack, onDone }: { value: number; result: ReturnType<typeof assess>; sentAt: number; symptoms: Symptom[]; doneSteps: string[]; onToggleStep: (s: string) => void; onBack: () => void; onDone: () => void }) {
-  const total = demo.delay.oneWaySeconds * 2;
+function Gap({ ctx, onPick, value, result, sentAt, symptoms, doneSteps, onToggleStep, onBack, onDone }: { ctx: Ctx; onPick: (id: string) => void; value: number; result: ReturnType<typeof assess>; sentAt: number; symptoms: Symptom[]; doneSteps: string[]; onToggleStep: (s: string) => void; onBack: () => void; onDone: () => void }) {
+  const total = ctx.replySeconds;
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 250);
@@ -286,14 +321,17 @@ function Gap({ value, result, sentAt, symptoms, doneSteps, onToggleStep, onBack,
   const meanwhile = result.steps.filter((st) => !/send the case/i.test(st));
   return (
     <>
-      <Context />
+      <Context ctx={ctx} />
       <div className="grid">
-        <section className="gap" aria-label="Time until a reply from Earth can arrive">
-          <span className="kicker">{left > 0 ? 'Earth reply possible in' : 'Earth reply possible now'}</span>
+        <section className="gap" aria-label="Time until help can answer">
+          <Where ctx={ctx} onPick={onPick} />
+          <span className="kicker">{left > 0 ? ctx.gapLabel : ctx.nowLabel}</span>
           <div className="gap-clock" role="timer">{clock(left)}</div>
-          <p>{demo.location} · one-way delay {minSec(demo.delay.oneWaySeconds)}</p>
-          <p className="caption">Your case takes {minSec(demo.delay.oneWaySeconds)} to reach Earth, and the reply takes the same to come back. {demo.delay.basis}</p>
-          <SyntheticTag />
+          <p>{ctx.detail}</p>
+          <p className="gap-advice">{ctx.advice}</p>
+          <p className="caption">{ctx.basis}</p>
+          {ctx.scenarioSynthetic ? <SyntheticTag /> : null}
+          <span className="placeholder">{demo.contextStatus}</span>
         </section>
         <div className="stack">
           <div className="card">
@@ -311,12 +349,12 @@ function Gap({ value, result, sentAt, symptoms, doneSteps, onToggleStep, onBack,
                 </li>
               ))}
             </ul>
-            <p className="caption">Tick each step as you do it. Earth sees what you have done.</p>
+            <p className="caption">{say('Tick each step as you do it. Earth sees what you have done.', ctx).replace('. the', '. The')}</p>
             <span className="placeholder">Placeholder steps, awaiting clinician review</span>
           </div>
           <div className="card">
             <div className="card-head">
-              <h2 className="title">Case pack sent to Earth</h2>
+              <h2 className="title">{say('Case pack sent to Earth', ctx)}</h2>
               <SyntheticTag />
             </div>
             <dl className="pack">
@@ -326,7 +364,7 @@ function Gap({ value, result, sentAt, symptoms, doneSteps, onToggleStep, onBack,
               <dt>Done so far</dt><dd>{doneSteps.length > 0 ? doneSteps.join(' ') : 'Nothing ticked yet.'}</dd>
               <dt>How you feel</dt><dd>{symptoms.length > 0 ? symptoms.map((x) => `${x.label} (${hhmm(x.at)})`).join(', ') : 'Nothing logged today.'}</dd>
             </dl>
-            <p className="caption">Sent at {hhmm(sentAt)}. Anything you tick or log later goes with the next link to Earth.</p>
+            <p className="caption">Sent at {hhmm(sentAt)}. {say('Anything you tick or log later goes with the next link to Earth.', ctx)}</p>
             <div className="btn-row">
               <button className="btn secondary" onClick={onBack}>Back to result</button>
               <button className="btn secondary" onClick={onDone}>Home</button>

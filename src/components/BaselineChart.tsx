@@ -18,7 +18,7 @@ function Shape({ x, y, tier, r = 6 }: { x: number; y: number; tier: Tier; r?: nu
   return <path d={`M${x - c} ${y - k}h${2 * c}l${k - c} ${k - c}v${2 * c}l${c - k} ${k - c}h${-2 * c}l${c - k} ${c - k}v${-2 * c}z`} className="t-red" />;
 }
 
-export function BaselineChart({ points, band, refMin, refMax, unit, dp = 1, title, baselineLabel = 'Before launch (your baseline)' }: { points: ChartPoint[]; band: Band; refMin: number; refMax: number; unit: string; dp?: number; title: string; baselineLabel?: string }) {
+export function BaselineChart({ points, band, refMin, refMax, unit, dp = 1, title, baselineLabel = 'Before launch (your baseline)', readingLabel = 'This mission' }: { points: ChartPoint[]; band: Band; refMin: number; refMax: number; unit: string; dp?: number; title: string; baselineLabel?: string; readingLabel?: string }) {
   const W = 500, H = 260, L = 44, R = 14, T = 20, B = 42;
   const vals = [...points.map((p) => p.value), band.low, band.high, refMin, refMax];
   const span = Math.max(...vals) - Math.min(...vals) || 1;
@@ -52,17 +52,17 @@ export function BaselineChart({ points, band, refMin, refMax, unit, dp = 1, titl
       {firstReading > 0 ? (
         <>
           <text x={(x(0) + x(firstReading - 1)) / 2} y={H - 4} textAnchor="middle">{baselineLabel}</text>
-          <text x={(x(firstReading) + x(points.length - 1)) / 2} y={H - 4} textAnchor="middle">{points[firstReading].label.startsWith('R+') ? 'After return' : 'This mission'}</text>
+          <text x={(x(firstReading) + x(points.length - 1)) / 2} y={H - 4} textAnchor="middle">{readingLabel}</text>
         </>
       ) : null}
     </svg>
   );
 }
 
-export function ChartLegend() {
+export function ChartLegend({ bandLabel = 'Own pre-flight range' }: { bandLabel?: string }) {
   return (
     <div className="legend">
-      <span><i className="sw-band" /> Own pre-flight range</span>
+      <span><i className="sw-band" /> {bandLabel}</span>
       <span><i className="sw-ref" /> Laboratory reference range</span>
     </div>
   );

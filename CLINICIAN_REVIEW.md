@@ -14,5 +14,7 @@ Nothing here is clinical advice until a clinician signs it off. The build uses e
 | CR-08 | Confidence label for the rule (High, Medium, Low) | Low | Team design system | Needs clinician decision |
 | CR-09 | The action shown beside a solar particle event | "Log your personal dosimeter reading." | NASA DONKI event list; Canadian Space Agency radiation monitoring article | Needs clinician decision |
 | CR-10 | The one-tap symptom list | Headache, Tired, Dizzy, Nauseous, Poor sleep, Low mood | Written for the build | Needs clinician decision |
+| CR-11 | The guidance line on the delay screen for each place, and the remote Australia wording ("remote area nurse", "on-call doctor", "Remote nurse" tier word) | Lines written for the build, shown with a placeholder note | Written for the build | Needs clinician decision |
+| CR-12 | Whether a tier may be raised on one reading, or needs a repeat reading first | One reading raises the tier; the first step is "Repeat the reading to confirm" | Raised by the judge panel as a false-alarm risk | Needs clinician decision |
 
 All of the above live in `rules/rules.yaml` and `src/data/demo.json`. To sign a rule off, replace `signed_off_by: placeholder` with the reviewing clinician's role.

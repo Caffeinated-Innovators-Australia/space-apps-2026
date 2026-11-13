@@ -1,9 +1,12 @@
 // Shared components, written during the hackathon to the team design system.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
-import type { ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import type { Assessment, Tier } from '../engine/rules';
 
 export const TIER_WORD: Record<Tier, string> = { green: 'Self-manage', amber: 'Crew medic', red: 'Urgent' };
+
+/** Tier words can change with the setting (for example on Earth); colour and shape never do. */
+export const TierWords = createContext<Record<Tier, string>>(TIER_WORD);
 
 export function TierShape({ tier, size = 14 }: { tier: Tier; size?: number }) {
   return (
@@ -14,10 +17,11 @@ export function TierShape({ tier, size = 14 }: { tier: Tier; size?: number }) {
 }
 
 export function TierPill({ tier }: { tier: Tier }) {
+  const words = useContext(TierWords);
   return (
     <span className={`pill pill-${tier}`}>
       <TierShape tier={tier} />
-      <span>{TIER_WORD[tier]}</span>
+      <span>{words[tier]}</span>
     </span>
   );
 }

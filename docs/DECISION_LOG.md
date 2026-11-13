@@ -10,3 +10,4 @@
 | D-006 | 14 Nov 2026, morning | Haemoglobin is the build's placeholder demo indicator, pending the clinicians' choice (CR-01) | Build assistant (AI), for team review |
 | D-007 | 14 Nov 2026, morning | Components are written fresh in this repo to the team design system; nothing built before kick-off is copied in | Build assistant (AI), for team review |
 | D-008 | 14 Nov 2026, morning | Build the case pack, the space-weather prompt (NASA DONKI) and the one-tap symptom log before drafting the project page | Team lead |
+| D-009 | 14 Nov 2026, morning | After the hour-1 judge panel (52%): add the place selector with an Earth mode, the evidence file and the challenge-to-screen map; clinician items stay open | Team lead |

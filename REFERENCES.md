@@ -15,6 +15,9 @@ Every third-party resource used, logged as it is added.
 
 All five challenge resources are linked inside the app, on the reading screen.
 
+## Other sources
+- Australian Institute of Health and Welfare, Deaths in Australia: variations by remoteness area (potentially avoidable deaths, 2022 to 2024). https://www.aihw.gov.au/reports/life-expectancy-deaths/deaths-in-australia/contents/variations-between-population-groups/remoteness-area
+
 ## Code libraries (all open source)
 | Library | Licence | Use |
 |---|---|---|

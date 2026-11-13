@@ -1,6 +1,7 @@
 // Simple body figure drawn in code by the team's build assistant (AI-assisted code, see AI_USE.md).
 import type { Tier } from '../engine/rules';
-import { TIER_WORD } from './ui';
+import { useContext } from 'react';
+import { TierWords } from './ui';
 
 interface Spot { id: string; label: string; x: number; y: number; lx: number; anchor: 'start' | 'end'; active: boolean }
 
@@ -12,6 +13,7 @@ const SPOTS: Spot[] = [
 ];
 
 export function BodyFigure({ onOpen, tier }: { onOpen: (id: string) => void; tier?: Tier }) {
+  const TIER_WORD = useContext(TierWords);
   return (
     <svg className="figure" viewBox="70 0 300 400" role="group" aria-label="Body figure. Choose a body area to check.">
       <circle className="body" cx="160" cy="48" r="30" />

@@ -2,15 +2,17 @@
   "synthetic": true,
   "note": "SYNTHETIC. Every value in this file was made up by the team for the demo. No real person.",
   "astronaut": "Crew member 2",
-  "location": "Mars transit",
   "missionDay": 142,
-  "delay": {
-    "oneWaySeconds": 680,
-    "basis": "Light-time arithmetic for an Earth to Mars distance in the published range (about 3 to 22 minutes one way). The distance used is a SYNTHETIC scenario."
-  },
   "symptoms": {
     "status": "Placeholder list, awaiting clinician review (CR-10)",
-    "options": ["Headache", "Tired", "Dizzy", "Nauseous", "Poor sleep", "Low mood"]
+    "options": [
+      "Headache",
+      "Tired",
+      "Dizzy",
+      "Nauseous",
+      "Poor sleep",
+      "Low mood"
+    ]
   },
   "radiationPrompt": {
     "status": "Placeholder step, awaiting clinician review (CR-09)",
@@ -26,16 +28,108 @@
     "whyCheck": "Placeholder, awaiting clinician wording (CR-03). Background: NASA Human Research Program, Risks of Human Spaceflight.",
     "howMeasured": "Placeholder, awaiting clinician wording (CR-03).",
     "baseline": [
-      { "t": "L-90", "value": 14.6 },
-      { "t": "L-45", "value": 14.9 },
-      { "t": "L-5", "value": 14.7 }
+      {
+        "t": "L-90",
+        "value": 14.6
+      },
+      {
+        "t": "L-45",
+        "value": 14.9
+      },
+      {
+        "t": "L-5",
+        "value": 14.7
+      }
     ],
     "mission": [
-      { "t": "Day 30", "value": 14.5 },
-      { "t": "Day 60", "value": 14.2 },
-      { "t": "Day 90", "value": 14.0 },
-      { "t": "Day 120", "value": 13.9 }
+      {
+        "t": "Day 30",
+        "value": 14.5
+      },
+      {
+        "t": "Day 60",
+        "value": 14.2
+      },
+      {
+        "t": "Day 90",
+        "value": 14.0
+      },
+      {
+        "t": "Day 120",
+        "value": 13.9
+      }
     ],
-    "demoValues": [14.4, 13.4, 12.6]
+    "demoValues": [
+      14.4,
+      13.4,
+      12.6
+    ]
+  },
+  "contexts": [
+    {
+      "id": "mars-far",
+      "label": "Mars, farthest",
+      "kicker": "Crew member 2 · Mars, farthest from Earth · Mission day 142",
+      "replySeconds": 2676,
+      "gapLabel": "Earth reply possible in",
+      "nowLabel": "Earth reply possible now",
+      "detail": "One-way delay 22 min 18 s",
+      "basis": "Light-time arithmetic: about 401 million km at the speed of light, there and back. Relay and processing time would add to this.",
+      "advice": "No one on Earth can answer for about 45 minutes. Start the steps now. Do not wait.",
+      "scenarioSynthetic": false
+    },
+    {
+      "id": "mars-near",
+      "label": "Mars, closest",
+      "kicker": "Crew member 2 · Mars, closest to Earth · Mission day 142",
+      "replySeconds": 364,
+      "gapLabel": "Earth reply possible in",
+      "nowLabel": "Earth reply possible now",
+      "detail": "One-way delay 3 min 2 s",
+      "basis": "Light-time arithmetic: about 54.6 million km at the speed of light, there and back. Relay and processing time would add to this.",
+      "advice": "No one on Earth can answer for about 6 minutes. Start the steps now.",
+      "scenarioSynthetic": false
+    },
+    {
+      "id": "moon",
+      "label": "Moon",
+      "kicker": "Crew member 2 · Lunar surface · Mission day 142",
+      "replySeconds": 2.6,
+      "gapLabel": "Earth reply possible in",
+      "nowLabel": "Earth can answer now",
+      "detail": "One-way delay 1.3 s",
+      "basis": "Light-time arithmetic: about 384,400 km at the speed of light, there and back.",
+      "advice": "Earth can answer within seconds. Call the flight surgeon and do the steps together.",
+      "scenarioSynthetic": false
+    },
+    {
+      "id": "earth",
+      "label": "Remote Australia",
+      "kicker": "Station hand · Very remote Australia · 7 hours by road from hospital",
+      "replySeconds": 3600,
+      "gapLabel": "Retrieval team can reach you in",
+      "nowLabel": "Retrieval team can reach you now",
+      "detail": "Nearest hospital: 7 hours by road",
+      "basis": "SYNTHETIC scenario for a very remote property: an aeromedical retrieval one hour away.",
+      "advice": "A doctor can talk you through this by phone now. Hands-on help is an hour away. Start the steps.",
+      "scenarioSynthetic": true,
+      "words": {
+        "your crew medic": "your remote area nurse",
+        "Earth": "the on-call doctor",
+        "pre-flight": "usual",
+        "Before launch": "Before this season",
+        "This mission": "This season"
+      },
+      "tierWords": {
+        "amber": "Remote nurse"
+      }
+    }
+  ],
+  "contextStatus": "Placeholder guidance lines and Earth-mode wording, awaiting clinician review (CR-11)",
+  "earthBenefit": {
+    "figure": "252 vs 88",
+    "text": "potentially avoidable deaths per 100,000 people in very remote Australia compared with major cities (2022 to 2024, age-standardised).",
+    "source": "Australian Institute of Health and Welfare, Deaths in Australia",
+    "link": "https://www.aihw.gov.au/reports/life-expectancy-deaths/deaths-in-australia/contents/variations-between-population-groups/remoteness-area"
   }
 }

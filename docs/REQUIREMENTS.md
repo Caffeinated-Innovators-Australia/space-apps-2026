@@ -8,7 +8,7 @@ Version: v0.2 · Status: building · Owner: Build lead · Last lint: 14 Nov 2026
 - **Pitch:** A delay-aware health decision-support tool that compares each reading with the astronaut's own pre-flight baseline, says in plain words what it means and what to do, and counts down to Earth's earliest reply.
 - **Primary user:** One astronaut on a Mars-class mission, not a medical expert, taking a routine reading alone.
 - **Secondary users:** The crew medic; the flight surgeon on Earth who receives the case later.
-- **Mission contexts covered:** Mars transit and surface (delay up to about 22 minutes one way). Others are out of scope for the demo.
+- **Mission contexts covered:** Moon, Mars at its closest and farthest (about 3 to 22 minutes one way), and very remote Australia.
 
 ## 2. Demo story (judges see this end to end in under a minute)
 1. The astronaut taps a region on the body figure and enters one reading: needs FR-01, FR-07, DR-02
@@ -38,7 +38,7 @@ Priority: Must / Should / Could / Won't. Status: todo / building / done / verifi
 | FR-09 | Should | One-tap case pack: bundles the alert, the trend, what the crew did and a checklist, queued for the next link to Earth | Given a result, when "Send to Earth" is tapped, then a case summary is shown as queued | R3, Q4 | impact | n/a | Build lead | done |
 | FR-10 | Should | A radiation prompt driven by cached NASA DONKI space-weather events | Given the cached event file, when the home screen loads, then the latest event is shown with "Data: NASA DONKI" | C3, Q3 | relevance | n/a | Build lead | done |
 | FR-11 | Should | "Feeling off? Tell us in one tap" symptom entry | Given the home screen, when the button is tapped, then a symptom can be logged in one tap | R1 | impact | n/a | Build lead | done |
-| FR-12 | Could | The same screen shown in a remote-Australia setting for the video close | Given the settings, when Earth mode is chosen, then the delay and wording change | C2 | impact | n/a | Build lead | todo |
+| FR-12 | Could | The same screen shown in a remote-Australia setting for the video close | Given the settings, when Earth mode is chosen, then the delay and wording change | C2 | impact | n/a | Build lead | done |
 | NFR-02 | Should | Accessibility basics: contrast at least 4.5:1, keyboard focus visible, tier never by colour alone | Given the demo screens, when the accessibility check runs, then there are no serious contrast or focus failures | U1 | presentation | n/a | Build lead | todo |
 
 ## 4. Out of scope (explicit)
@@ -49,7 +49,7 @@ Priority: Must / Should / Could / Won't. Status: todo / building / done / verifi
 ## 5. Assumptions and open questions
 - A1: The demo indicator is chosen by the clinicians (CLINICIAN_REVIEW.md, CR-01). Until then the build uses a marked placeholder.
 - A2: OSD-569 holds pre-flight and post-flight draws only (three before launch, four after return, four crew, a three-day mission). We show it as real personal baselines and recovery, never as in-flight data.
-- A3: The Mars delay shown is light-time arithmetic (about 3 to 22 minutes one way), labelled as such.
+- A3: The Moon and Mars delays shown are light-time arithmetic, labelled as such. The remote Australia retrieval time is a SYNTHETIC scenario.
 
 ## 6. Change history
 | Version | Time | Change | Decision log # |

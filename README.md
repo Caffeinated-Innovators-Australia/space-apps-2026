@@ -4,7 +4,7 @@ Challenge: Create Health Monitoring Software for Astronauts on Space Missions. M
 
 ## What we are building
 
-A delay-aware health decision-support tool for astronauts who are not medical experts. A reading is taken, compared with the astronaut's own pre-flight baseline, explained in plain words with its source, and followed by a clear action and a countdown to the earliest reply from Earth. Results are sorted into three tiers: Self-manage, Crew medic, Urgent. Rules decide; AI only explains.
+On the way to Mars, a question to Earth's doctors can take up to 45 minutes to come back. This tool helps an astronaut who is not a medical expert act in that gap. A reading is taken, compared with the astronaut's own pre-flight baseline, explained in plain words with its source, and followed by a clear action and a countdown to the earliest reply from Earth. Results are sorted into three tiers: Self-manage, Crew medic, Urgent. Rules decide; AI only explains.
 
 This is an assessment and next-steps tool. It does not diagnose. It is a hackathon prototype and makes no clinical accuracy claim.
 
@@ -13,6 +13,10 @@ This is an assessment and next-steps tool. It does not diagnose. It is a hackath
 Live demo: https://caffeinated-innovators-australia.github.io/space-apps-2026/ (no sign-in; works offline once it has loaded).
 
 In development during the hackathon. The tiering rule and its wording are placeholders until our clinicians sign them off. Requirements are in `docs/REQUIREMENTS.md`; the technical spec is in `docs/SPEC.md`.
+
+## How it answers the challenge
+
+Each ask in the challenge statement is mapped to a screen in `docs/CHALLENGE.md`. The "Where are you?" selector shows the same reading at the Moon, at Mars and in very remote Australia, where potentially avoidable deaths run at 252 per 100,000 people against 88 in major cities (Australian Institute of Health and Welfare, 2022 to 2024).
 
 ## Data
 
@@ -30,7 +34,7 @@ We used AI tools (Claude Code) to help write code and documents. The idea is the
 
 ## Clinical content
 
-Every threshold shows its source. Clinicians on the team write and sign off each one; open items are in `CLINICIAN_REVIEW.md`.
+Every threshold shows its source. Each one is to be written and signed off by a clinician on the team. Until that happens the rule is a marked placeholder, on screen and in `CLINICIAN_REVIEW.md`. Sources, evidence grades and limits are in `docs/EVIDENCE.md`.
 
 ## Run it
 
