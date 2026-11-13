@@ -21,6 +21,7 @@ Evidence grades: **A** physics or a published standard; **B** real data from a s
 | Solar particle events | Latest event date; days with events in about the past year | NASA DONKI (CCMC, NASA Goddard Space Flight Center) | B | Records for near-Earth space. Not a dose, and not linked to any tier |
 | Radiation step | "Log your personal dosimeter reading." | Written for the build | None | Placeholder (CR-09) |
 | Symptom list | Six one-tap options | Written for the build | None | Placeholder (CR-10). Symptoms are logged only; they never change a tier |
+| Distance from Earth as a hazard | Medical care becomes harder to receive from Earth as crews travel deeper into space | NASA Human Research Program, 5 Hazards of Human Spaceflight (read 14 Nov 2026) | A | A statement of the problem. It gives no figure for how often crews need care |
 | Avoidable deaths, very remote Australia against major cities | 252 against 88 per 100,000 people, 2022 to 2024, age-standardised | Australian Institute of Health and Welfare, Deaths in Australia | A | Describes the size of the remote-care problem. It says nothing about this tool's effect |
 
 ## What the real data does and does not show

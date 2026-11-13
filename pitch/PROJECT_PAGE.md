@@ -30,7 +30,7 @@ Source code: https://github.com/Caffeinated-Innovators-Australia/space-apps-2026
 
 **What is real and what is not.** The crew blood counts and space-weather events are real NASA data. The demo astronaut's values are synthetic and labelled SYNTHETIC on every screen. [Clinicians: confirm before submission which rules are signed off. Until then:] the tiering rule and its wording are placeholders, marked as such on screen. This is a hackathon prototype for assessment and next steps. It does not diagnose and makes no clinical accuracy claim. Sources, evidence grades and limits are listed in docs/EVIDENCE.md.
 
-**Why it matters.** [The team's own story, told by our doctor, with the family's agreement. No child's name, image or voice.] NASA and partner agencies already work on medical decision support for crews; our contribution is a crew-facing sketch of one slice of it: a routine self-check, a transparent rule, and an honest view of how long help will take.
+**Why it matters.** NASA's Human Research Program names distance from Earth as one of the five hazards of human spaceflight, because medical care becomes harder to receive the further a crew travels. [The team's own story, told by our doctor, with the family's agreement. No child's name, image or voice.] NASA and partner agencies already work on medical decision support for crews; our contribution is a crew-facing sketch of one slice of it: a routine self-check, a transparent rule, and an honest view of how long help will take.
 
 **The team.** Four clinicians (digital health, retrieval medicine, telecare, crew physician) and an aerospace engineer.
 

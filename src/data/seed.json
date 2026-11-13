@@ -715,5 +715,17 @@
   "text": "potentially avoidable deaths per 100,000 people in very remote Australia compared with major cities (2022 to 2024, age-standardised).",
   "source": "Australian Institute of Health and Welfare, Deaths in Australia",
   "link": "https://www.aihw.gov.au/reports/life-expectancy-deaths/deaths-in-australia/contents/variations-between-population-groups/remoteness-area"
+ },
+ "problem": {
+  "space": {
+   "text": "NASA names distance from Earth as one of the five hazards of human spaceflight: medical care becomes “increasingly challenging to receive from Earth”.",
+   "source": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
+   "link": "https://www.nasa.gov/hrp/hazards/"
+  },
+  "earth": {
+   "text": "In very remote Australia, potentially avoidable deaths run at 252 per 100,000 people, against 88 in major cities (2022 to 2024, age-standardised).",
+   "source": "Australian Institute of Health and Welfare, Deaths in Australia",
+   "link": "https://www.aihw.gov.au/reports/life-expectancy-deaths/deaths-in-australia/contents/variations-between-population-groups/remoteness-area"
+  }
  }
 }

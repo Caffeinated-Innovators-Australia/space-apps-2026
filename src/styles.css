@@ -166,3 +166,5 @@ button { font: inherit; color: inherit; }
 .plain { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; }
 @media (min-width: 800px) { .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .card a, .foot a { color: var(--advisory); }
+.gap-problem { font-size: 14px; max-width: 46ch; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; }
+.gap a { color: var(--advisory); }

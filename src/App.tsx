@@ -16,7 +16,7 @@ import seedJson from './data/seed.json';
 import { CrewData, SpaceWeather } from './screens/RealData';
 import { deviceStore } from './store/indexeddb.ts';
 
-interface Extras { settingStatus: string; earthBenefit: { figure: string; text: string; source: string; link: string } }
+interface Extras { problem: Record<'space' | 'earth', { text: string; source: string; link: string }>; settingStatus: string; earthBenefit: { figure: string; text: string; source: string; link: string } }
 const seed = seedJson as unknown as Seed & Extras;
 const store = deviceStore();
 const REPO = 'https://github.com/Caffeinated-Innovators-Australia/space-apps-2026';
@@ -358,6 +358,7 @@ function Gap({ state, commit, ui, setting, rule, reading }: Shared & { rule: Rul
   const content = casePackContent(state, seed, rule, pack.id);
   const left = setting.replySeconds - (now - startAt) / 1000;
   const meanwhile = raw.steps.filter((st) => !/send the case/i.test(st));
+  const problem = seed.problem[setting.id === 'earth' ? 'earth' : 'space'];
   return (
     <>
       <Context setting={setting} crewId={reading.crewId} />
@@ -370,6 +371,7 @@ function Gap({ state, commit, ui, setting, rule, reading }: Shared & { rule: Rul
           <p className="gap-advice">{setting.advice}</p>
           <p className="caption">{setting.basis}</p>
           {setting.scenarioSynthetic ? <SyntheticTag /> : null}
+          <p className="gap-problem">{problem.text} <span className="caption">Source: <a href={problem.link}>{problem.source}</a>.</span></p>
           <span className="placeholder">{seed.settingStatus}</span>
         </section>
         <div className="stack">
