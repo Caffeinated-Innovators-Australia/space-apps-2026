@@ -403,7 +403,7 @@ function SpaceWeather({ doseLogged, onDose }: { doseLogged: boolean; onDose: () 
       <p>
         Latest solar particle event on record: <strong>{when} UTC</strong>. {donki.eventDaysInPeriod} days with events in the past {donki.periodDays} days.
       </p>
-      <p className="caption">Recorded near Earth by: {same.map((e) => e.instruments.join(', ')).join('; ')}. Real events, bundled on {donki.fetched}.</p>
+      <p className="caption">Instruments or models, as listed by DONKI: {same.map((e) => e.instruments.join(', ').replace(/^MODEL: /, '')).join('; ')}. Real DONKI records for near-Earth space, bundled on {donki.fetched}.</p>
       <button className="check" role="checkbox" aria-checked={doseLogged} onClick={onDose}>
         <span className="box" aria-hidden="true">{doseLogged ? '\u2713' : ''}</span>
         <span>{demo.radiationPrompt.step}</span>

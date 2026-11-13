@@ -39,7 +39,7 @@ def main(out_path):
         "link": "https://ccmc.gsfc.nasa.gov/tools/DONKI/",
         "synthetic": False,
         "fetched": dt.date.today().isoformat(),
-        "note": "Real solar energetic particle events recorded by spacecraft near Earth. Bundled at build time.",
+        "note": "Real solar energetic particle event records for near-Earth space, as listed by DONKI. Bundled at build time.",
         "periodDays": WINDOW_DAYS * WINDOWS,
         "recordsInPeriod": len(ordered),
         "eventDaysInPeriod": len({e["time"][:10] for e in ordered}),

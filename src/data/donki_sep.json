@@ -4,7 +4,7 @@
  "link": "https://ccmc.gsfc.nasa.gov/tools/DONKI/",
  "synthetic": false,
  "fetched": "2026-11-14",
- "note": "Real solar energetic particle events recorded by spacecraft near Earth. Bundled at build time.",
+ "note": "Real solar energetic particle event records for near-Earth space, as listed by DONKI. Bundled at build time.",
  "periodDays": 385,
  "recordsInPeriod": 58,
  "eventDaysInPeriod": 16,
