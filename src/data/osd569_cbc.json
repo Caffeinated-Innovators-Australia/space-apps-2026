@@ -1,0 +1,707 @@
+{
+ "source": "NASA Open Science Data Repository (OSDR), OSD-569, Inspiration4, Complete Blood Count (LSDS-7)",
+ "credit": "Data: NASA OSDR, OSD-569",
+ "link": "https://osdr.nasa.gov/bio/repo/data/studies/OSD-569",
+ "synthetic": false,
+ "note": "Real crew data. Three draws before launch (L-) and four after return (R+). No in-flight draws. Reference ranges are the laboratory ranges reported in the source file.",
+ "timepoints": [
+  "L-92",
+  "L-44",
+  "L-3",
+  "R+1",
+  "R+45",
+  "R+82",
+  "R+194"
+ ],
+ "series": [
+  {
+   "subject": "C001",
+   "analyte": "Haematocrit",
+   "unit": "%",
+   "refMin": 38.5,
+   "refMax": 50.0,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 42.5,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 45.1,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 44.5,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+1",
+     "value": 43.6,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 43.3,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 46.1,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 41.8,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C001",
+   "analyte": "Haemoglobin",
+   "unit": "g/dL",
+   "refMin": 13.2,
+   "refMax": 17.1,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 14.1,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 14.9,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 14.7,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+1",
+     "value": 14.7,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 14.3,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 15.7,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 14.1,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C001",
+   "analyte": "Red blood cell count",
+   "unit": "Million/uL",
+   "refMin": 4.2,
+   "refMax": 5.8,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 4.58,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 4.85,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 4.69,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+1",
+     "value": 4.84,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 4.63,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 5.02,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 4.66,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C001",
+   "analyte": "White blood cell count",
+   "unit": "Thousand/uL",
+   "refMin": 3.8,
+   "refMax": 10.8,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 5.4,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 5.5,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 7.0,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+1",
+     "value": 5.0,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 4.9,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 4.9,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 4.9,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C002",
+   "analyte": "Haematocrit",
+   "unit": "%",
+   "refMin": 35.0,
+   "refMax": 45.0,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 40.8,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 37.8,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 35.9,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+1",
+     "value": 36.4,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 37.1,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 34.7,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 38.3,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C002",
+   "analyte": "Haemoglobin",
+   "unit": "g/dL",
+   "refMin": 11.7,
+   "refMax": 15.5,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 13.2,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 12.8,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 11.5,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+1",
+     "value": 12.1,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 12.2,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 11.5,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 12.7,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C002",
+   "analyte": "Red blood cell count",
+   "unit": "Million/uL",
+   "refMin": 3.8,
+   "refMax": 5.1,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 4.36,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 3.93,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 3.72,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+1",
+     "value": 4.02,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 4.02,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 3.84,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 4.11,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C002",
+   "analyte": "White blood cell count",
+   "unit": "Thousand/uL",
+   "refMin": 3.8,
+   "refMax": 10.8,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 6.5,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 5.4,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 7.2,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+1",
+     "value": 5.5,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 6.4,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 5.3,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 6.4,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C003",
+   "analyte": "Haematocrit",
+   "unit": "%",
+   "refMin": 38.5,
+   "refMax": 50.0,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 40.7,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 42.6,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 41.6,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 44.3,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 44.6,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 40.4,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C003",
+   "analyte": "Haemoglobin",
+   "unit": "g/dL",
+   "refMin": 13.2,
+   "refMax": 17.1,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 13.2,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 14.4,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 13.3,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 14.6,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 14.4,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 13.3,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C003",
+   "analyte": "Red blood cell count",
+   "unit": "Million/uL",
+   "refMin": 4.2,
+   "refMax": 5.8,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 4.46,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 4.62,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 4.5,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 5.09,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 4.89,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 4.64,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C003",
+   "analyte": "White blood cell count",
+   "unit": "Thousand/uL",
+   "refMin": 3.8,
+   "refMax": 10.8,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 9.6,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 9.3,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 9.8,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+1",
+     "value": 7.0,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 7.8,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 8.8,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 7.4,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C004",
+   "analyte": "Haematocrit",
+   "unit": "%",
+   "refMin": 38.5,
+   "refMax": 50.0,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 49.1,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 50.0,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 49.0,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+1",
+     "value": 48.3,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 49.0,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 47.5,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 48.0,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C004",
+   "analyte": "Haemoglobin",
+   "unit": "g/dL",
+   "refMin": 13.2,
+   "refMax": 17.1,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 17.0,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 16.6,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 16.8,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+1",
+     "value": 16.5,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 16.8,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 16.4,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 16.5,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C004",
+   "analyte": "Red blood cell count",
+   "unit": "Million/uL",
+   "refMin": 4.2,
+   "refMax": 5.8,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 5.48,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 5.57,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 5.4,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+1",
+     "value": 5.55,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 5.54,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 5.45,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 5.58,
+     "phase": "post-flight"
+    }
+   ]
+  },
+  {
+   "subject": "C004",
+   "analyte": "White blood cell count",
+   "unit": "Thousand/uL",
+   "refMin": 3.8,
+   "refMax": 10.8,
+   "points": [
+    {
+     "t": "L-92",
+     "value": 7.7,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-44",
+     "value": 6.4,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "L-3",
+     "value": 10.6,
+     "phase": "pre-flight"
+    },
+    {
+     "t": "R+1",
+     "value": 8.1,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+45",
+     "value": 6.8,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+82",
+     "value": 7.9,
+     "phase": "post-flight"
+    },
+    {
+     "t": "R+194",
+     "value": 8.3,
+     "phase": "post-flight"
+    }
+   ]
+  }
+ ]
+}

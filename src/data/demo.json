@@ -1,0 +1,33 @@
+{
+  "synthetic": true,
+  "note": "SYNTHETIC. Every value in this file was made up by the team for the demo. No real person.",
+  "astronaut": "Crew member 2",
+  "location": "Mars transit",
+  "missionDay": 142,
+  "delay": {
+    "oneWaySeconds": 680,
+    "basis": "Light-time arithmetic for an Earth to Mars distance in the published range (about 3 to 22 minutes one way). The distance used is a SYNTHETIC scenario."
+  },
+  "indicator": {
+    "region": "Blood",
+    "name": "Haemoglobin",
+    "unit": "g/dL",
+    "refMin": 13.2,
+    "refMax": 17.1,
+    "refSource": "Laboratory reference range as reported in NASA OSDR, OSD-569 (LSDS-7)",
+    "whyCheck": "Placeholder, awaiting clinician wording (CR-03). Background: NASA Human Research Program, Risks of Human Spaceflight.",
+    "howMeasured": "Placeholder, awaiting clinician wording (CR-03).",
+    "baseline": [
+      { "t": "L-90", "value": 14.6 },
+      { "t": "L-45", "value": 14.9 },
+      { "t": "L-5", "value": 14.7 }
+    ],
+    "mission": [
+      { "t": "Day 30", "value": 14.5 },
+      { "t": "Day 60", "value": 14.2 },
+      { "t": "Day 90", "value": 14.0 },
+      { "t": "Day 120", "value": 13.9 }
+    ],
+    "demoValues": [14.4, 13.4, 12.6]
+  }
+}

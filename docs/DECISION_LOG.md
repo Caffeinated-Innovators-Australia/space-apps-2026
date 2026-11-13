@@ -7,3 +7,5 @@
 | D-003 | 14 Nov 2026, morning | NASA OSDR OSD-569 is the lead NASA dataset; NASA DONKI is a Should | Build assistant (AI), for team review |
 | D-004 | 14 Nov 2026, morning | Static web app on GitHub Pages; Apache 2.0 | Build assistant (AI), for team review |
 | D-005 | 14 Nov 2026, morning | OSD-569 is shown as pre-flight and post-flight data only, because the dataset has no in-flight draws | Build assistant (AI), for team review |
+| D-006 | 14 Nov 2026, morning | Haemoglobin is the build's placeholder demo indicator, pending the clinicians' choice (CR-01) | Build assistant (AI), for team review |
+| D-007 | 14 Nov 2026, morning | Components are written fresh in this repo to the team design system; nothing built before kick-off is copied in | Build assistant (AI), for team review |

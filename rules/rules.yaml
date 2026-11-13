@@ -1,0 +1,42 @@
+# Tiering rules. Rules decide; AI only explains.
+# Every rule needs a source and a signed_off_by field, or the app refuses to load it.
+# signed_off_by is a clinician ROLE (never a name), or the word "placeholder".
+#
+# STATUS: every value and every line of wording below is a PLACEHOLDER awaiting clinician review.
+# See CLINICIAN_REVIEW.md (CR-02, CR-03, CR-04). Nothing here is clinical advice.
+version: "0.1"
+rules:
+  - id: PB-01
+    name: Personal baseline band
+    # The band is the lowest to highest pre-flight value, widened on each side by
+    # margin_percent of the pre-flight mean. The margin is a placeholder (CR-02).
+    band:
+      method: baseline-range
+      margin_percent: 5
+    source: "Placeholder rule, awaiting clinician review. Laboratory reference range as reported in NASA OSDR, OSD-569 (LSDS-7)."
+    confidence: Low
+    signed_off_by: placeholder
+    tiers:
+      green:
+        when: inside_band
+        title: "{region}: within your baseline"
+        why: "Your {indicator} is {value} {unit}. That is inside your own pre-flight range of {bandLow} to {bandHigh} {unit}."
+        steps:
+          - "Log the reading."
+          - "Repeat at your next scheduled check."
+      amber:
+        when: outside_band_inside_reference
+        title: "{region}: change from your baseline"
+        why: "Your {indicator} is {value} {unit}. That is {direction} than your own pre-flight range of {bandLow} to {bandHigh} {unit}. It is still inside the laboratory reference range of {refMin} to {refMax} {unit}."
+        steps:
+          - "Repeat the reading to confirm."
+          - "Tell your crew medic."
+          - "Send the case to Earth."
+      red:
+        when: outside_band_outside_reference
+        title: "{region}: large change from your baseline"
+        why: "Your {indicator} is {value} {unit}. That is {direction} than your own pre-flight range of {bandLow} to {bandHigh} {unit}, and outside the laboratory reference range of {refMin} to {refMax} {unit}."
+        steps:
+          - "Tell your crew medic now."
+          - "Repeat the reading to confirm."
+          - "Send the case to Earth."

@@ -7,5 +7,7 @@ Logged as we go: what, where, who reviewed it. AI did not supply the idea. The c
 | 14 Nov 2026, morning | Claude Code (Anthropic) | Read the team's preparation notes and the official rules | not in repo | Team lead |
 | 14 Nov 2026, morning | Claude Code (Anthropic) | Drafted the requirements, spec, acceptance tests and logs from the team's confirmed concept | docs/, REFERENCES.md, CLINICIAN_REVIEW.md, README.md | Awaiting build lead |
 | before kick-off | Claude Code (Anthropic) | Wrote generic checking tools (requirements lint, rules and judging checks) with no project content | .claude/skills/, evals/rubric.yaml | Team lead |
+| 14 Nov 2026, morning | Claude Code (Anthropic) | Wrote the app code: rules engine, tests, screens, charts, the code-drawn body figure and icon, the data fetch script and the deploy workflow | src/, rules/, scripts/, public/, .github/ | Awaiting build lead |
+| 14 Nov 2026, morning | Claude Code (Anthropic) | Drafted placeholder rule wording and a placeholder margin so the journey could be built. These are not clinical content until a clinician rewrites and signs them | rules/rules.yaml, CLINICIAN_REVIEW.md | Awaiting clinicians |
 
-AI-generated code is acknowledged here and in commit messages (Co-Authored-By line). No AI-generated images, video or audio are used so far.
+AI-generated code is acknowledged here and in commit messages (Co-Authored-By line). Source files carry an AI-assistance note, and the page metadata states it. No AI-generated photos, video or audio are used. The body figure and icon are simple shapes drawn in code, not generated images.

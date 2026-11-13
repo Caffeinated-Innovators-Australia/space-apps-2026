@@ -5,7 +5,7 @@ Version: v0.1 · Satisfies: docs/REQUIREMENTS.md v0.1 · Owner: Build lead
 ## 1. Architecture (satisfies: NFR-01, PR-01)
 - Stack: a static single-page web app (Vite, React, TypeScript). No server, no accounts, no network calls on the demo path. Chosen because it deploys as plain files, works offline and suits a 48-hour build.
 - Hosting: GitHub Pages from this public repo.
-- Offline: a service worker caches the built files; data and fonts are bundled.
+- Offline: a small service worker, written at build time, caches the built files; data and fonts are bundled.
 
 ```mermaid
 flowchart LR

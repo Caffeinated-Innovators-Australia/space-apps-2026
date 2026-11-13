@@ -6,4 +6,4 @@
 | NASA DONKI space-weather events (planned) | DONKI | https://ccmc.gsfc.nasa.gov/tools/DONKI/ | NASA public data; cited | Recent solar particle events for the radiation prompt | Real |
 | Demo astronaut baseline and readings | none | made by the team | Apache 2.0 | The demo journey | SYNTHETIC |
 
-Notes: OSD-569 has no in-flight draws. Timepoints are L-92, L-44, L-3 (days before launch) and R+1, R+45, R+82, R+194 (days after return).
+Notes: the app shows four analytes from the file: haemoglobin, haematocrit, red blood cell count and white blood cell count. OSD-569 has no in-flight draws. Timepoints are L-92, L-44, L-3 (days before launch) and R+1, R+45, R+82, R+194 (days after return).
