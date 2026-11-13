@@ -1,11 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { assessValue, casePackContent, demoValues, exportOutbox, history, initialState, parseRules, recordReading, sendCase, toggleStep, toggleSymptom, type Seed } from './index.ts';
+import { assessValue, casePackContent, confirmation, demoValues, exportOutbox, history, initialState, parseRules, recordReading, sendCase, toggleStep, toggleSymptom, type Seed } from './index.ts';
 
 const rule = parseRules(readFileSync('rules/rules.yaml', 'utf8'))[0];
 const seed = JSON.parse(readFileSync('src/data/seed.json', 'utf8')) as Seed;
 
 describe('action layer', () => {
+  it('uses the variation figures computed from the real NASA crew data', () => {
+    const osd = JSON.parse(readFileSync('src/data/osd569_cbc.json', 'utf8')) as { variation: Record<string, { pooledSd: number }> };
+    for (const i of seed.indicators) expect(i.withinPersonSd).toBe(osd.variation[i.name].pooledSd);
+  });
   it('assesses the same value differently for different people', () => {
     expect(assessValue(seed, rule, 'crew-2', 'haemoglobin', 13.4).tier).toBe('amber');
     expect(assessValue(seed, rule, 'crew-1', 'haemoglobin', 13.4).tier).toBe('green');
@@ -21,6 +25,17 @@ describe('action layer', () => {
     expect(() => assessValue(seed, rule, 'nobody', 'haemoglobin', 13)).toThrow(/Unknown crew member/);
     expect(() => assessValue(seed, rule, 'crew-1', 'pulse', 60)).toThrow(/Unknown indicator/);
     expect(() => assessValue(seed, rule, 'crew-1', 'haemoglobin', -1)).toThrow(/above zero/);
+  });
+  it('marks a raised result as unconfirmed until a second reading agrees', () => {
+    let s = initialState(seed);
+    const a = recordReading(s, seed, rule, { crewId: 'crew-2', indicatorId: 'haemoglobin', value: 13.4, at: 1000 });
+    expect(confirmation(a.state, a.reading).status).toBe('unconfirmed');
+    const b = recordReading(a.state, seed, rule, { crewId: 'crew-2', indicatorId: 'haemoglobin', value: 13.3, at: 2000 });
+    expect(confirmation(b.state, b.reading).status).toBe('confirmed');
+    const c = recordReading(b.state, seed, rule, { crewId: 'crew-2', indicatorId: 'haemoglobin', value: 14.7, at: 3000 });
+    expect(confirmation(c.state, c.reading).status).toBe('not-needed');
+    s = c.state;
+    expect(s.readings).toHaveLength(3);
   });
   it('records a reading, queues one case per reading and exports it once', () => {
     let s = initialState(seed);

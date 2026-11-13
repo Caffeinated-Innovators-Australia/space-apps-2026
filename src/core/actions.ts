@@ -37,7 +37,7 @@ export function assessValue(seed: Seed, rule: Rule, crewId: string, indicatorId:
   if (baseline.length === 0) throw new Error(`${crew.name} has no baseline for ${ind.name}.`);
   if (!Number.isFinite(value) || value <= 0) throw new Error('The reading must be a number above zero.');
   const ref = ind.ref[crew.sex];
-  return assess(rule, { region: ind.region, indicator: ind.name, unit: ind.unit, value, baseline, refMin: ref.min, refMax: ref.max }, ind.dp);
+  return assess(rule, { region: ind.region, indicator: ind.name, unit: ind.unit, value, baseline, withinPersonSd: ind.withinPersonSd, refMin: ref.min, refMax: ref.max }, ind.dp);
 }
 
 /** Save a reading and return it with its assessment. */
@@ -59,6 +59,17 @@ export function history(state: State, seed: Seed, crewId: string, indicatorId: s
     mission: crew.mission[indicatorId] ?? [],
     recorded: state.readings.filter((r) => r.crewId === crewId && r.indicatorId === indicatorId),
   };
+}
+
+/**
+ * Has a raised result been backed by a second reading? A single out-of-range reading can be a
+ * measurement slip, so the record says whether the reading before it was also outside the band.
+ */
+export function confirmation(state: State, reading: Reading): { status: 'not-needed' | 'unconfirmed' | 'confirmed'; previousAt?: number } {
+  if (reading.tier === 'green') return { status: 'not-needed' };
+  const earlier = state.readings.filter((r) => r.crewId === reading.crewId && r.indicatorId === reading.indicatorId && r.at < reading.at);
+  const prev = earlier[earlier.length - 1];
+  return prev && prev.tier !== 'green' ? { status: 'confirmed', previousAt: prev.at } : { status: 'unconfirmed' };
 }
 
 export function toggleStep(state: State, readingId: string, step: string): State {
@@ -99,7 +110,7 @@ export function casePackContent(state: State, seed: Seed, rule: Rule, packId: st
     synthetic: seed.synthetic,
     reading: { indicator: ind.name, value: reading.value, unit: ind.unit, takenAt: new Date(reading.at).toISOString(), changeFromBaseline: a.deltaText },
     trend: { baseline: h.baseline, mission: h.mission, recorded: h.recorded.map((r) => ({ t: new Date(r.at).toISOString(), value: r.value })) },
-    assessment: { tier: a.tier, ruleId: a.ruleId, why: a.why, source: a.source, confidence: a.confidence, placeholderRule: a.placeholder, reviewedBy: a.reviewedBy },
+    assessment: { tier: a.tier, ruleId: a.ruleId, why: a.why, source: a.source, confidence: a.confidence, placeholderRule: a.placeholder, reviewedBy: a.reviewedBy, confirmedByRepeatReading: confirmation(state, reading).status === 'confirmed' },
     stepsGiven: a.steps,
     stepsDone: reading.stepsDone,
     symptoms: state.symptoms.filter((s) => s.crewId === pack.crewId).map((s) => ({ label: s.label, at: new Date(s.at).toISOString() })),
@@ -125,6 +136,6 @@ export function demoValues(seed: Seed, rule: Rule, crewId: string, indicatorId: 
   const f = (n: number) => Number(n.toFixed(ind.dp));
   const out = [f(a.band.mean)];
   if (a.band.low > ref.min) out.push(f((a.band.low + ref.min) / 2));
-  out.push(f(ref.min - (ref.max - ref.min) * 0.08));
+  out.push(f(Math.min(ref.min, a.band.low) - (ref.max - ref.min) * 0.08));
   return [...new Set(out)];
 }

@@ -6,7 +6,7 @@ import { BaselineChart, ChartLegend, type ChartPoint } from './components/Baseli
 import { BodyFigure } from './components/BodyFigure';
 import { AlertCard, ReadingTile, SyntheticTag, TierPill, TIER_WORD, TierWords } from './components/ui';
 import {
-  assessValue, casePackContent, crewById, demoValues, exportOutbox, history, indicatorById, initialState, latestReading, parseRules,
+  assessValue, casePackContent, confirmation, crewById, demoValues, exportOutbox, history, indicatorById, initialState, latestReading, parseRules,
   recordReading, sendCase, settingById, tierFor, toggleStep, toggleSymptom,
   type Assessment, type Indicator, type Reading as SavedReading, type Rule, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
@@ -312,6 +312,7 @@ function Result({ state, commit, setting, rule, reading }: Shared & { rule: Rule
   const raw = assessValue(seed, rule, reading.crewId, reading.indicatorId, reading.value);
   const a = localise(raw, setting);
   const sent = state.outbox.some((p) => p.readingId === reading.id);
+  const conf = confirmation(state, reading);
   const send = () => { commit(sendCase(state, { readingId: reading.id, settingId: setting.id, at: Date.now() }).state); go('gap', reading.id); };
   return (
     <>
@@ -325,11 +326,13 @@ function Result({ state, commit, setting, rule, reading }: Shared & { rule: Rule
               <SyntheticTag />
             </div>
             <BaselineChart points={trendPoints(state, reading, ind, raw, ref)} band={raw.band} refMin={ref.min} refMax={ref.max} unit={ind.unit} dp={ind.dp} baselineLabel={`${say('Before launch', setting)} (your baseline)`} readingLabel={say('This mission', setting)} title={`${ind.name} over time against your own baseline. Today: ${reading.value.toFixed(ind.dp)} ${ind.unit}.`} />
-            <ChartLegend bandLabel={say('Own pre-flight range', setting)} />
+            <ChartLegend bandLabel={say('Own expected range', setting)} />
             <p className="caption">{ind.refSource}.</p>
           </div>
         </div>
         <AlertCard a={a} synthetic>
+          {conf.status === 'unconfirmed' ? <p className="confirm" role="status">One reading so far. A second reading that agrees will mark this as confirmed.</p> : null}
+          {conf.status === 'confirmed' ? <p className="confirm ok" role="status">Confirmed by a second reading (the one at {hhmm(conf.previousAt!)} was also outside your range).</p> : null}
           <div className="btn-row">
             {a.tier === 'green' ? (
               <button className="btn" onClick={() => go('home')}>Log and finish</button>
@@ -401,7 +404,7 @@ function Gap({ state, commit, ui, setting, rule, reading }: Shared & { rule: Rul
             <dl className="pack">
               <dt>Reading</dt><dd>{ind.name} {reading.value.toFixed(ind.dp)} {ind.unit} ({raw.deltaText})</dd>
               <dt>Trend</dt><dd>Baseline {content.trend.baseline.map((b) => b.value.toFixed(ind.dp)).join(', ')}; this mission {content.trend.mission.map((m) => m.value.toFixed(ind.dp)).join(', ')} {ind.unit}</dd>
-              <dt>Assessment</dt><dd>{TIER_WORD[raw.tier]}. Rule {raw.ruleId}. {raw.source}</dd>
+              <dt>Assessment</dt><dd>{TIER_WORD[raw.tier]}{content.assessment.confirmedByRepeatReading ? ', confirmed by a second reading' : ', one reading so far'}. Rule {raw.ruleId}. {raw.source}</dd>
               <dt>Done so far</dt><dd>{reading.stepsDone.length > 0 ? reading.stepsDone.map((x) => cap(say(x, setting))).join(' ') : 'Nothing ticked yet.'}</dd>
               <dt>How you feel</dt><dd>{content.symptoms.length > 0 ? content.symptoms.map((x) => x.label).join(', ') : 'Nothing logged today.'}</dd>
             </dl>

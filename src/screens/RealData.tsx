@@ -22,7 +22,8 @@ export function CrewData({ rule }: { rule: Rule }) {
   const pre = s.points.filter((p) => p.phase === 'pre-flight');
   const post = s.points.filter((p) => p.phase === 'post-flight');
   const dp = decimals(s.points.map((p) => p.value));
-  const band = personalBand(pre.map((p) => p.value), rule.band.margin_percent);
+  const sd = (osd.variation as Record<string, { pooledSd: number }>)[analyte].pooledSd;
+  const band = personalBand(pre.map((p) => p.value), rule.band.k, sd);
   const tiers = post.map((p) => tierFor(p.value, band, s.refMin, s.refMax));
   const points: ChartPoint[] = [
     ...pre.map((p) => ({ label: p.t, value: p.value, kind: 'baseline' as const })),
@@ -37,7 +38,7 @@ export function CrewData({ rule }: { rule: Rule }) {
         <span className="kicker">Real crew data · Inspiration4 · pre-flight and post-flight</span>
       </div>
       <h1 className="display">The same rule, on real crew data</h1>
-      <p className="muted">Four crew members had blood taken three times before launch and four times after return. We build each person's own range from their pre-flight draws, then check every later draw against it. There are no in-flight draws in this dataset.</p>
+      <p className="muted">Four crew members had blood taken three times before launch and four times after return. We build each person's own range from their pre-flight draws: their own average, plus or minus two standard deviations of the variation seen within these crew members before launch. Then we check every later draw against it. There are no in-flight draws in this dataset.</p>
       <div className="card">
         <div className="btn-row">
           <div className="seg" role="group" aria-label="Crew member">
@@ -50,7 +51,7 @@ export function CrewData({ rule }: { rule: Rule }) {
         <BaselineChart points={points} band={band} refMin={s.refMin} refMax={s.refMax} unit={unit} dp={dp} title={`${analyte} for crew ${subject}: pre-flight baseline and post-flight draws.`} baselineLabel="Before launch (their baseline)" />
         <ChartLegend />
         <p>
-          Own pre-flight range: {band.low.toFixed(dp)} to {band.high.toFixed(dp)} {unit}. Laboratory reference range: {s.refMin} to {s.refMax} {unit}.
+          Own expected range: {band.low.toFixed(dp)} to {band.high.toFixed(dp)} {unit}. Laboratory reference range: {s.refMin} to {s.refMax} {unit}.
           {preOutside > 0 ? ` ${preOutside} of this person's ${pre.length} pre-flight draws sat outside the laboratory range. A population range alone would flag a value that is usual for this person.` : ''}
         </p>
         <div className="legend">

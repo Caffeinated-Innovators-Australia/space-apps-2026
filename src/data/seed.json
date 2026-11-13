@@ -571,7 +571,9 @@
    },
    "refSource": "Laboratory reference range as reported in NASA OSDR, OSD-569 (LSDS-7)",
    "whyCheck": "Placeholder, awaiting clinician wording (CR-03). Background: NASA Human Research Program, Risks of Human Spaceflight.",
-   "howMeasured": "Placeholder, awaiting clinician wording (CR-03)."
+   "howMeasured": "Placeholder, awaiting clinician wording (CR-03).",
+   "withinPersonSd": 0.601,
+   "variationSource": "Within-person variation of pre-flight draws in NASA OSDR, OSD-569 (four crew, three draws each)"
   },
   {
    "id": "haematocrit",
@@ -591,7 +593,9 @@
    },
    "refSource": "Laboratory reference range as reported in NASA OSDR, OSD-569 (LSDS-7)",
    "whyCheck": "Placeholder, awaiting clinician wording (CR-03). Background: NASA Human Research Program, Risks of Human Spaceflight.",
-   "howMeasured": "Placeholder, awaiting clinician wording (CR-03)."
+   "howMeasured": "Placeholder, awaiting clinician wording (CR-03).",
+   "withinPersonSd": 1.514,
+   "variationSource": "Within-person variation of pre-flight draws in NASA OSDR, OSD-569 (four crew, three draws each)"
   },
   {
    "id": "red-cells",
@@ -611,7 +615,9 @@
    },
    "refSource": "Laboratory reference range as reported in NASA OSDR, OSD-569 (LSDS-7)",
    "whyCheck": "Placeholder, awaiting clinician wording (CR-03). Background: NASA Human Research Program, Risks of Human Spaceflight.",
-   "howMeasured": "Placeholder, awaiting clinician wording (CR-03)."
+   "howMeasured": "Placeholder, awaiting clinician wording (CR-03).",
+   "withinPersonSd": 0.186,
+   "variationSource": "Within-person variation of pre-flight draws in NASA OSDR, OSD-569 (four crew, three draws each)"
   },
   {
    "id": "white-cells",
@@ -631,7 +637,9 @@
    },
    "refSource": "Laboratory reference range as reported in NASA OSDR, OSD-569 (LSDS-7)",
    "whyCheck": "Placeholder, awaiting clinician wording (CR-03). Background: NASA Human Research Program, Risks of Human Spaceflight.",
-   "howMeasured": "Placeholder, awaiting clinician wording (CR-03)."
+   "howMeasured": "Placeholder, awaiting clinician wording (CR-03).",
+   "withinPersonSd": 1.256,
+   "variationSource": "Within-person variation of pre-flight draws in NASA OSDR, OSD-569 (four crew, three draws each)"
   }
  ],
  "settings": [

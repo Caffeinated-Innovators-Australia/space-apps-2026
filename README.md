@@ -20,7 +20,7 @@ Each ask in the challenge statement is mapped to a screen in `docs/CHALLENGE.md`
 
 ## Data
 
-- NASA Open Science Data Repository (OSDR), OSD-569, Inspiration4 complete blood count: https://osdr.nasa.gov/bio/repo/data/studies/OSD-569 . Real crew data, pre-flight and post-flight.
+- NASA Open Science Data Repository (OSDR), OSD-569, Inspiration4 complete blood count: https://osdr.nasa.gov/bio/repo/data/studies/OSD-569 . Real crew data, pre-flight and post-flight. The variation in these crew members' own pre-flight draws sets the width of every personal baseline band.
 - NASA DONKI solar energetic particle events (CCMC, NASA Goddard Space Flight Center): https://ccmc.gsfc.nasa.gov/tools/DONKI/ . Real events, shown with the radiation prompt.
 - NASA Human Research Program hazards and risks pages: https://www.nasa.gov/hrp/hazards/ and https://www.nasa.gov/hrp/risks/
 - NASA Human Research Program, Ongoing HRP Research in Space: https://www.nasa.gov/hrp/ongoing-hrp-research/

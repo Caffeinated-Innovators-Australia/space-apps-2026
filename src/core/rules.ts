@@ -15,7 +15,8 @@ export interface TierRule {
 export interface Rule {
   id: string;
   name: string;
-  band: { method: 'baseline-range'; margin_percent: number };
+  /** Band = own baseline mean plus or minus k standard deviations of within-person variation. */
+  band: { method: 'baseline-mean-sd'; k: number };
   source: string;
   confidence: string;
   signed_off_by: string;
@@ -49,6 +50,8 @@ export interface AssessInput {
   unit: string;
   value: number;
   baseline: number[];
+  /** Within-person standard deviation for this indicator, from real crew data. */
+  withinPersonSd: number;
   refMin: number;
   refMax: number;
 }
@@ -70,7 +73,7 @@ export function parseRules(text: string): Rule[] {
     if (!r.source || !String(r.source).trim()) throw new Error(`Rule ${id} has no source. Every threshold must show its source.`);
     if (!r.signed_off_by || !String(r.signed_off_by).trim()) throw new Error(`Rule ${id} has no signed_off_by field. Use a clinician role, or "placeholder".`);
     if (!r.confidence) throw new Error(`Rule ${id} has no confidence label.`);
-    if (r.band?.method !== 'baseline-range' || !(r.band.margin_percent >= 0)) throw new Error(`Rule ${id} has no valid band.`);
+    if (r.band?.method !== 'baseline-mean-sd' || !(r.band.k > 0)) throw new Error(`Rule ${id} has no valid band.`);
     for (const t of TIERS) {
       const tr = r.tiers?.[t];
       if (!tr) throw new Error(`Rule ${id} has no ${t} tier.`);
@@ -87,12 +90,12 @@ export function round(n: number, dp = 1): number {
   return Math.round((n + Number.EPSILON) * f) / f;
 }
 
-/** Personal band: lowest to highest baseline value, widened by margin_percent of the baseline mean. */
-export function personalBand(baseline: number[], marginPercent: number): Band {
+/** Personal band: the person's own baseline mean, plus or minus k standard deviations of within-person variation. */
+export function personalBand(baseline: number[], k: number, withinPersonSd: number): Band {
   if (baseline.length === 0) throw new Error('No baseline values.');
+  if (!(withinPersonSd > 0)) throw new Error('No within-person variation figure for this indicator.');
   const mean = baseline.reduce((a, b) => a + b, 0) / baseline.length;
-  const margin = (mean * marginPercent) / 100;
-  return { low: Math.min(...baseline) - margin, high: Math.max(...baseline) + margin, mean };
+  return { low: mean - k * withinPersonSd, high: mean + k * withinPersonSd, mean };
 }
 
 export function tierFor(value: number, band: Band, refMin: number, refMax: number): Tier {
@@ -110,7 +113,7 @@ function fill(template: string, vars: Record<string, string>): string {
 }
 
 export function assess(rule: Rule, input: AssessInput, dp = 1): Assessment {
-  const band = personalBand(input.baseline, rule.band.margin_percent);
+  const band = personalBand(input.baseline, rule.band.k, input.withinPersonSd);
   const tier = tierFor(input.value, band, input.refMin, input.refMax);
   const delta = round(input.value - band.mean, dp);
   const sign = delta > 0 ? '+' : delta < 0 ? '−' : '';

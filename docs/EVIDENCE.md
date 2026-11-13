@@ -8,9 +8,9 @@ Evidence grades: **A** physics or a published standard; **B** real data from a s
 
 | Item | Value | Source | Grade | Limits |
 |---|---|---|---|---|
-| Personal baseline band, method | Lowest to highest pre-flight value, widened on each side | Team design choice. No published self-check band for haemoglobin in spaceflight was found | None | Placeholder until our clinicians choose a method (CLINICIAN_REVIEW.md, CR-02) |
-| Band margin | 5% of the pre-flight mean | Invented for the build so the journey could be shown | None | A demo parameter, not a clinical threshold. Shown on screen as "Placeholder rule" with confidence Low |
-| Tier logic | Inside band: Self-manage. Outside band, inside laboratory range: Crew medic. Outside both: Urgent | Team design choice | None | Placeholder. A single reading can raise a tier; whether a repeat reading should be required first is a clinician decision (CR-12) |
+| Personal baseline band, method | The person's own pre-flight mean, plus or minus 2 standard deviations of within-person variation | Team design choice. The "mean plus or minus 2 standard deviations" form is a common statistical convention for an expected range | C | Not a clinical threshold. Awaits clinician review (CLINICIAN_REVIEW.md, CR-02) |
+| Within-person variation | Haemoglobin 0.60 g/dL; haematocrit 1.51%; red cells 0.19 million/µL; white cells 1.26 thousand/µL | Computed by `scripts/fetch_osd569.py` from NASA OSDR, OSD-569: pooled standard deviation of each crew member's three pre-flight draws | B | Four people, three draws each, on Earth before a three-day flight. Variation in flight may differ |
+| Tier logic | Inside band: Self-manage. Outside band, inside laboratory range: Crew medic. Outside both: Urgent | Team design choice | None | Placeholder. One reading can raise a tier; the result is marked "one reading so far" until a second reading agrees. Whether a second reading should be required first is a clinician decision (CR-12) |
 | Laboratory reference range, haemoglobin | 13.2 to 17.1 g/dL (male crew), 11.7 to 15.5 g/dL (female crew) | As reported by the laboratory in NASA OSDR, OSD-569 (LSDS-7) | D | An Earth laboratory range. Not tested for in-flight use |
 | Laboratory reference ranges, other blood measures | Haematocrit 38.5 to 50% (male), 35 to 45% (female); red cells 4.2 to 5.8 (male), 3.8 to 5.1 (female) million/µL; white cells 3.8 to 10.8 thousand/µL | As reported by the laboratory in NASA OSDR, OSD-569 (LSDS-7) | D | Earth laboratory ranges. Not tested for in-flight use |
 | Real crew blood counts | Four crew, three draws before launch, four after return | NASA OSDR, OSD-569, Inspiration4 | B | Four people, a three-day mission, no in-flight draws. Shown as pre-flight and post-flight only |
@@ -31,7 +31,7 @@ On the "Real crew data" screen, one crew member's haemoglobin sat below the labo
 ## Known limits
 
 - Every tiering rule and every line of advice is a placeholder until a clinician on the team signs it off. The app shows this on screen and shows no review badge.
-- A baseline built from three draws is a small sample. Normal day-to-day variation within one person is not modelled.
+- A baseline built from three draws is a small sample. Normal variation within one person is estimated from only four crew members' pre-flight draws.
 - No space-specific alert bands were found in published sources for haemoglobin, heart rate, blood pressure, oxygen saturation or temperature. Any such band is a team decision.
 - Complete blood counts are not a routine in-flight self-measurement today. The demo indicator was chosen because it is in the open NASA dataset, pending the clinicians' choice (CR-01).
 - Synthetic results are never evidence of clinical accuracy.

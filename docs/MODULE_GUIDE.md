@@ -14,6 +14,7 @@ Everything that reads or changes the record goes through `src/core/`. Import fro
 | `recordReading(state, seed, rule, { crewId, indicatorId, value, at })` | Saves a reading; returns the new state, the reading and its assessment |
 | `latestReading(state, crewId, indicatorId)` | The most recent saved reading |
 | `history(state, seed, crewId, indicatorId)` | Baseline, earlier mission values and saved readings |
+| `confirmation(state, reading)` | Whether a raised result has been confirmed by a second reading |
 | `toggleStep(state, readingId, step)` | Ticks or unticks a "meanwhile" step |
 | `toggleSymptom(state, crewId, label, at)` | Logs or removes a one-tap symptom |
 | `sendCase(state, { readingId, settingId, at })` | Queues one case per reading for the next link |

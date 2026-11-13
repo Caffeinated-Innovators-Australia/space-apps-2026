@@ -12,3 +12,4 @@
 | D-008 | 14 Nov 2026, morning | Build the case pack, the space-weather prompt (NASA DONKI) and the one-tap symptom log before drafting the project page | Team lead |
 | D-009 | 14 Nov 2026, morning | After the hour-1 judge panel (52%): add the place selector with an Earth mode, the evidence file and the challenge-to-screen map; clinician items stay open | Team lead |
 | D-010 | 14 Nov 2026, morning | Build a mission-ready foundation: on-device storage, crew profiles, more indicators, store-and-forward outbox, command-line tool, agent page, road-to-flight page. No server. No claim of flight readiness | Team lead |
+| D-011 | 14 Nov 2026, morning | After the round 2 judge panel (60%): replace the invented 5% margin with a band width computed from real OSD-569 crew variation; mark raised results as confirmed or unconfirmed; assemble a draft demo video. Clinician items stay open | Team lead |

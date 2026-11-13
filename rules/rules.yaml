@@ -8,26 +8,28 @@ version: "0.1"
 rules:
   - id: PB-01
     name: Personal baseline band
-    # The band is the lowest to highest pre-flight value, widened on each side by
-    # margin_percent of the pre-flight mean. The margin is a placeholder (CR-02).
+    # The band is the person's own pre-flight mean, plus or minus k standard deviations of
+    # within-person variation. The standard deviation comes from real crew data: the pooled
+    # variation of pre-flight draws in NASA OSDR, OSD-569 (four crew, three draws each).
+    # k = 2 is the usual statistical convention, not a clinical decision (CR-02).
     band:
-      method: baseline-range
-      margin_percent: 5
-    source: "Placeholder rule, awaiting clinician review. Laboratory reference range as reported in NASA OSDR, OSD-569 (LSDS-7)."
+      method: baseline-mean-sd
+      k: 2
+    source: "Placeholder rule, awaiting clinician review. Band width from within-person variation in NASA OSDR, OSD-569 pre-flight draws; laboratory reference range as reported in OSD-569 (LSDS-7)."
     confidence: Low
     signed_off_by: placeholder
     tiers:
       green:
         when: inside_band
         title: "{region}: within your baseline"
-        why: "Your {indicator} is {value} {unit}. That is inside your own pre-flight range of {bandLow} to {bandHigh} {unit}."
+        why: "Your {indicator} is {value} {unit}. That is inside your own expected range of {bandLow} to {bandHigh} {unit}."
         steps:
           - "Log the reading."
           - "Repeat at your next scheduled check."
       amber:
         when: outside_band_inside_reference
         title: "{region}: change from your baseline"
-        why: "Your {indicator} is {value} {unit}. That is {direction} than your own pre-flight range of {bandLow} to {bandHigh} {unit}. It is still inside the laboratory reference range of {refMin} to {refMax} {unit}."
+        why: "Your {indicator} is {value} {unit}. That is {direction} than your own expected range of {bandLow} to {bandHigh} {unit}. It is still inside the laboratory reference range of {refMin} to {refMax} {unit}."
         steps:
           - "Repeat the reading to confirm."
           - "Tell your crew medic."
@@ -35,7 +37,7 @@ rules:
       red:
         when: outside_band_outside_reference
         title: "{region}: large change from your baseline"
-        why: "Your {indicator} is {value} {unit}. That is {direction} than your own pre-flight range of {bandLow} to {bandHigh} {unit}, and outside the laboratory reference range of {refMin} to {refMax} {unit}."
+        why: "Your {indicator} is {value} {unit}. That is {direction} than your own expected range of {bandLow} to {bandHigh} {unit}, and outside the laboratory reference range of {refMin} to {refMax} {unit}."
         steps:
           - "Tell your crew medic now."
           - "Repeat the reading to confirm."

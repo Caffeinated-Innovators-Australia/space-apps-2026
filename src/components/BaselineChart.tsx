@@ -59,7 +59,7 @@ export function BaselineChart({ points, band, refMin, refMax, unit, dp = 1, titl
   );
 }
 
-export function ChartLegend({ bandLabel = 'Own pre-flight range' }: { bandLabel?: string }) {
+export function ChartLegend({ bandLabel = 'Own expected range' }: { bandLabel?: string }) {
   return (
     <div className="legend">
       <span><i className="sw-band" /> {bandLabel}</span>

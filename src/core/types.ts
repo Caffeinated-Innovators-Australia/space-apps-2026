@@ -13,6 +13,9 @@ export interface Indicator {
   /** Laboratory reference range by sex, as reported in the source file. */
   ref: Record<'F' | 'M', { min: number; max: number }>;
   refSource: string;
+  /** Pooled within-person standard deviation of pre-flight draws in the real crew data. */
+  withinPersonSd: number;
+  variationSource: string;
   whyCheck: string;
   howMeasured: string;
 }

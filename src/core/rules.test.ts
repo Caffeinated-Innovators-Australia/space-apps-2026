@@ -4,7 +4,7 @@ import { assess, parseRules, personalBand, tierFor } from './rules.ts';
 
 const text = readFileSync('rules/rules.yaml', 'utf8');
 const rule = parseRules(text)[0];
-const base = { region: 'Blood', indicator: 'Haemoglobin', unit: 'g/dL', baseline: [14.6, 14.9, 14.7], refMin: 13.2, refMax: 17.1 };
+const base = { region: 'Blood', indicator: 'Haemoglobin', unit: 'g/dL', baseline: [14.6, 14.9, 14.7], withinPersonSd: 0.601, refMin: 13.2, refMax: 17.1 };
 
 describe('rules file', () => {
   it('loads and every tier has steps', () => {
@@ -19,10 +19,14 @@ describe('rules file', () => {
 });
 
 describe('tiering (AT-03)', () => {
-  it('builds the personal band from the baseline', () => {
-    const b = personalBand([14.6, 14.9, 14.7], 5);
-    expect(b.low).toBeCloseTo(13.863, 2);
-    expect(b.high).toBeCloseTo(15.637, 2);
+  it('builds the personal band from the baseline mean and within-person variation', () => {
+    const b = personalBand([14.6, 14.9, 14.7], 2, 0.601);
+    expect(b.mean).toBeCloseTo(14.733, 2);
+    expect(b.low).toBeCloseTo(13.531, 2);
+    expect(b.high).toBeCloseTo(15.935, 2);
+  });
+  it('refuses an indicator with no variation figure', () => {
+    expect(() => personalBand([14.6], 2, 0)).toThrow(/variation/);
   });
   it('sorts one reading into each tier', () => {
     expect(assess(rule, { ...base, value: 14.4 }).tier).toBe('green');

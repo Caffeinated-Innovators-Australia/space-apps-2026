@@ -4,6 +4,29 @@
  "link": "https://osdr.nasa.gov/bio/repo/data/studies/OSD-569",
  "synthetic": false,
  "note": "Real crew data. Three draws before launch (L-) and four after return (R+). No in-flight draws. Reference ranges are the laboratory ranges reported in the source file.",
+ "variation": {
+  "Haemoglobin": {
+   "pooledSd": 0.601,
+   "crew": 4,
+   "draws": 12
+  },
+  "White blood cell count": {
+   "pooledSd": 1.256,
+   "crew": 4,
+   "draws": 12
+  },
+  "Red blood cell count": {
+   "pooledSd": 0.186,
+   "crew": 4,
+   "draws": 12
+  },
+  "Haematocrit": {
+   "pooledSd": 1.514,
+   "crew": 4,
+   "draws": 12
+  }
+ },
+ "variationNote": "Pooled within-person standard deviation of pre-flight draws. Four crew, three draws each: a small sample.",
  "timepoints": [
   "L-92",
   "L-44",

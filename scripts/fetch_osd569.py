@@ -42,6 +42,20 @@ def main(out_path):
                             "phase": "pre-flight" if r["TEST_DATE"].startswith("L") else "post-flight"})
     for s in series.values():
         s["points"].sort(key=lambda p: ORDER.index(p["t"]))
+    # Within-person variation before launch: pooled standard deviation of each crew member's
+    # three pre-flight draws, per analyte. Used by the tiering rule as the width of the personal band.
+    variation = {}
+    for name in ANALYTES.values():
+        variances, draws = [], 0
+        for s in series.values():
+            if s["analyte"] != name:
+                continue
+            pre = [p["value"] for p in s["points"] if p["phase"] == "pre-flight"]
+            if len(pre) >= 2:
+                m = sum(pre) / len(pre)
+                variances.append(sum((v - m) ** 2 for v in pre) / (len(pre) - 1))
+                draws += len(pre)
+        variation[name] = {"pooledSd": round((sum(variances) / len(variances)) ** 0.5, 3), "crew": len(variances), "draws": draws}
     out = {
         "source": "NASA Open Science Data Repository (OSDR), OSD-569, Inspiration4, Complete Blood Count (LSDS-7)",
         "credit": "Data: NASA OSDR, OSD-569",
@@ -49,6 +63,8 @@ def main(out_path):
         "synthetic": False,
         "note": "Real crew data. Three draws before launch (L-) and four after return (R+). No in-flight draws. "
                 "Reference ranges are the laboratory ranges reported in the source file.",
+        "variation": variation,
+        "variationNote": "Pooled within-person standard deviation of pre-flight draws. Four crew, three draws each: a small sample.",
         "timepoints": ORDER,
         "series": sorted(series.values(), key=lambda s: (s["subject"], s["analyte"])),
     }
