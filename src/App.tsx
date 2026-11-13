@@ -124,7 +124,7 @@ interface Shared { state: State; commit: (s: State) => void; ui: (p: Partial<Sta
 function Context({ setting, crewId }: { setting: Setting; crewId: string }) {
   return (
     <div className="context">
-      <span className="kicker">{crewById(seed, crewId).name} · {setting.kicker}</span>
+      <span className="kicker">{setting.id === 'earth' ? setting.kicker : `${crewById(seed, crewId).name} · ${setting.kicker}`}</span>
       <SyntheticTag />
     </div>
   );

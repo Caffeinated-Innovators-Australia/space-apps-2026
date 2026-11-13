@@ -32,4 +32,5 @@ All five challenge resources are linked inside the app, on the reading screen.
 
 ## Other
 - Apache License 2.0 text. https://www.apache.org/licenses/LICENSE-2.0
+- The draft demo video (`pitch/demo-draft.mp4`) is a screen capture of our own app with text cards set in IBM Plex. No third-party footage, music or images.
 - The body figure, icons and charts are drawn in code by the team (AI-assisted, see AI_USE.md). No third-party images are used.

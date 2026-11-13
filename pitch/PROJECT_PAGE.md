@@ -12,7 +12,9 @@ On the way to Mars, a question to Earth's doctors can take up to 45 minutes to c
 
 ## Link to project demo
 
-[30-second video, to be recorded. Must be 30 seconds or less.]
+Draft cut (29.1 seconds, no sound): https://github.com/Caffeinated-Innovators-Australia/space-apps-2026/blob/main/pitch/demo-draft.mp4
+
+[Team: replace with the final hosted video, 30 seconds or less, with our doctor's voice. See pitch/VIDEO_PLAN.md.]
 
 ## Link to final project
 
