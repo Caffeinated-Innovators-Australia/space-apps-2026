@@ -70,7 +70,7 @@ describe('kidney stone pathway (KS-01)', () => {
     const c = caseContent(s, seed, rules, sent.pack.id);
     expect(c.kind).toBe('symptom-pathway');
     if (c.kind !== 'symptom-pathway') return;
-    expect(c.assessment.tier).toBe('amber');
+    expect(c.assessment.tier).toBe('red');
     expect(c.painScores).toEqual([{ score: 6, outOf: 10, at: new Date(2500).toISOString() }]);
     expect(c.symptoms.map((x) => x.label)).toEqual(['Pain in side or lower back', 'Nauseous']);
     expect(c.stepsDone).toEqual(['Tell your crew medic.']);
@@ -101,11 +101,11 @@ describe('kidney stone pathway (KS-01)', () => {
   it('logs a urine strip result with the case and never lets it change the tier', () => {
     let s = log(initialState(seed), 'crew-4', 'Pain in side or lower back', 'Nauseous');
     const before = one(s).level;
-    s = logPathwayTest(s, rules, { crewId: 'crew-4', pathwayId: 'KS-01', testId: 'urine-strip', result: 'Blood seen' });
+    s = logPathwayTest(s, rules, { crewId: 'crew-4', pathwayId: 'KS-01', testId: 'urine-strip', result: 'Present' });
     expect(one(s).level).toBe(before);
     const sent = sendPathwayCase(s, seed, rules, { crewId: 'crew-4', pathwayId: 'KS-01', settingId: 'mars-18', at: 5 });
     const c = caseContent(sent.state, seed, rules, sent.pack.id);
-    expect(c.kind === 'symptom-pathway' && c.tests[0].result).toBe('Blood seen');
+    expect(c.kind === 'symptom-pathway' && c.tests[0].result).toBe('Present');
     expect(() => logPathwayTest(s, rules, { crewId: 'crew-4', pathwayId: 'KS-01', testId: 'urine-strip', result: 'Maybe' })).toThrow();
   });
 });

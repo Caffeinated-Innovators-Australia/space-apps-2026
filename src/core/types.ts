@@ -17,6 +17,8 @@ export interface Indicator {
   weekDay?: number;
   /** How well-established this signal is, as measured in this app. An experimental signal can raise amber but never red alone. */
   evidence?: 'established' | 'emerging' | 'experimental';
+  /** The highest tier this signal may raise on its own. Set by clinicians for signals that should only ever ask the crew to watch. */
+  maxTier?: 'amber';
   /** True for a reading of the shared habitat, such as cabin air. It is worded as the cabin's, never as the person's own. */
   environment?: boolean;
   /** 'cumulative' marks a running total, such as radiation dose, which is judged against a limit and not a personal band. */
@@ -72,6 +74,14 @@ export interface Setting {
   adviceSeconds?: number;
   /** How far away help is, in words: the one-way delay to Earth, or the distance to the nearest doctor. */
   away?: string;
+  /** Location profile: which place this is, its gravity as a fraction of Earth's, and its cabin atmosphere. */
+  profile?: 'iss' | 'transit' | 'moon' | 'mars' | 'earth';
+  g?: number;
+  cabinKPa?: number;
+  o2Pct?: number;
+  gravityBand?: 'zero' | 'lunar' | 'martian' | 'earth';
+  /** Short facts for the status strip, such as the one-way delay to Earth. */
+  strip?: string[];
 }
 
 export interface TimelineBlock { start: string; end: string; label: string; critical: boolean }
@@ -98,6 +108,10 @@ export interface Seed {
   privacy?: { status: string; rows: { what: string; you: string; medic: string; surgeon: string; crew: string }[] };
   symptomZones?: { status: string; zones: { id: string; label: string; symptoms: string[] }[] };
   evidenceStatus?: string;
+  /** Example sets of vital signs for the demo story. SYNTHETIC. */
+  demoVitals?: { id: string; label: string; values: VitalSigns }[];
+  /** The weekly crew check-in: its items and who may see the answers. */
+  crewCheck?: { status: string; label: string; visibleTo: string; scale: string; items: string[] };
 }
 
 export interface Reading {
@@ -111,6 +125,13 @@ export interface Reading {
   ruleId: string;
   stepsDone: string[];
 }
+
+/** One set of vital signs. Any value may be missing. Oxygen saturation never raises an alert on its own. */
+export interface VitalSigns { temp?: number; hr?: number; sbp?: number; dbp?: number; rr?: number; spo2?: number }
+export interface VitalsEntry { id: string; crewId: string; at: number; values: VitalSigns }
+
+/** One weekly crew check-in. Answers are 1 to 5, in the order of the items. Never shown to crewmates or the crew medic. */
+export interface CrewCheck { crewId: string; week: number; answers: number[]; at: number }
 
 export interface Symptom { crewId: string; label: string; at: number }
 
@@ -156,7 +177,15 @@ export interface State {
   replies?: EarthReply[];
   emergencies?: EmergencyRun[];
   wounds?: Wound[];
-  ui: { crewId: string; settingId: string; theme: string; doseLogged: boolean; clock: string; slipped: boolean; /** Real time at which the mission clock was last set, so logged times read as mission time. */ clockSetAt?: number; /** True while there is no link to Earth, for example at solar conjunction. Cases queue until it returns. */ linkDown?: boolean; /** Demo only: milliseconds the clock has been skipped ahead. */ skipMs?: number };
+  vitals?: VitalsEntry[];
+  /** Guided ultrasound steps saved, keyed by crew member. No image is kept. */
+  ultrasound?: Record<string, { stepsDone: string[]; at: number }>;
+  crewChecks?: CrewCheck[];
+  /** Detail of each reaction check, keyed by reading id: the median, and the lapses over the lapse time. */
+  reactionDetail?: Record<string, { median: number; lapses: number; trials: number }>;
+  /** Alerts raised by the emergency module from vital signs, newest last. */
+  moduleAlerts?: { at: number; crewId: string; construct: number; pathway: string; reasons: string[] }[];
+  ui: { crewId: string; settingId: string; theme: string; doseLogged: boolean; clock: string; slipped: boolean; /** Real time at which the mission clock was last set, so logged times read as mission time. */ clockSetAt?: number; /** True while there is no link to Earth, for example at solar conjunction. Cases queue until it returns. */ linkDown?: boolean; /** Demo only: milliseconds the clock has been skipped ahead. */ skipMs?: number; /** Set when the place changes to one with different gravity: the old gravity band and when. */ gravityChange?: { from: string; at: number } };
 }
 
 export interface Store {

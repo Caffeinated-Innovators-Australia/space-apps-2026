@@ -15,7 +15,7 @@ export interface IsbarOptions {
   tierWord?: (t: Tier) => string;
 }
 
-const TIER_WORDS: Record<Tier, string> = { green: 'Self-manage', amber: 'Crew medic', red: 'Urgent' };
+const TIER_WORDS: Record<Tier, string> = { green: 'Nothing to do', amber: 'Watch', red: 'Act now' };
 export const NOT_A_DIAGNOSIS = 'Assessment and next steps only. Not a diagnosis.';
 export const REQUEST_LINE = 'Please review and advise on next steps.';
 

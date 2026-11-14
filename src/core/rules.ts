@@ -34,6 +34,8 @@ export interface PathwayRule extends Signed {
   background: { text: string; source: string; link: string }[];
   early?: Signed & { id: string; indicator: string; count: number; shift_sd: number; title: string; why: string; steps: string[] };
   tests: { id: string; label: string; options: string[] }[];
+  /** A plain line shown when the test results match exactly. Clinician wording; a placeholder until signed off. */
+  test_notes?: { when: Record<string, string>; text: string }[];
 }
 
 /** The whole rules file, checked. */
@@ -128,6 +130,7 @@ export function parseRules(text: string): RuleFile {
     w.context = w.context ?? [];
     w.background = w.background ?? [];
     w.tests = w.tests ?? [];
+    w.test_notes = w.test_notes ?? [];
     if (w.early) {
       signed(w.early, w.early.id ?? `${id} early warning`);
       if (!w.early.indicator || !(Number(w.early.count) >= 2) || !(Number(w.early.shift_sd) > 0) || !w.early.title || !w.early.why || !Array.isArray(w.early.steps) || w.early.steps.length === 0) throw new Error(`Pathway ${id}: the early warning needs an indicator, a count of 2 or more, a shift, a title, an explanation and at least one step.`);

@@ -139,7 +139,7 @@ for i in INDICATORS:
 
 # name, sex (only to pick the laboratory range), and each person's own normal: mean and day-to-day spread
 CREW = [
-    ("crew-1", "Jo", "F", {"sleep": (7.2, 0.42), "resting-hr": (58, 2.6), "mood": (4.1, 0.55), "reaction": (262, 13), "haemoglobin": (13.2, 0.2), "bp-sys": (112, 4), "bp-dia": (70, 3), "vision": (7, 0), "exercise": (96, 6), "grip": (31.0, 1.2), "body-mass": (62.0, 0.4), "fluid": (2.4, 0.25), "energy": (2350, 160)}),
+    ("crew-1", "Jo", "F", {"sleep": (7.2, 0.42), "resting-hr": (58, 2.6), "mood": (4.1, 0.55), "reaction": (262, 13), "haemoglobin": (13.2, 0.2), "bp-sys": (112, 4), "bp-dia": (70, 3), "vision": (7, 0), "exercise": (96, 6), "grip": (31.0, 1.2), "body-mass": (62.0, 0.4), "fluid": (2.6, 0.12), "energy": (2350, 160)}),
     ("crew-2", "Crew member 2", "M", {"sleep": (6.9, 0.45), "resting-hr": (64, 3.0), "mood": (3.9, 0.6), "reaction": (275, 15), "haemoglobin": (14.7, 0.2), "bp-sys": (121, 5), "bp-dia": (78, 4), "vision": (7, 0), "exercise": (94, 7), "grip": (46.0, 1.6), "body-mass": (81.5, 0.5), "fluid": (2.7, 0.3), "energy": (2900, 190)}),
     ("crew-3", "Crew member 3", "M", {"sleep": (7.4, 0.40), "resting-hr": (55, 2.4), "mood": (4.2, 0.5), "reaction": (255, 12), "haemoglobin": (16.5, 0.2), "bp-sys": (118, 4), "bp-dia": (74, 3), "vision": (7, 0), "exercise": (98, 5), "grip": (49.0, 1.5), "body-mass": (84.0, 0.5), "fluid": (2.9, 0.3), "energy": (3000, 180)}),
     ("crew-4", "Crew member 4", "F", {"sleep": (7.0, 0.48), "resting-hr": (61, 2.8), "mood": (4.0, 0.6), "reaction": (270, 14), "haemoglobin": (12.3, 0.2), "bp-sys": (108, 4), "bp-dia": (68, 3), "vision": (7, 0), "exercise": (95, 6), "grip": (29.0, 1.1), "body-mass": (58.5, 0.4), "fluid": (2.3, 0.25), "energy": (2250, 150)}),
@@ -198,8 +198,8 @@ for cid, name, sex, normal in CREW:
         # The second thread of Jo's story, for the kidney stone pathway: fluid intake has been low for days,
         # each day still inside the personal band.
         fb, fs = statistics.mean(baseline["fluid"]), statistics.stdev(baseline["fluid"])
-        mission["fluid"][-7:] = [round(fb - fs * k, 1) for k in (0.6, 0.9, 1.1, 1.25, 1.35, 1.45, 1.5)]
-        JO_FLUID_TODAY = round(fb - fs * 1.5, 1)
+        mission["fluid"][-3:] = [1.3, 1.2, 1.1]  # demo values set by the clinical lead (build pack v3.3), placeholders
+        JO_FLUID_TODAY = 1.4
     total, dose = 0.0, []
     for _ in range(DAYS):
         total += max(0.4, rng.gauss(0.66, 0.05))
@@ -221,6 +221,9 @@ for level, ids in EVIDENCE.items():
     for ind in INDICATORS:
         if ind["id"] in ids:
             ind["evidence"] = level
+for ind in INDICATORS:
+    if ind["id"] in ("fluid", "mood"):
+        ind["maxTier"] = "amber"  # clinical lead, build pack v3.3: these can raise Watch, never Act now, on their own
 AWAY = {"mars-base": "22 min 18 s", "mars-18": "18 min", "transit": "3 min 2 s", "moon": "1.3 s", "station": "under a second", "earth": "640 km"}
 
 seed = {
@@ -233,38 +236,37 @@ seed = {
     "crew": crew_out,
     "today": {"crew-1": {"sleep": 6.2, "resting-hr": 59, "mood": 4, "reaction": 318, "cabin-co2": 3.4, "haemoglobin": 13.1, "vision": 7, "exercise": 90, "fluid": JO_FLUID_TODAY, "energy": 2300, "bp-sys": 113, "bp-dia": 71, "grip": 30.6, "body-mass": 61.7}},
     "settings": [
-        {"id": "mars-base", "label": "Mars, 22 min", "kicker": "Mars surface base · Mission day 214", "replySeconds": 2676,
-         "gapLabel": "Earth reply possible in", "nowLabel": "Earth reply possible now", "detail": "One-way delay 22 min 18 s, with Mars at its farthest",
-         "basis": "Light-time arithmetic: about 401 million km at the speed of light, there and back. Relay and processing time would add to this.",
-         "advice": "No one on Earth can answer for about 45 minutes. Start the steps now. Do not wait.", "scenarioSynthetic": False,
-         "risks": "Partial gravity, dust, long-term radiation, behavioural health", "twist": "Months of trend data; a reply takes 6 to 45 minutes"},
-        {"id": "mars-18", "label": "Mars, 18 min", "kicker": "Mars surface base · Mission day 214", "replySeconds": 2160,
+        {"id": "mars-18", "profile": "mars", "g": 0.38, "cabinKPa": 56.5, "o2Pct": 34, "gravityBand": "martian", "strip": ["Earth 18 min"], "label": "Mars, 18 min", "kicker": "Mars surface base · Mission day 214", "replySeconds": 2160,
          "gapLabel": "Earth reply possible in", "nowLabel": "Earth reply possible now", "detail": "One-way delay 18 min, with Mars about 324 million km away",
          "basis": "Light-time arithmetic: about 324 million km at the speed of light, there and back. Relay and processing time would add to this.",
          "advice": "No one on Earth can answer for about 36 minutes. Start the steps now. Do not wait.", "scenarioSynthetic": False,
          "risks": "Partial gravity, dust, long-term radiation, behavioural health", "twist": "Months of trend data; a reply takes 6 to 45 minutes"},
-        {"id": "transit", "label": "In transit", "kicker": "Spacecraft in transit to Mars · Mission day 214", "replySeconds": 364,
+        {"id": "mars-base", "profile": "mars", "g": 0.38, "cabinKPa": 56.5, "o2Pct": 34, "gravityBand": "martian", "strip": ["Earth 22 min"], "label": "Mars, 22 min", "kicker": "Mars surface base · Mission day 214", "replySeconds": 2676,
+         "gapLabel": "Earth reply possible in", "nowLabel": "Earth reply possible now", "detail": "One-way delay 22 min 18 s, with Mars at its farthest",
+         "basis": "Light-time arithmetic: about 401 million km at the speed of light, there and back. Relay and processing time would add to this.",
+         "advice": "No one on Earth can answer for about 45 minutes. Start the steps now. Do not wait.", "scenarioSynthetic": False,
+         "risks": "Partial gravity, dust, long-term radiation, behavioural health", "twist": "Months of trend data; a reply takes 6 to 45 minutes"},
+        {"id": "transit", "profile": "transit", "g": 0, "cabinKPa": 101.3, "o2Pct": 21, "gravityBand": "zero", "strip": ["Earth 3 min"], "label": "In transit", "kicker": "Spacecraft in transit to Mars · Mission day 214", "replySeconds": 364,
          "gapLabel": "Earth reply possible in", "nowLabel": "Earth reply possible now", "detail": "One-way delay 3 min 2 s, at Mars-closest distance",
          "basis": "Light-time arithmetic: about 54.6 million km at the speed of light, there and back. The delay grows as the spacecraft travels.",
          "advice": "No one on Earth can answer for about 6 minutes. Start the steps now.", "scenarioSynthetic": False,
          "risks": "Radiation, isolation, confinement", "twist": "The delay grows every day, so the crew must act on its own"},
-        {"id": "moon", "label": "Moon base", "kicker": "Lunar surface base · Mission day 214", "replySeconds": 2.6,
+        {"id": "moon", "profile": "moon", "g": 0.16, "cabinKPa": 56.5, "o2Pct": 34, "gravityBand": "lunar", "strip": ["Earth 1.3 s"], "label": "Moon base", "kicker": "Lunar surface base · Mission day 214", "replySeconds": 2.6,
          "gapLabel": "Earth reply possible in", "nowLabel": "Earth can answer now", "detail": "One-way delay 1.3 s",
          "basis": "Light-time arithmetic: about 384,400 km at the speed of light, there and back.",
          "advice": "Earth can answer within seconds. Call the flight surgeon and do the steps together.", "scenarioSynthetic": False,
          "risks": "Partial gravity, dust, radiation", "twist": "Ground support within seconds"},
-        {"id": "station", "label": "Space station", "kicker": "Space station, low Earth orbit · Mission day 214", "replySeconds": 0.5,
+        {"id": "station", "profile": "iss", "g": 0, "cabinKPa": 101.3, "o2Pct": 21, "gravityBand": "zero", "strip": ["Earth: real time"], "label": "Space station", "kicker": "Space station, low Earth orbit · Mission day 214", "replySeconds": 0.5,
          "gapLabel": "Earth reply possible in", "nowLabel": "Earth can answer now", "detail": "Real-time link while in coverage",
          "basis": "In low Earth orbit the signal delay is a fraction of a second.",
          "advice": "Ground support is in real time. Call the flight surgeon now.", "scenarioSynthetic": False,
          "risks": "Bone and muscle loss, eye changes, carbon dioxide, sleep", "twist": "Ground support is in real time"},
-        {"id": "earth", "label": "Remote Australia", "kicker": "Sam, station hand · Remote desert station, Australia · 640 km from the nearest doctor", "replySeconds": 3600,
-         "gapLabel": "Retrieval team can reach you in", "nowLabel": "Retrieval team can reach you now", "detail": "Aircraft grounded by a dust storm. Nearest doctor: 640 km, about 7 hours by road",
-         "basis": "SYNTHETIC scenario for a remote desert station: a dust storm has grounded aircraft, the nearest doctor is 640 km away, and a retrieval team can fly in about an hour.",
+        {"id": "earth", "profile": "earth", "g": 1, "cabinKPa": 101.3, "o2Pct": 21, "gravityBand": "earth", "strip": ["Satellite signal", "Nearest hospital 640 km", "Aircraft grounded"], "label": "Remote Australia", "kicker": "Sam, station hand · Simpson Desert station, Australia · 640 km from the nearest hospital", "replySeconds": 3600,
+         "gapLabel": "Retrieval team can reach you in", "nowLabel": "Retrieval team can reach you now", "detail": "Aircraft grounded: dust storm. Nearest hospital: 640 km",
+         "basis": "SYNTHETIC scenario for a remote desert station: a dust storm has grounded aircraft, the nearest hospital is 640 km away, and a retrieval team can fly in about an hour.",
          "advice": "Dust has grounded the aircraft. A doctor can talk you through this by phone now. Start the steps.", "scenarioSynthetic": True, "habitat": False, "adviceSeconds": 0,
          "risks": "Distance from care, heat, isolation", "twist": "A doctor by phone now; aircraft grounded by dust, hands-on help an hour away",
-         "words": {"your crew medic": "your remote area nurse", "the commander": "the station manager", "Earth": "the on-call doctor", "pre-flight": "usual", "Before launch": "Before this season", "This mission": "This season", "cabin": "room", "flight surgeon": "on-call doctor"},
-         "tierWords": {"amber": "Remote nurse"}},
+         "words": {"your crew medic": "your remote area nurse", "the commander": "the station manager", "Earth": "the on-call doctor", "pre-flight": "usual", "Before launch": "Before this season", "This mission": "This season", "cabin": "room", "flight surgeon": "on-call doctor"}},
     ],
     "settingStatus": "Draft guidance lines, environment profiles and Earth-mode wording, awaiting clinician review (CR-11). The rules do not yet change by environment; that is a clinician decision.",
     # A mock crew day. Critical operations never carry a prompt.
@@ -282,16 +284,26 @@ seed = {
     "clockOptions": ["06:45", "09:30", "12:10", "21:10"],
     "slipMinutes": 45,
     "radiationDays": event_days,
-    "symptoms": {"status": "Placeholder list, awaiting clinician review (CR-10)", "options": ["Headache", "Tired", "Dizzy on standing", "Nauseous", "Blurred vision", "Rash", "Fever or chills", "Sore throat", "Cut slow to heal", "Cold sore", "Low mood", "Pain in side or lower back", "Blood in urine", "Pain passing urine", "Cannot pass urine"]},
+    "symptoms": {"status": "Placeholder list, awaiting clinician review (CR-10)", "options": ["Comes in waves", "Confused", "Headache", "Tired", "Dizzy on standing", "Nauseous", "Blurred vision", "Rash", "Fever or chills", "Sore throat", "Cut slow to heal", "Cold sore", "Low mood", "Pain in side or lower back", "Blood in urine", "Pain passing urine", "Cannot pass urine"]},
     "symptomZones": {"status": "Placeholder grouping, awaiting clinician review (CR-10)", "zones": [
         {"id": "head", "label": "Head and mind", "symptoms": ["Headache", "Dizzy on standing", "Low mood", "Tired"]},
         {"id": "eyes", "label": "Eyes", "symptoms": ["Blurred vision"]},
         {"id": "throat", "label": "Mouth and throat", "symptoms": ["Sore throat", "Cold sore"]},
         {"id": "stomach", "label": "Stomach", "symptoms": ["Nauseous"]},
-        {"id": "kidneys", "label": "Kidneys and urine", "symptoms": ["Pain in side or lower back", "Blood in urine", "Pain passing urine", "Cannot pass urine"]},
+        {"id": "kidneys", "label": "Kidneys and urine", "symptoms": ["Pain in side or lower back", "Comes in waves", "Blood in urine", "Pain passing urine", "Cannot pass urine"]},
         {"id": "skin", "label": "Skin", "symptoms": ["Rash", "Cut slow to heal"]},
-        {"id": "whole", "label": "Whole body", "symptoms": ["Fever or chills", "Tired"]},
+        {"id": "whole", "label": "Whole body", "symptoms": ["Fever or chills", "Confused", "Tired"]},
     ]},
+    # Two sets of vital signs for the demo story, set by the clinical lead (build pack v3.3). SYNTHETIC placeholders.
+    "demoVitals": [
+        {"id": "stone", "label": "Day 214, 15:00", "values": {"temp": 37.1, "hr": 96, "sbp": 138, "dbp": 84, "rr": 18, "spo2": 98}},
+        {"id": "infected", "label": "Day 214, 22:30", "values": {"temp": 38.6, "hr": 118, "sbp": 94, "dbp": 56, "rr": 24, "spo2": 96}},
+    ],
+    # Weekly crew check-in. The five items and the label are the clinical lead's (build pack v3.3).
+    "crewCheck": {"status": "Placeholder items, awaiting clinician review", "label": "Modelled on NASA's APEX team constructs. Not a validated scale.", "visibleTo": "the flight psychologist only",
+                  "scale": "1 strongly disagree to 5 strongly agree",
+                  "items": ["The crew worked well together this week.", "I felt able to raise a problem or mistake without it being held against me.", "Disagreements this week were sorted out.",
+                            "Shared living (noise, mess, space, schedules) went smoothly.", "I had someone to talk to when I needed it."]},
     "radiationPrompt": {"status": "Placeholder step, awaiting clinician review (CR-09)", "step": "Log your personal dosimeter reading."},
     "privacy": {
         "status": "Draft policy for the team to confirm (CR-13)",

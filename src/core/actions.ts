@@ -124,7 +124,14 @@ export function assessValue(seed: Seed, rules: RuleFile, crewId: string, indicat
     a.tier = 'amber';
     a.title = rules.titles.amber.replace('{region}', ind.region);
     a.steps = rules.steps.amber;
-    a.why = `${a.why} This check is experimental, so by itself it is never rated Urgent.`;
+    a.why = `${a.why} This check is experimental, so by itself it is never rated Act now.`;
+  }
+  // A signal the clinicians have capped can ask the crew to watch, never to act now, on its own.
+  if (ind.maxTier === 'amber' && a.tier === 'red') {
+    a.tier = 'amber';
+    a.title = rules.titles.amber.replace('{region}', ind.region);
+    a.steps = rules.steps.amber;
+    a.why = `${a.why} By itself this signal is never rated Act now.`;
   }
   const own = ind.steps?.[a.tier];
   return own ? { ...a, steps: own } : a;

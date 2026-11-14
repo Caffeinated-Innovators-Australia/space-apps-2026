@@ -15,7 +15,7 @@ import { AdvisoryPill, AlertCard, LimitArrow, More, ReadingTile, Ring, Synthetic
 import {
   acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
   fromMin, initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
-  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, togglePathwayStep, toggleStep, toggleSymptom, toMin,
+  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, toMin,
   type Assessment, type DaySummary, type Indicator, type PathwayStatus, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
 import osd from './data/osd569_cbc.json';
@@ -195,6 +195,7 @@ function StatusBar({ state, commit, rules, crewId, setting }: { state: State; co
   return (
     <div className="statusbar" role="status" aria-label="Mission time and alerts">
       <span>{noCabin ? 'Time' : 'Mission time'} <span className="time">{noCabin ? hhmmss(now) : `${String(seed.missionDay).padStart(4, '0')}/${hhmmss(now)}`}</span></span>
+      {(setting.strip ?? []).map((x) => <span key={x} className="strip-item">{x}</span>)}
       <span className="alertline">
         {top ? (
           <>
@@ -896,15 +897,21 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
             {chips(pathway.urgent)}
             <span className="placeholder">Placeholder list</span>
           </div>
-          {pathway.tests.map((t) => (
-            <div className="card" key={t.id}>
-              <h2 className="title">{t.label}</h2>
-              <div className="chips" role="group" aria-label={t.label}>
-                {t.options.map((o) => <button key={o} className="chip chip-toggle" aria-pressed={tests[t.id] === o} onClick={() => commit(logPathwayTest(state, rules, { crewId, pathwayId, testId: t.id, result: o }))}>{o}</button>)}
-              </div>
+          {pathway.tests.length > 0 && (
+            <div className="card">
+              <div className="card-head"><h2 className="title">Urine test strip</h2><SyntheticTag /></div>
+              {pathway.tests.map((t) => (
+                <div key={t.id}>
+                  <div className="caption">{t.label}</div>
+                  <div className="chips" role="group" aria-label={t.label}>
+                    {t.options.map((o) => <button key={o} className="chip chip-toggle" aria-pressed={tests[t.id] === o} onClick={() => commit(logPathwayTest(state, rules, { crewId, pathwayId, testId: t.id, result: o }))}>{o}</button>)}
+                  </div>
+                </div>
+              ))}
+              {testNote(pathway, tests) && <p className="confirm" role="note">{testNote(pathway, tests)} <span className="placeholder">Placeholder wording</span></p>}
               <p className="caption">Logged for the case. It does not change the result.</p>
             </div>
-          ))}
+          )}
           <div className="card">
             <h2 className="title">Pain now, from 0 to 10</h2>
             <div className="chips" role="group" aria-label="Pain score from 0, no pain, to 10, the worst you can imagine">

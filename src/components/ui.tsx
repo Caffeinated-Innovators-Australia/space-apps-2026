@@ -3,7 +3,7 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import type { Assessment, Tier } from '../core/rules.ts';
 
-export const TIER_WORD: Record<Tier, string> = { green: 'Self-manage', amber: 'Crew medic', red: 'Urgent' };
+export const TIER_WORD: Record<Tier, string> = { green: 'Nothing to do', amber: 'Watch', red: 'Act now' };
 
 /** Tier words can change with the setting (for example on Earth); colour and shape never do. */
 export const TierWords = createContext<Record<Tier, string>>(TIER_WORD);
@@ -11,7 +11,7 @@ export const TierWords = createContext<Record<Tier, string>>(TIER_WORD);
 export function TierShape({ tier, size = 14 }: { tier: Tier; size?: number }) {
   return (
     <svg viewBox="0 0 16 16" width={size} height={size} aria-hidden="true">
-      {tier === 'green' ? <circle cx="8" cy="8" r="6.5" /> : tier === 'amber' ? <path d="M8 1.5L15 14H1z" /> : <path d="M5.2 1h5.6L15 5.2v5.6L10.8 15H5.2L1 10.8V5.2z" />}
+      {tier === 'green' ? <circle cx="8" cy="8" r="6.5" /> : tier === 'amber' ? <path d="M8 1.5L15 14H1z" /> : <rect x="1.5" y="1.5" width="13" height="13" />}
     </svg>
   );
 }

@@ -29,6 +29,11 @@ export interface PathwayStatus {
   tests: Record<string, string>;
 }
 
+/** The clinicians' one-line note for the test results logged so far, if the results match one exactly. */
+export function testNote(pathway: PathwayRule, tests: Record<string, string>): string | undefined {
+  return (pathway.test_notes ?? []).find((n) => Object.entries(n.when).every(([id, v]) => tests[id] === v))?.text;
+}
+
 export const pathwayKey = (crewId: string, pathwayId: string) => `pathway:${crewId}:${pathwayId}`;
 
 function list(items: string[]): string {
@@ -106,7 +111,10 @@ export function pathwayStatuses(state: State, seed: Seed, rules: RuleFile, crewI
   return out.sort((a, b) => rank[b.level] - rank[a.level]);
 }
 
-export const pathwayTier = (s: PathwayStatus): Tier | undefined => (s.level === 'check' ? undefined : s.level === 'early' ? 'amber' : s.level);
+/** Three tiers: an early warning asks the crew to watch; a matched pattern is Act now, with the crew medic told. */
+export const pathwayTier = (s: PathwayStatus): Tier | undefined => (s.level === 'check' ? undefined : s.level === 'early' ? 'amber' : 'red');
+/** A matched pattern with a red-flag symptom is a life threat now: it opens emergency mode. Emergency is a mode within Act now, not a tier. */
+export const pathwayEmergency = (s: PathwayStatus): boolean => s.level === 'red';
 
 /** Whether the pathway's early-warning rule fires: the watched indicator has been low for enough logged days in a row. */
 export function earlyWarning(state: State, seed: Seed, rules: RuleFile, crewId: string, pathway: PathwayRule): { title: string; why: string } | null {

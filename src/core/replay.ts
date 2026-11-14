@@ -24,7 +24,7 @@ export function plantedChanges(seed: Seed): Planted[] {
   const days = seed.missionDay - 1;
   return [
     { crewId: 'crew-1', indicatorId: 'sleep', fromDay: days - 20, what: 'Sleep slides over three weeks' },
-    { crewId: 'crew-1', indicatorId: 'fluid', fromDay: days - 6, what: 'Fluid intake low for a week' },
+    { crewId: 'crew-1', indicatorId: 'fluid', fromDay: days - 2, what: 'Fluid intake low for three days' },
     { crewId: 'cabin', indicatorId: 'cabin-co2', fromDay: days - 6, what: 'Cabin carbon dioxide creeps up over a week' },
   ];
 }
@@ -56,7 +56,7 @@ export function replay(seed: Seed, rules: RuleFile): ReplayResult {
         });
         history.push(value);
         readings += 1;
-        const tier: Tier = ind.evidence === 'experimental' && a.tier === 'red' ? 'amber' : a.tier;
+        const tier: Tier = (ind.evidence === 'experimental' || ind.maxTier === 'amber') && a.tier === 'red' ? 'amber' : a.tier;
         const who = cabin ? 'cabin' : crew.id;
         if (isPlanted(who, ind.id, day)) {
           const f = found.find((p) => p.crewId === who && p.indicatorId === ind.id);

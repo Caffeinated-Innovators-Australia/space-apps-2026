@@ -42,7 +42,7 @@ describe('isbar', () => {
     expect(all).toContain(c.reading.indicator);
     expect(all).toContain(String(c.reading.value));
     expect(all).toContain(c.assessment.rules[0].id);
-    expect(all).toContain('Urgent');
+    expect(all).toContain('Act now');
     expect(all).toContain(`Steps done: ${c.stepsDone[0].replace(/\.$/, "")}`);
     expect(all).not.toMatch(/undefined|NaN|\[object/);
     expect(h[3].lines.at(-1)).toBe(NOT_A_DIAGNOSIS);
@@ -63,10 +63,10 @@ describe('isbar', () => {
     expect(all).toContain('Pattern to check for: Possible kidney stone');
     expect(all).toContain('Pain in side or lower back at T');
     expect(all).toContain('6 out of 10 at T');
-    expect(all).toContain('Urine test strip: blood: Not recorded');
+    expect(all).toContain('Blood: Not recorded');
     expect(all).toContain('Rule KS-01');
     expect(all).toContain('Placeholder, awaiting clinician review.');
-    expect(all).toContain('Tier: tier-amber');
+    expect(all).toContain('Tier: tier-red');
     expect(all).not.toMatch(/undefined|NaN|\[object/);
     expect(h[3].lines.at(-1)).toBe(NOT_A_DIAGNOSIS);
     expect(h[4].lines).toEqual([REQUEST_LINE]);

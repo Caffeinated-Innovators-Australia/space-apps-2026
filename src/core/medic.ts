@@ -56,7 +56,7 @@ export function crewOverview(state: State, seed: Seed, rules: RuleFile): MedicRo
       let t: Tier | null = null;
       if (p.pathwayId) {
         const s = statuses.find((x) => x.pathway.id === p.pathwayId);
-        t = s && (s.level === 'amber' || s.level === 'red') ? s.level : null;
+        t = s && (s.level === 'amber' || s.level === 'red') ? 'red' : null;
       } else {
         const r = state.readings.find((x) => x.id === p.readingId);
         t = r ? assessReading(state, seed, rules, r).tier : null;

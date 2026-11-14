@@ -82,9 +82,9 @@ pathways:
     name: "Possible kidney stone"
     region: "Kidneys and urine"
     core: ["Pain in side or lower back"]
-    supporting: ["Blood in urine", "Pain passing urine", "Nauseous"]
+    supporting: ["Comes in waves", "Blood in urine", "Pain passing urine", "Nauseous"]
     min_supporting: 1
-    urgent: ["Fever or chills", "Cannot pass urine"]
+    urgent: ["Fever or chills", "Confused", "Cannot pass urine"]
     context: [fluid, exercise]
     # Early warning, before any symptom: the indicator has sat more than shift_sd standard deviations below the
     # person's own baseline for count logged days in a row. It names a risk to act on early, not a finding.
@@ -105,8 +105,21 @@ pathways:
     # Simple tests the pathway asks for. The result is logged and sent with the case. It never changes a tier.
     tests:
       - id: urine-strip
-        label: "Urine test strip: blood"
-        options: ["Blood seen", "No blood seen", "Not done"]
+        label: "Blood"
+        options: ["Present", "Not present", "Not done"]
+      - id: urine-nitrite
+        label: "Nitrite"
+        options: ["Positive", "Negative", "Not done"]
+      - id: urine-leuk
+        label: "Leucocytes"
+        options: ["Positive", "Negative", "Not done"]
+      - id: urine-sg
+        label: "Specific gravity"
+        options: ["1.005", "1.010", "1.015", "1.020", "1.025", "1.030", "Not done"]
+    # One plain line shown when the strip results match exactly. Wording from the clinical lead, a placeholder until signed off.
+    test_notes:
+      - when: { urine-strip: "Present", urine-nitrite: "Negative", urine-leuk: "Negative" }
+        text: "Blood present, no signs of infection."
     check:
       title: "Pain in your side or lower back: three quick questions"
       why: "You logged {core}. Pain here has many causes. Three quick questions tell the rules whether your crew medic should check for a kidney stone."
