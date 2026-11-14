@@ -95,7 +95,9 @@ function CaseView({ state, commit, setting, seed, rules, say, hhmm, packId, onBa
   const send = () => {
     if (!decision) { setError('Pick a decision first.'); return; }
     try {
-      const r = replyToCase(state, { caseId: packId, decision, note, steps: steps.split('\n'), at: Date.now() });
+      // The doctor cannot answer before the case has arrived: one leg of the signal delay after it was sent.
+      const arrived = pack.createdAt + (caseSetting.replySeconds / 2) * 1000;
+      const r = replyToCase(state, { caseId: packId, decision, note, steps: steps.split('\n'), at: Math.max(Date.now(), arrived) });
       commit(r.state);
       setDecision(null); setNote(''); setSteps(''); setError(null); setSent(true);
     } catch (e) {
