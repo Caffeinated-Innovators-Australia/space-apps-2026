@@ -21,7 +21,7 @@ import {
 import osd from './data/osd569_cbc.json';
 import seedJson from './data/seed.json';
 import { HandoverCard, LinkBanner, ReplyCard } from './components/Handover';
-import { acceptReply, linkStatus, repliesFor, type CasePack } from './core/index.ts';
+import { acceptReply, arrivedReplies, linkStatus, type CasePack } from './core/index.ts';
 import { EmergencyButton } from './components/EmergencyButton';
 import { CheckIn } from './screens/CheckIn';
 import { Emergency } from './screens/Emergency';
@@ -48,6 +48,9 @@ const REPO = 'https://github.com/Caffeinated-Innovators-Australia/space-apps-202
 /** The demo's mission clock: the chosen clock time, moving forward in real time from the moment it was set. */
 const BOOT = Date.now();
 let anchor = { clock: '06:45', at: BOOT };
+/** Demo only: how far the clock has been skipped ahead, so a wait of many minutes can be shown in seconds. */
+let skipMs = 0;
+const nowMs = () => Date.now() + skipMs;
 const missionSeconds = (t: number) => Math.max(0, toMin(anchor.clock) * 60 + Math.floor((t - anchor.at) / 1000)) % 86400;
 /** A logged time, shown as mission time so it agrees with the mission clock in the status bar. */
 const hhmm = (t: number) => fromMin(Math.floor(missionSeconds(t) / 60));
@@ -95,6 +98,7 @@ export function App() {
   const commit = (next: State) => { setState(next); void store.save(next); };
   const ui = (patch: Partial<State['ui']>) => commit({ ...state, ui: { ...state.ui, ...patch } });
   anchor = { clock: state.ui.clock, at: state.ui.clockSetAt ?? BOOT };
+  skipMs = state.ui.skipMs ?? 0;
   const setting = settingById(seed, state.ui.settingId);
   const crew = crewById(seed, seed.crew.some((c) => c.id === state.ui.crewId) ? state.ui.crewId : seed.crew[0].id);
   const tierWords = { ...TIER_WORD, ...(setting.tierWords ?? {}) };
@@ -112,7 +116,7 @@ export function App() {
           <nav className="nav" aria-label="Main">
             <button aria-current={['home', 'reading', 'result', 'gap', 'pathway', 'checkin', 'feeling', 'radiation', 'immune'].includes(route.name) ? 'page' : undefined} onClick={() => go('home')}>Today</button>
             <button aria-current={route.name === 'outbox' ? 'page' : undefined} onClick={() => go('outbox')}>Outbox{queued ? ` (${queued})` : ''}</button>
-            <button aria-current={route.name === 'inbox' ? 'page' : undefined} onClick={() => go('inbox')}>{say('Earth inbox', setting)}</button>
+            <button aria-current={route.name === 'inbox' ? 'page' : undefined} onClick={() => go('inbox')}>{setting.id === 'earth' ? 'Doctor inbox' : 'Earth inbox'}</button>
             <button aria-current={['menu', 'medic', 'about', 'crew'].includes(route.name) ? 'page' : undefined} onClick={() => go('menu')}>Menu</button>
           </nav>
           {route.name === 'emergency' ? null : <EmergencyButton go={go} />}
@@ -179,9 +183,9 @@ function StatusBar({ state, commit, rules, crewId }: { state: State; commit: (s:
     ...day.flagged.map((x) => ({ id: x.reading!.id, tier: x.assessment!.tier, name: x.indicator.name, open: () => go('result', x.reading!.id) })),
     ...pathwayAlerts(state, seed, rules, crewId).map((p) => ({ id: p.key, tier: p.tier, name: p.name, open: () => go('pathway', p.pathwayId) })),
   ].sort((x, y) => RANK[y.tier] - RANK[x.tier]);
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(nowMs());
   useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    const id = window.setInterval(() => setNow(nowMs()), 1000);
     return () => window.clearInterval(id);
   }, []);
   const done = state.acknowledged ?? [];
@@ -339,7 +343,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
             <div className="where">
               <span className="caption">Mission clock</span>
               <div className="seg" role="group" aria-label="Mission clock">
-                {seed.clockOptions.map((c) => <button key={c} aria-pressed={c === state.ui.clock} onClick={() => ui({ clock: c, clockSetAt: Date.now() })}>{c}</button>)}
+                {seed.clockOptions.map((c) => <button key={c} aria-pressed={c === state.ui.clock} onClick={() => ui({ clock: c, clockSetAt: nowMs() })}>{c}</button>)}
               </div>
               <button className="chip chip-toggle" aria-pressed={state.ui.slipped} onClick={() => ui({ slipped: !state.ui.slipped })}>EVA runs {seed.slipMinutes} min late</button>
             </div>
@@ -367,7 +371,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
             </div>
             <BodyFigure onOpen={open} tiers={tiers} />
             <div className="btn-row">
-              <span>{day.flagged.length} outside range, {day.items.filter((x) => x.due && !x.reading && x.indicator.cadence !== 'sensor').length} due today, {day.items.length - day.items.filter(needsYou).length} quiet.</span>
+              <span>{day.flagged.length + pathways.filter((p) => p.level !== 'check').length} need attention, {day.items.filter((x) => x.due && !x.reading && x.indicator.cadence !== 'sensor').length} due today, {day.items.length - day.items.filter(needsYou).length} quiet.</span>
               <button className="btn secondary" aria-pressed={showAll} onClick={() => setShowAll(!showAll)}>{showAll ? 'Show only what needs you' : `Show all ${day.items.length} signals`}</button>
             </div>
             {visible.length === 0 ? <p className="muted">Nothing needs you right now. Every signal is within range or not due.</p> : null}
@@ -418,7 +422,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
             </div>
             <div className="chips" role="group" aria-label="How you feel">
               {seed.symptoms.options.map((o) => (
-                <button key={o} className="chip chip-toggle" aria-pressed={mine.some((x) => x.label === o)} onClick={() => commit(toggleSymptom(state, crewId, o, Date.now()))}>{o}</button>
+                <button key={o} className="chip chip-toggle" aria-pressed={mine.some((x) => x.label === o)} onClick={() => commit(toggleSymptom(state, crewId, o, nowMs()))}>{o}</button>
               ))}
               <button className="chip chip-toggle" aria-pressed={nothing} onClick={() => commit(reportNothing(state, crewId))}>Nothing to report</button>
             </div>
@@ -491,7 +495,7 @@ function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: S
   const submit = () => {
     if (!valid) return;
     try {
-      const r = recordReading(state, seed, rules, { crewId, indicatorId, value: Number(n.toFixed(ind.dp)), at: Date.now() });
+      const r = recordReading(state, seed, rules, { crewId, indicatorId, value: Number(n.toFixed(ind.dp)), at: nowMs() });
       commit(r.state);
       go('result', r.reading.id);
     } catch (e) {
@@ -579,7 +583,7 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
   const day = daySummary(state, seed, rules, reading.crewId);
   const promptOpen = day.prompt && day.prompt.indicatorId !== ind.id && !day.items.find((x) => x.indicator.id === day.prompt!.indicatorId)?.reading;
   const others = day.flagged.filter((x) => x.indicator.id !== ind.id);
-  const send = () => { commit(sendCase(state, { readingId: reading.id, settingId: setting.id, at: Date.now() }).state); go('gap', reading.id); };
+  const send = () => { commit(sendCase(state, { readingId: reading.id, settingId: setting.id, at: nowMs() }).state); go('gap', reading.id); };
   const limit = ind.limit ? (lim.high ?? lim.low) : undefined;
   return (
     <>
@@ -656,10 +660,10 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
 
 function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: RuleFile; reading: SavedReading }) {
   const pack = state.outbox.find((p) => p.readingId === reading.id);
-  const [startAt, setStartAt] = useState(pack?.createdAt ?? Date.now());
-  const [now, setNow] = useState(Date.now());
+  const [startAt, setStartAt] = useState(pack?.createdAt ?? nowMs());
+  const [now, setNow] = useState(nowMs());
   useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 250);
+    const id = window.setInterval(() => setNow(nowMs()), 250);
     return () => window.clearInterval(id);
   }, []);
   if (!pack) return <Result state={state} commit={commit} ui={ui} setting={setting} crewId={reading.crewId} rules={rules} reading={reading} />;
@@ -674,7 +678,7 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
       <Context setting={setting} crewId={reading.crewId} />
       <div className="grid">
         <section className="gap" aria-label="Time until help can answer">
-          <Where setting={setting} onPick={(id) => { ui({ settingId: id }); setStartAt(Date.now()); }} />
+          <Where setting={setting} onPick={(id) => { ui({ settingId: id }); setStartAt(nowMs()); }} />
           <span className="kicker">{left > 0 ? setting.gapLabel : setting.nowLabel}</span>
           <div className="gap-clock" role="timer">{clock(left)}</div>
           <p>{setting.detail}</p>
@@ -717,7 +721,7 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
               <dt>Done so far</dt><dd>{reading.stepsDone.length > 0 ? reading.stepsDone.map((x) => cap(say(x, setting))).join(' ') : 'Nothing ticked yet.'}</dd>
               <dt>How you feel</dt><dd>{content.symptoms.length > 0 ? content.symptoms.map((x) => x.label).join(', ') : 'Nothing logged today.'}</dd>
             </dl>
-            <p className="caption">{pack.status === 'queued' ? `Queued on this device at ${hhmm(pack.createdAt)}. It leaves when a link opens, with anything you tick or log before then.` : `Exported at ${hhmm(pack.exportedAt ?? pack.createdAt)}.`}</p>
+            <p className="caption">{pack.status === 'queued' ? `Sent at ${hhmm(pack.createdAt)} and kept in the outbox on this device. Anything you tick or log from now is added to the case.` : `Exported at ${hhmm(pack.exportedAt ?? pack.createdAt)}.`}</p>
             <div className="btn-row">
               <button className="btn secondary" onClick={() => go('outbox')}>Open outbox</button>
               <button className="btn secondary" onClick={() => go('home')}>Back to today</button>
@@ -731,19 +735,24 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
 
 /** The Earth end of a sent case, as the crew sees it: where the case is, the handover as sent, and any reply. */
 function EarthLoop({ state, commit, setting, rules, pack }: { state: State; commit: (s: State) => void; setting: Setting; rules: RuleFile; pack: CasePack }) {
-  const [now, setNow] = useState(Date.now());
+  const doctor = setting.id === 'earth';
+  const [now, setNow] = useState(nowMs());
   useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    const id = window.setInterval(() => setNow(nowMs()), 1000);
     return () => window.clearInterval(id);
   }, []);
   const link = linkStatus(state, pack, setting, now);
-  const replies = repliesFor(state, pack.id);
+  const replies = arrivedReplies(state, pack, setting, now);
   return (
     <>
       <LinkBanner status={link.status} secondsLeft={link.secondsLeft} setting={setting} say={say} />
-      {replies.length > 0 ? <ReplyCard replies={replies} onAccept={(id) => commit(acceptReply(state, id, Date.now()))} hhmm={hhmm} say={say} setting={setting} /> : null}
+      {replies.length > 0 ? <ReplyCard replies={replies} onAccept={(id) => commit(acceptReply(state, id, nowMs()))} hhmm={hhmm} say={say} setting={setting} /> : null}
       <HandoverCard content={caseContent(state, seed, rules, pack.id)} hhmm={hhmm} setting={setting} say={say} />
-      <div className="btn-row"><button className="btn secondary" onClick={() => go('inbox', pack.id)}>{say('See this case at the Earth end', setting)}</button></div>
+      <div className="btn-row">
+        <button className="btn secondary" onClick={() => go('inbox', pack.id)}>{doctor ? 'See this case as the doctor sees it' : 'See this case as Earth sees it'}</button>
+        {link.status === 'waiting' ? <button className="btn secondary" onClick={() => commit({ ...state, ui: { ...state.ui, skipMs: (state.ui.skipMs ?? 0) + Math.ceil(link.secondsLeft) * 1000 } })}>Demo: skip ahead {Math.ceil(link.secondsLeft / 60)} min</button> : null}
+      </div>
+      {link.status === 'waiting' ? <p className="caption">{doctor ? 'A reply cannot arrive before the doctor has seen the case and answered.' : 'A reply cannot arrive sooner: the case takes one leg to reach Earth and the answer takes one leg back.'} The demo button moves the mission clock forward.</p> : null}
     </>
   );
 }
@@ -776,10 +785,10 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
   const p = pathwayStatuses(state, seed, rules, crewId).find((x) => x.pathway.id === pathwayId);
   const key = `pathway:${crewId}:${pathwayId}`;
   const pack = state.outbox.find((x) => x.readingId === key);
-  const [startAt, setStartAt] = useState(pack?.createdAt ?? Date.now());
-  const [now, setNow] = useState(Date.now());
+  const [startAt, setStartAt] = useState(pack?.createdAt ?? nowMs());
+  const [now, setNow] = useState(nowMs());
   useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 250);
+    const id = window.setInterval(() => setNow(nowMs()), 250);
     return () => window.clearInterval(id);
   }, []);
   const mine = state.symptoms.filter((x) => x.crewId === crewId);
@@ -788,7 +797,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
   const active = p && p.level !== 'check' ? p : undefined;
   const canSend = Boolean(active && active.level !== 'early');
   const tests = state.pathwayTests?.[key] ?? {};
-  const send = () => { const r = sendPathwayCase(state, seed, rules, { crewId, pathwayId, settingId: setting.id, at: Date.now() }); commit(r.state); setStartAt(r.pack.createdAt); };
+  const send = () => { const r = sendPathwayCase(state, seed, rules, { crewId, pathwayId, settingId: setting.id, at: nowMs() }); commit(r.state); setStartAt(r.pack.createdAt); };
   const content = pack ? pathwayCaseContent(state, seed, rules, pack.id) : undefined;
   const left = setting.replySeconds - (now - startAt) / 1000;
   const meanwhile = (active?.steps ?? []).filter((st) => !/send the case/i.test(st));
@@ -796,7 +805,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
   const context = p?.context ?? [];
   const chips = (labels: string[]) => (
     <div className="chips" role="group">
-      {labels.map((o) => <button key={o} className="chip chip-toggle" aria-pressed={has(o)} onClick={() => commit(toggleSymptom(state, crewId, o, Date.now()))}>{o}</button>)}
+      {labels.map((o) => <button key={o} className="chip chip-toggle" aria-pressed={has(o)} onClick={() => commit(toggleSymptom(state, crewId, o, nowMs()))}>{o}</button>)}
     </div>
   );
   return (
@@ -844,7 +853,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
           <div className="card">
             <h2 className="title">Pain now, from 0 to 10</h2>
             <div className="chips" role="group" aria-label="Pain score from 0, no pain, to 10, the worst you can imagine">
-              {Array.from({ length: 11 }, (_, n) => <button key={n} className="chip" onClick={() => commit(logPain(state, { crewId, pathwayId, score: n, at: Date.now() }))}>{n}</button>)}
+              {Array.from({ length: 11 }, (_, n) => <button key={n} className="chip" onClick={() => commit(logPain(state, { crewId, pathwayId, score: n, at: nowMs() }))}>{n}</button>)}
             </div>
             {pain.length > 0 ? <p aria-live="polite">Logged: {pain.map((x) => `${x.score} at ${hhmm(x.at)}`).join(', ')}.</p> : <p className="muted">0 is no pain. 10 is the worst you can imagine. Log it again whenever it changes.</p>}
             <p className="caption">{say('No threshold is applied to this score. Your crew medic and Earth read how it moves over time.', setting)}</p>
@@ -860,7 +869,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
         <div className="stack">
           {pack ? (
             <section className="gap" aria-label="Time until help can answer">
-              <Where setting={setting} onPick={(id) => { ui({ settingId: id }); setStartAt(Date.now()); }} />
+              <Where setting={setting} onPick={(id) => { ui({ settingId: id }); setStartAt(nowMs()); }} />
               <span className="kicker">{left > 0 ? setting.gapLabel : setting.nowLabel}</span>
               <div className="gap-clock" role="timer">{clock(left)}</div>
               <p>{setting.detail}</p>
@@ -911,7 +920,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
                 <dt>Other signals</dt><dd>{content.otherSignalsToday.length > 0 ? content.otherSignalsToday.map((x) => `${x.indicator} ${x.value} ${x.unit}`).join('; ') : 'None today.'}</dd>
                 <dt>Done so far</dt><dd>{content.stepsDone.length > 0 ? content.stepsDone.map((x) => cap(say(x, setting))).join(' ') : 'Nothing ticked yet.'}</dd>
               </dl>
-              <p className="caption">{pack.status === 'queued' ? `Queued on this device at ${hhmm(pack.createdAt)}. It leaves when a link opens, with anything you tick or log before then.` : `Exported at ${hhmm(pack.exportedAt ?? pack.createdAt)}.`}</p>
+              <p className="caption">{pack.status === 'queued' ? `Sent at ${hhmm(pack.createdAt)} and kept in the outbox on this device. Anything you tick or log from now is added to the case.` : `Exported at ${hhmm(pack.exportedAt ?? pack.createdAt)}.`}</p>
               <div className="btn-row"><button className="btn secondary" onClick={() => go('outbox')}>Open outbox</button></div>
             </div>
           ) : null}
@@ -926,7 +935,7 @@ function Outbox({ state, commit, rules }: Shared & { rules: RuleFile }) {
   const [file, setFile] = useState<string | null>(null);
   const queued = state.outbox.filter((p) => p.status === 'queued');
   const doExport = () => {
-    const r = exportOutbox(state, seed, rules, Date.now());
+    const r = exportOutbox(state, seed, rules, nowMs());
     const text = JSON.stringify(r.file, null, 2);
     commit(r.state);
     setFile(text);

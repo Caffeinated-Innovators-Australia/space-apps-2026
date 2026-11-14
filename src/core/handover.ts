@@ -126,8 +126,22 @@ export function repliesFor(state: State, caseId: string): EarthReply[] {
 export type LinkState = 'no-link' | 'queued' | 'waiting' | 'reply-in';
 
 /** Where a case stands: a reply is in, there is no link, the round trip is still running, or the case waits with no reply. */
+/**
+ * When a reply reaches the crew. The case takes one leg to arrive, so a reply cannot leave before then,
+ * and the reply takes one more leg to come back. Nothing beats the signal delay.
+ */
+export function replyArrival(reply: EarthReply, pack: CasePack, setting: Setting): number {
+  const leg = (setting.replySeconds / 2) * 1000;
+  return Math.max(reply.at, pack.createdAt + leg) + leg;
+}
+
+/** The replies the crew can see now: those whose signal has had time to arrive. */
+export function arrivedReplies(state: State, pack: CasePack, setting: Setting, now: number): EarthReply[] {
+  return repliesFor(state, pack.id).filter((r) => replyArrival(r, pack, setting) <= now);
+}
+
 export function linkStatus(state: State, pack: CasePack, setting: Setting, now: number): { status: LinkState; secondsLeft: number } {
-  if (repliesFor(state, pack.id).length) return { status: 'reply-in', secondsLeft: 0 };
+  if (arrivedReplies(state, pack, setting, now).length) return { status: 'reply-in', secondsLeft: 0 };
   if (state.ui.linkDown) return { status: 'no-link', secondsLeft: 0 };
   const left = setting.replySeconds - (now - pack.createdAt) / 1000;
   if (left > 0) return { status: 'waiting', secondsLeft: left };

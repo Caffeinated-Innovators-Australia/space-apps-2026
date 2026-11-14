@@ -63,11 +63,17 @@ We used Claude Code (Anthropic) as a build assistant. The idea is the team's own
 
 NASA does not endorse this project. No NASA logos are used.
 
+- **NASA Human Research Program, Evidence Report: Risk of Renal Stone Formation (2017), and the Risk of Renal Stone Formation page.** The source for the early warning: three days of low fluid raise a result that names kidney stone risk. https://humanresearchroadmap.nasa.gov/evidence/reports/Renal.pdf and https://www.nasa.gov/directorates/esdmd/hhp/risk-of-renal-stone-formation/
+- **NASA Office of the Chief Health and Medical Officer, Medical Technical Brief MTB-003, Urinary Health, Rev A.** Quoted on the kidney stone pathway for prevention and for ultrasound, and the source given to our clinicians for the steps they will write. https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf
+- **NASA, Risk of Altered Immune System Responses.** Quoted on the Infections and healing screen. https://www.nasa.gov/reference/risk-of-altered-immune-system-responses/
+
 ## Space agency partner data and other references
 
 - Canadian Space Agency, Monitoring Radiation for Astronaut Health. https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp
 - Canadian Space Agency, Why Do We Conduct Science Experiments in Space? https://www.asc-csa.gc.ca/eng/iss/science/why-do-we-conduct-science-experiments-in-space.asp
 - Australian Institute of Health and Welfare, Deaths in Australia, variations by remoteness area. https://www.aihw.gov.au/reports/life-expectancy-deaths/deaths-in-australia/contents/variations-between-population-groups/remoteness-area
+- healthdirect Australia, Kidney stones; and the US National Institute of Diabetes and Digestive and Kidney Diseases, Kidney stones: symptoms and causes. The sources for the symptom pattern in the kidney stone pathway. https://www.healthdirect.gov.au/kidney-stones and https://www.niddk.nih.gov/health-information/urologic-diseases/kidney-stones/symptoms-causes
+- Australian and New Zealand Committee on Resuscitation, Guideline 8 and the Basic Life Support flowchart. The source for the steps on the Emergency screen; the wording is ours and is a placeholder. https://www.anzcor.org/
 - Open-source libraries: React, Vite, TypeScript, js-yaml, Vitest (MIT or Apache 2.0). Fonts: IBM Plex (SIL Open Font License 1.1).
 - [ABC News article for the team's story, if the story is used.]
 - Full list with licences: REFERENCES.md in the repository.

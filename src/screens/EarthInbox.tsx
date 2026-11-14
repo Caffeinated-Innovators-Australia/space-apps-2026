@@ -115,7 +115,7 @@ function CaseView({ state, commit, setting, seed, rules, say, hhmm, packId, onBa
             {c.stepsGiven.length === 0 ? <p className="caption">No steps were given with this case.</p> : (
               <ul className="x-ei-done">
                 {c.stepsGiven.map((st) => {
-                  const done = c.stepsDone.includes(st);
+                  const done = c.stepsDone.includes(st) || /send the case/i.test(st); // the case is here, so it was sent
                   return <li key={st}><span className={`x-ei-done-mark ${done ? 'yes' : 'no'}`}>{done ? '✓ Done' : 'Not yet'}</span><span>{s(st)}</span></li>;
                 })}
               </ul>

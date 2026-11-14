@@ -123,6 +123,8 @@ describe('linkStatus', () => {
     const down: State = { ...state, ui: { ...state.ui, linkDown: true } };
     expect(linkStatus(down, pack, setting, pack.createdAt).status).toBe('no-link');
     const replied = replyToCase(down, { caseId, decision: 'agree', note: 'n', at: 1 }).state;
-    expect(linkStatus(replied, pack, setting, pack.createdAt)).toEqual({ status: 'reply-in', secondsLeft: 0 });
+    // A reply written at once still cannot reach the crew before the signal has gone there and back.
+    expect(linkStatus(replied, pack, setting, pack.createdAt).status).not.toBe('reply-in');
+    expect(linkStatus(replied, pack, setting, pack.createdAt + setting.replySeconds * 1000)).toEqual({ status: 'reply-in', secondsLeft: 0 });
   });
 });

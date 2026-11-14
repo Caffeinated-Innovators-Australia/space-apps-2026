@@ -209,6 +209,7 @@ export function Emergency({ state, commit, crewId, go, hhmm }: EmergencyProps) {
   const notice = (
     <div className="x-em-notice" role="note">
       <p><strong>This guides basic life support. It does not diagnose. {protocol.status}.</strong></p>
+      <p>These steps were written for Earth. They have not been adapted for low gravity or for a habitat. That is for the mission's clinicians.</p>
       <p className="source">Source: <a href={protocol.source.url} target="_blank" rel="noreferrer">{protocol.source.name}</a>, read {protocol.source.read}. Wording is ours, not the guideline's.</p>
     </div>
   );

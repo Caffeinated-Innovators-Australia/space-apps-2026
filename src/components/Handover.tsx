@@ -26,6 +26,12 @@ export function HandoverCard({ content, hhmm, setting, say }: { content: CaseCon
   const words = useContext(TierWords);
   const sections = isbar(content, { time: hhmm ? (iso) => hhmm(Date.parse(iso)) : undefined, tierWord: (t) => words[t] });
   const s = (t: string) => (setting && say ? doctorSay(t, setting, say) : t);
+  // In the Earth twin the same case is told for the person at the remote station: no crew, mission day or planet.
+  const twin = setting?.id === 'earth';
+  if (twin) {
+    const id = sections.find((x) => x.key === 'I');
+    if (id) id.lines = id.lines.filter((l) => !l.startsWith('Mission day')).map((l) => (l.startsWith('Crew member:') ? `Person: Sam, station hand${content.synthetic ? ' (SYNTHETIC)' : ''}` : l.startsWith('Place:') ? 'Place: Remote desert station, Australia, 640 km from the nearest doctor (SYNTHETIC scenario)' : l));
+  }
   return (
     <section className="card" aria-label="Handover">
       <div className="card-head"><h2 className="title">Handover</h2>{content.synthetic ? <SyntheticTag /> : null}</div>
