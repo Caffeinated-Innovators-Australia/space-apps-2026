@@ -1,6 +1,6 @@
 # Demo video plan
 
-`demo-draft.mp4` is a draft cut of this plan: 28.9 seconds, 1920 by 1080, no sound, with English captions burned in. The official limit is 30 seconds. It is a screen recording of the live app with text cards. Every frame carries "Draft cut · assembled with AI assistance". It uses no outside footage, images or music.
+`demo-draft.mp4` is a draft cut of this plan: 28.9 seconds, 1920 by 1080, recorded on the leaner interface of 14 November, no sound, with English captions burned in. The official limit is 30 seconds. It is a screen recording of the live app with text cards. Every frame carries "Draft cut · assembled with AI assistance". It uses no outside footage, images or music.
 
 The story, set by the team lead on 14 November 2026: **the first 20 seconds are a kidney stone on Mars; the last 9 seconds are the turn to Earth**, where the same gap exists for people in the remote outback.
 
@@ -10,8 +10,8 @@ The story, set by the team lead on 14 November 2026: **the first 20 seconds are 
 |---|---|---|---|
 | 0:00 to 0:01.6 | Mars | Team card: team name, "Four clinicians and an aerospace engineer", and the challenge | none |
 | 0:01.6 to 0:03 | Mars | Title card: "Crew health check. Care that starts before the expert arrives." [Project name: team to choose] | none |
-| 0:03 to 0:04.6 | Mars | Today as Jo, with "Mars, 18 min" chosen | "Day 87 on Mars. Earth is 18 minutes away." |
-| 0:04.6 to 0:07.4 | Mars | The early warning card, with its NASA source | "Three days of low fluid. It flags kidney stone risk early. Source: NASA." |
+| 0:03 to 0:04.6 | Mars | Today as Jo: one status mark, one tile, the body figure | "Day 87 on Mars. Earth is 18 minutes away." |
+| 0:04.6 to 0:07.4 | Mars | The early warning opened, with "Why this alert?" showing its NASA source | "Three days of low fluid. It flags kidney stone risk early. Source: NASA." |
 | 0:07.4 to 0:11.8 | Mars | "Feeling off?": Kidneys and urine, two symptoms, then the result | "Then pain in her side. Three taps, and the rules say: crew medic." |
 | 0:11.8 to 0:15 | Mars | The case is sent and the countdown starts at 36:00 | "No answer from Earth for 36 minutes. The crew starts now." |
 | 0:15 to 0:16.8 | Mars | The Earth inbox: the handover and the doctor's reply | "On Earth, the doctor reads the handover and replies." |
