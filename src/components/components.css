@@ -76,3 +76,11 @@
 .x-bar-fill { height: 100%; background: var(--ink-muted); }
 .x-insights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .x-insights li { background: var(--surface-200); border-radius: 8px; padding: 10px 12px; font-size: 16px; }
+
+.x-rt-how { width: 100%; max-width: 360px; }
+.x-rt-how-screen { fill: var(--surface-200); stroke: var(--line-strong); stroke-width: 1.5; }
+.x-rt-how-word { font-family: var(--font-sans); font-size: 16px; font-weight: 600; fill: var(--ink); }
+.x-rt-how-num { font-family: var(--font-mono); font-size: 18px; font-weight: 600; fill: var(--ink); }
+.x-rt-how-dim { font-family: var(--font-mono); font-size: 18px; fill: var(--ink-muted); }
+.x-rt-how-tap { fill: var(--focus); }
+.x-rt-how-ring { fill: none; stroke: var(--focus); stroke-width: 2; }

@@ -43,5 +43,6 @@
 .x-em-letter { font-family: var(--font-mono); color: var(--procedure); border: 1px solid var(--procedure); border-radius: 4px; min-width: 32px; text-align: center; font-size: 16px; }
 
 /* The Emergency button: black with white text and a white border in both themes, on purpose (see EmergencyButton.tsx). */
-.x-em-button { background: #000000; color: #ffffff; border: 2px solid #ffffff; outline: 1px solid #000000; border-radius: 8px; min-height: 44px; padding: 8px 16px; font-size: 18px; font-weight: 700; cursor: pointer; }
+/* Solid red on every page, as the clinicians asked: it must be the easiest thing to find. White on this red is 6.5 to 1. */
+.x-em-button { background: #b3261e; color: #ffffff; border: 2px solid #ffffff; outline: 1px solid #b3261e; border-radius: 8px; min-height: 44px; padding: 8px 16px; font-size: 18px; font-weight: 700; cursor: pointer; }
 .x-em-button:focus-visible { box-shadow: var(--focus-ring); }

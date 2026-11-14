@@ -3,7 +3,8 @@
 import { useContext } from 'react';
 import { isbar, type CaseContent, type LinkState } from '../core/handover.ts';
 import type { EarthReply, Setting } from '../core/types.ts';
-import { SyntheticTag, TierWords } from './ui';
+import type { Tier } from '../core/rules.ts';
+import { SyntheticTag, TierShape, TierWords } from './ui';
 import './handover.css';
 
 type Say = (text: string, s: Setting) => string;
@@ -32,6 +33,16 @@ export function HandoverCard({ content, hhmm, setting, say }: { content: CaseCon
     const id = sections.find((x) => x.key === 'I');
     if (id) id.lines = id.lines.filter((l) => !l.startsWith('Mission day')).map((l) => (l.startsWith('Crew member:') ? `Person: Sam, station hand${content.synthetic ? ' (SYNTHETIC)' : ''}` : l.startsWith('Place:') ? 'Place: Remote desert station, Australia, 640 km from the nearest doctor (SYNTHETIC scenario)' : l));
   }
+  // What is outside range is marked with the tier's colour and shape, so the doctor's eye lands on it first.
+  const caseTier = content.assessment.tier && content.assessment.tier !== 'green' ? (content.assessment.tier as Tier) : undefined;
+  const flag = (key: string, line: string): Tier | undefined => {
+    if (key === 'A' && line.startsWith('Tier: ')) return caseTier;
+    if (key === 'S' && content.kind === 'reading' && (line.startsWith('Reading:') || line.startsWith('Change from own baseline'))) return caseTier;
+    if (key === 'I' || key === 'R') return undefined;
+    if (line.includes(`(${words.red})`)) return 'red';
+    if (line.includes(`(${words.amber})`) || line.includes('(drifted)')) return 'amber';
+    return undefined;
+  };
   return (
     <section className="card" aria-label="Handover">
       <div className="card-head"><h2 className="title">Handover</h2>{content.synthetic ? <SyntheticTag /> : null}</div>
@@ -39,7 +50,7 @@ export function HandoverCard({ content, hhmm, setting, say }: { content: CaseCon
         {sections.map((x) => (
           <div key={x.key}>
             <dt><span className="mono" aria-hidden="true">{x.key}</span>{x.label}</dt>
-            <dd><ul>{x.lines.map((l, i) => <li key={i}>{s(l)}</li>)}</ul></dd>
+            <dd><ul>{x.lines.map((l, i) => { const f = flag(x.key, l); return <li key={i} className={f ? `x-ei-flag x-ei-flag-${f}` : undefined}>{f ? <TierShape tier={f} /> : null}{s(l)}</li>; })}</ul></dd>
           </div>
         ))}
       </dl>

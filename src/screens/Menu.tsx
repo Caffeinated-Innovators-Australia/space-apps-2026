@@ -121,6 +121,14 @@ export function Menu({ state, commit, ui, setting, seed, go, say }: MenuProps) {
         <div className="seg" role="group" aria-label="Where are you?">
           {seed.settings.map((c) => <button key={c.id} aria-pressed={c.id === setting.id} onClick={() => commit(noteGravityChange(changePlace(state, c.id, Date.now()), setting, c, Date.now()))}>{c.label}</button>)}
         </div>
+        <ul className="rows">
+          <li>
+            <button className="row" onClick={() => go('inbox')}>
+              <span className="row-name">{setting.id === 'earth' ? 'Doctor inbox' : 'Earth inbox'}<br /><span className="caption">{say('The flight surgeon\'s end of a case. On a mission this screen is on Earth, not on the crew\'s device.', setting)}</span></span>
+              <span className="chev" aria-hidden="true">›</span>
+            </button>
+          </li>
+        </ul>
         <div className="btn-row x-mo-section">
           <button className="chip chip-toggle" aria-pressed={!!state.ui.linkDown} onClick={() => ui({ linkDown: !state.ui.linkDown })}>{say('No link to Earth', setting)}</button>
         </div>

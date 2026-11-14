@@ -15,3 +15,4 @@ export * from './pvt.ts';
 export * from './crewcheck.ts';
 export * from './profiles.ts';
 export * from './astra.ts';
+export * from './records.ts';

@@ -29,3 +29,9 @@
 .x-ei-done-mark.yes { background: var(--surface-200); color: var(--ink); }
 .x-ei-done-mark.no { color: var(--ink-muted); border-style: dashed; }
 .x-ei-error { border: 2px solid var(--tier-red); border-radius: 8px; padding: 8px 12px; font-size: 16px; }
+
+/* A line that is outside range: the tier's colour and shape, never colour alone. */
+.x-ei-isbar li.x-ei-flag { list-style: none; margin-left: -20px; padding: 4px 8px; border-left: 4px solid var(--line-strong); border-radius: 4px; background: var(--surface-200); font-weight: 600; }
+.x-ei-isbar li.x-ei-flag svg { margin-right: 8px; vertical-align: -1px; }
+.x-ei-isbar li.x-ei-flag-amber { border-left-color: var(--tier-amber); } .x-ei-isbar li.x-ei-flag-amber svg { fill: var(--tier-amber); }
+.x-ei-isbar li.x-ei-flag-red { border-left-color: var(--tier-red); } .x-ei-isbar li.x-ei-flag-red svg { fill: var(--tier-red); }

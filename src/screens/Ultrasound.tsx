@@ -2,7 +2,7 @@
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { useState } from 'react';
 import type { RuleFile, Seed, Setting, State } from '../core/index.ts';
-import { toggleUltrasoundStep, ultrasoundAvailable, ultrasoundDone, ultrasoundProcedure, type UltrasoundStep } from '../core/ultrasound.ts';
+import { toggleUltrasoundStep, ultrasoundAvailable, ultrasoundDone, ultrasoundProcedure, type UltrasoundStep, type UltrasoundView } from '../core/ultrasound.ts';
 import { SyntheticTag } from '../components/ui';
 import './x-us.css';
 
@@ -19,13 +19,15 @@ export interface UltrasoundProps {
   hhmm: (t: number) => string;
   /** Where "Back to the case" goes. Defaults to the home screen. */
   returnTo?: { route: string; arg?: string };
+  /** Which guided view. Defaults to the kidneys. */
+  view?: UltrasoundView;
 }
 
 /** A plain torso from the front, no face or detail, with the probe position for this step. */
-function Torso({ side }: { side?: 'left' | 'right' }) {
+function Torso({ side }: { side?: 'left' | 'right' | 'chest' }) {
   // Drawn from the front, so the person's left side is on the viewer's right.
-  const mark = side === 'left' ? { x: 166, y: 158 } : side === 'right' ? { x: 74, y: 158 } : undefined;
-  const label = side ? `Body outline from the front. The probe goes on the ${side} side, just below the ribs.` : 'Body outline from the front.';
+  const mark = side === 'left' ? { x: 166, y: 158 } : side === 'right' ? { x: 74, y: 158 } : side === 'chest' ? { x: 134, y: 96 } : undefined;
+  const label = side === 'chest' ? 'Body outline from the front. The probe goes just to the left of the breastbone, about the middle of the chest.' : side ? `Body outline from the front. The probe goes on the ${side} side, just below the ribs.` : 'Body outline from the front.';
   return (
     <svg className="x-us-figure" viewBox="0 0 240 270" role="img" aria-label={label}>
       <path className="x-us-body" d="M104 14 h32 v18 l44 12 q14 4 16 20 l4 70 q0 10 -10 10 l-10 -2 l-4 50 q-2 30 8 64 h-128 q10 -34 8 -64 l-4 -50 l-10 2 q-10 0 -10 -10 l4 -70 q2 -16 16 -20 l44 -12 z" />
@@ -42,8 +44,8 @@ function Torso({ side }: { side?: 'left' | 'right' }) {
   );
 }
 
-export function Ultrasound({ state, commit, setting, crewId, go, hhmm, returnTo }: UltrasoundProps) {
-  const proc = ultrasoundProcedure();
+export function Ultrasound({ state, commit, setting, crewId, go, hhmm, returnTo, view }: UltrasoundProps) {
+  const proc = ultrasoundProcedure(view);
   const steps = proc.steps;
   const [index, setIndex] = useState(0);
   const back = () => go(returnTo?.route ?? 'home', returnTo?.arg);
@@ -61,12 +63,12 @@ export function Ultrasound({ state, commit, setting, crewId, go, hhmm, returnTo 
   }
 
   const step: UltrasoundStep = steps[index];
-  const done = ultrasoundDone(state, crewId);
+  const done = ultrasoundDone(state, crewId, view);
   const isDone = done.includes(step.id);
   const last = index === steps.length - 1;
-  const saved = state.ultrasound?.[crewId]?.at;
+  const saved = state.ultrasound?.[view === 'heart' ? `${crewId}:heart` : crewId]?.at;
 
-  const toggle = () => commit(toggleUltrasoundStep(state, { crewId, stepId: step.id, at: Date.now() }));
+  const toggle = () => commit(toggleUltrasoundStep(state, { crewId, stepId: step.id, at: Date.now(), view }));
   const doneNext = () => {
     if (!isDone) toggle();
     if (last) back();
@@ -76,7 +78,7 @@ export function Ultrasound({ state, commit, setting, crewId, go, hhmm, returnTo 
   return (
     <section className="x-us" aria-labelledby="x-us-h">
       <div className="x-us-head">
-        <h1 id="x-us-h" className="title">Guided ultrasound · step <span className="mono">{index + 1}</span> of <span className="mono">{steps.length}</span></h1>
+        <h1 id="x-us-h" className="title">{proc.title} · step <span className="mono">{index + 1}</span> of <span className="mono">{steps.length}</span></h1>
         <SyntheticTag />
       </div>
 
@@ -110,7 +112,7 @@ export function Ultrasound({ state, commit, setting, crewId, go, hhmm, returnTo 
 
       <div className="x-us-nav">
         <button type="button" className="btn secondary" onClick={() => (index === 0 ? back() : setIndex(index - 1))}>Back</button>
-        <button type="button" className="btn x-us-next" onClick={doneNext}>{last ? 'Back to the case' : 'Done, next step'}</button>
+        <button type="button" className="btn x-us-next" onClick={doneNext}>{last ? (view === 'heart' ? 'Save and go back' : 'Back to the case') : 'Done, next step'}</button>
       </div>
       <p className="caption" role="status">
         {saved !== undefined

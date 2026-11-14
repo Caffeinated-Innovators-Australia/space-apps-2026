@@ -1,0 +1,12 @@
+{
+ "id": "guided-ultrasound-heart",
+ "title": "Guided heart ultrasound",
+ "status": "Placeholder wording written by the build team, awaiting clinician sign-off (CR-53)",
+ "source": "Requested by the team's clinicians, 14 Nov 2026. Wording is a placeholder.",
+ "imageNote": "Live image would show here. No image is captured or kept in this demo.",
+ "steps": [
+  { "id": "ush-1", "title": "Get ready", "instruction": "Get the ultrasound probe and gel ready, as your kit card shows. Lie back, turned a little onto your left side if you can." },
+  { "id": "ush-2", "title": "Beside the breastbone", "instruction": "Probe just to the left of the breastbone, between the ribs, about the middle of the chest. Marker towards the right shoulder.", "lookFor": "Look for: a steady view of the heart beating. Hold it still for a few beats.", "note": "The app does not read the image. Your crew medic and Earth do.", "side": "chest" },
+  { "id": "ush-3", "title": "Save", "instruction": "Save. The steps you completed go into the case for your crew medic and Earth." }
+ ]
+}

@@ -135,6 +135,7 @@ export function Astra({ state, commit, setting, crewId, seed, rules, go, arg }: 
       <div className="x-as-bar">
         <button type="button" className="btn secondary x-as-back" onClick={() => go('home')}>Back</button>
         <p className="x-as-note">Emergency module (ASTRA) · a separate team prototype · not for clinical use</p>
+        <p className="x-as-note">It uses its own crew labels and does not model the signal delay: a report it marks delivered has only been queued. Values shown in it are SYNTHETIC.</p>
       </div>
       {status === 'failed' ? (
         <div className="card x-as-failed" role="status">

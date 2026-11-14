@@ -4,6 +4,7 @@
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { latestVitals, vitalsLine } from './vitals.ts';
 import { ultrasoundSummary } from './ultrasound.ts';
+import { recordsSummary } from './records.ts';
 import { crewById, daySummary, indicatorById, latestReading, settingById } from './actions.ts';
 import { personalBand, RANK, round, type PathwayRule, type RuleFile, type Tier } from './rules.ts';
 import type { CasePack, PainEntry, Seed, State } from './types.ts';
@@ -29,6 +30,8 @@ export interface PathwayStatus {
   source: string;
   confidence: string;
   tests: Record<string, string>;
+  /** An early warning that fired before this pattern matched. It still counts: the pattern is added to it, not put in its place. */
+  earlier?: { title: string; ruleId: string };
 }
 
 /** The clinicians' one-line note for the test results logged so far, if the results match one exactly. */
@@ -94,6 +97,18 @@ export function pathwayStatuses(state: State, seed: Seed, rules: RuleFile, crewI
     const pattern = matched.supporting.length >= pathway.min_supporting;
     const level: PathwayStatus['level'] = matched.urgent.length > 0 ? 'red' : pattern ? 'amber' : 'check';
     const key = pathwayKey(crewId, pathway.id);
+    const before = pathway.early ? earlyWarning(state, seed, rules, crewId, pathway) : null;
+    if (level === 'check' && before) {
+      // A core symptom alone does not match the pattern yet. The early warning stays up, with its steps, while the questions are answered.
+      out.push({
+        pathway, key, level: 'early', title: before.title, why: before.why, matched, steps: pathway.early!.steps,
+        stepsDone: state.pathwaySteps?.[key] ?? [], context: pathwayContext(state, seed, rules, crewId, pathway),
+        pain: (state.painLog ?? []).filter((p) => p.crewId === crewId && p.pathwayId === pathway.id),
+        placeholder: pathway.early!.signed_off_by.trim().toLowerCase() === 'placeholder',
+        ruleId: pathway.early!.id, source: pathway.early!.source, confidence: pathway.early!.confidence, tests,
+      });
+      continue;
+    }
     const all = list([...matched.core, ...matched.supporting, ...matched.urgent]);
     const fill = (t: string) => t.replace('{symptoms}', all).replace('{urgent}', list(matched.urgent)).replace('{core}', list(matched.core));
     out.push({
@@ -107,6 +122,7 @@ export function pathwayStatuses(state: State, seed: Seed, rules: RuleFile, crewI
       pain: (state.painLog ?? []).filter((p) => p.crewId === crewId && p.pathwayId === pathway.id),
       placeholder: pathway.signed_off_by.trim().toLowerCase() === 'placeholder',
       ruleId: pathway.id, source: pathway.source, confidence: pathway.confidence, tests,
+      ...(before && level !== 'check' ? { earlier: { title: before.title, ruleId: pathway.early!.id } } : {}),
     });
   }
   const rank = { check: 0, early: 1, amber: 2, red: 3 };
@@ -196,6 +212,7 @@ export function pathwayCaseContent(state: State, seed: Seed, rules: RuleFile, pa
     tests: pathway.tests.map((t) => ({ test: t.label, result: state.pathwayTests?.[key]?.[t.id] ?? 'Not recorded' })),
     vitals: latestVitals(state, pack.crewId) ? vitalsLine(latestVitals(state, pack.crewId)!.values) : undefined,
     ultrasound: ultrasoundSummary(state, pack.crewId),
+    records: recordsSummary(state, pack.crewId),
     painScores: (state.painLog ?? []).filter((p) => p.crewId === pack.crewId && p.pathwayId === pathway.id).map((p) => ({ score: p.score, outOf: 10, at: iso(p.at) })),
     recentTrends: pathwayContext(state, seed, rules, pack.crewId, pathway).map((c) => ({ indicator: c.name, summary: c.text, drifted: c.flagged })),
     otherSignalsToday: day.flagged.filter((x) => !(x.indicator.environment && settingById(seed, pack.settingId).habitat === false)).map((x) => ({ indicator: x.indicator.name, value: x.reading!.value, unit: x.indicator.unit, tier: x.assessment!.tier, why: x.assessment!.why })),

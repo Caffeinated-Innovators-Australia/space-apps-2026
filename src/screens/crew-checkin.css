@@ -16,3 +16,7 @@
 .x-ci-zone { min-height: 64px; border-radius: 12px; border: 1px solid var(--line-strong); background: var(--surface-200); color: var(--ink); font-size: 18px; font-weight: 600; padding: 12px; cursor: pointer; text-align: left; }
 .x-ci-zone[aria-pressed='true'] { background: var(--action); color: var(--on-action); border-color: var(--focus); box-shadow: inset 0 0 0 2px var(--focus); }
 .x-ci-steps { font-size: 16px; color: var(--ink-muted); font-weight: 600; }
+
+.x-ci-stepper { flex-wrap: wrap; }
+.x-ci-range { flex-basis: 100%; width: 100%; min-height: 44px; accent-color: var(--focus); cursor: pointer; }
+.x-ci-zonegroup { display: flex; flex-direction: column; gap: 6px; }

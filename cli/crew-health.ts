@@ -5,7 +5,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assessValue, caseContent, casePackContent, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, initialState, logPain, replay, parseRules, pathwayCaseContent, pathwayStatuses, recordReading, sendCase, sendPathwayCase, streak, toggleSymptom, type Seed, type State } from '../src/core/index.ts';
+import { addRecord, bodyAreas, recordKinds, recordsFor, recordLine, recordsStatus, assessValue, caseContent, casePackContent, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, initialState, logPain, replay, parseRules, pathwayCaseContent, pathwayStatuses, recordReading, sendCase, sendPathwayCase, streak, toggleSymptom, type Seed, type State } from '../src/core/index.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const rules = parseRules(readFileSync(join(root, 'rules/rules.yaml'), 'utf8'));
@@ -43,6 +43,9 @@ Commands (all print JSON):
   symptom --crew ID --label "TEXT"                  log a symptom, or clear it if already logged
   pathways --crew ID                                symptom patterns open for this person now, with next steps
   pain    --crew ID --pathway ID --score N          log a pain score from 0 to 10; no threshold is applied
+  areas                                             list body areas, their symptoms and the record-only result types
+  log     --crew ID --type ID [--option TEXT] [--option2 TEXT] [--value N] [--score N] [--note TEXT]
+                                                    log a result for the record only; it is never scored and raises no alert
   replay                                            run the rules over every past mission day and count what they raise
   send-pathway --crew ID --pathway ID [--setting ID]  queue a symptom-pattern case for the next link to Earth
   outbox                                            list queued and exported cases
@@ -83,7 +86,7 @@ try {
     case 'symptoms': print({ status: seed.symptoms.status, options: seed.symptoms.options, patterns: rules.pathways.map((w) => ({ id: w.id, checksFor: w.name, opensOn: w.core, alsoAsks: w.supporting, urgentWith: w.urgent, source: w.source, confidence: w.confidence, signedOffBy: w.signed_off_by })) }); break;
     case 'symptom': {
       const label = need('label');
-      if (!seed.symptoms.options.includes(label)) throw new Error(`Unknown symptom "${label}". Known: ${seed.symptoms.options.join('; ')}.`);
+      if (![...seed.symptoms.options, ...(seed.symptoms.followUps ?? [])].includes(label)) throw new Error(`Unknown symptom "${label}". Known: ${seed.symptoms.options.join('; ')}.`);
       const s = toggleSymptom(load(), need('crew'), label, Date.now());
       save(s);
       print({ logged: s.symptoms.filter((x) => x.crewId === opts.crew).map((x) => x.label), pathways: view(s, opts.crew) });
@@ -100,6 +103,13 @@ try {
       const r = sendPathwayCase(load(), seed, rules, { crewId: need('crew'), pathwayId: need('pathway'), settingId: opts.setting ?? seed.settings[0].id, at: Date.now() });
       save(r.state);
       print(pathwayCaseContent(r.state, seed, rules, r.pack.id));
+      break;
+    }
+    case 'areas': print({ ...recordsStatus(), areas: bodyAreas(), recordTypes: recordKinds().map(({ demo: _demo, ...k }) => k) }); break;
+    case 'log': {
+      const r = addRecord(load(), { crewId: need('crew'), kindId: need('type'), at: Date.now(), option: opts.option, option2: opts.option2, value: opts.value === undefined ? undefined : Number(opts.value), score: opts.score === undefined ? undefined : Number(opts.score), note: opts.note });
+      save(r.state);
+      print({ logged: recordLine(r.record), all: recordsFor(r.state, opts.crew).map(recordLine), note: 'Record only. No rule reads this, so it raises no alert and sets no result. It is sent with any case this person sends.' });
       break;
     }
     case 'replay': print(replay(seed, rules)); break;

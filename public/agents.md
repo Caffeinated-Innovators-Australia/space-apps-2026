@@ -57,6 +57,9 @@ npm run crew-health -- symptom --crew crew-4 --label "Blood in urine"
 npm run crew-health -- pathways --crew crew-4
 npm run crew-health -- pain    --crew crew-4 --pathway KS-01 --score 7
 npm run crew-health -- send-pathway --crew crew-4 --pathway KS-01
+npm run crew-health -- areas
+npm run crew-health -- log     --crew crew-1 --type hrv --value 52
+npm run crew-health -- log     --crew crew-1 --type msk-pain --option Pain --option2 Knee --score 6
 ```
 
 `READING_ID` is the `reading.id` that `record` prints. Grip strength 24.4 kg for `crew-1` is below 80% of their own baseline, the NASA strength standard (NASA-STD-3001 Volume 1), so it comes back `red`. A radiation total lower than the last reading is refused with an error, because a running total cannot go down. `assess`, `demo`, `day`, `plan`, `history`, `streak` and `outbox` save nothing. `record`, `send` and `export` change a local state file (`.crew-health-state.json`, or the path given with `--state FILE`). Nothing is sent over a network. `export` writes a file in the format `crew-health-case-export/3`; each case has a `kind` (`reading` or `symptom-pathway`) and includes the other signals flagged that day.
@@ -98,3 +101,5 @@ Symptoms that form a pattern open a pathway. The first is a possible kidney ston
 - Action layer: `src/core/actions.ts` (pure functions: state in, new state out)
 - Evidence and limits: `docs/EVIDENCE.md`
 - What is built and what is not: `docs/ROAD_TO_FLIGHT.md`, and the app's "Privacy and limits" screen
+
+`areas` lists the eight body areas, the symptoms under each and the record-only result types. `log` saves one result for the record: it is checked for typing slips, sent with any case that person sends, and never scored. No rule reads it, so it raises no alert. A follow-up question such as "Comes in waves" is not on the general symptom list; it is asked inside a pathway once its symptom is logged, and `symptom` accepts it.

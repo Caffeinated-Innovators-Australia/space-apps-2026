@@ -126,7 +126,7 @@ export function Location({ state, setting, seed, onChange }: LocationProps) {
             <li key={ch.area}>
               <span className="x-lp-area">{ch.area}</span>
               <span>{ch.text}</span>
-              {ch.builtBy === 'emergency module' ? <span className="caption">Shown in the emergency steps.</span> : null}
+              {ch.builtBy === 'emergency module' ? <span className="caption">Shown in the emergency module, a separate team prototype. The built-in Emergency steps are not adapted yet.</span> : null}
             </li>
           ))}
         </ul>

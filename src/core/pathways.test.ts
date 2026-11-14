@@ -16,7 +16,23 @@ const one = (s: State, crew = 'crew-4') => pathwayStatuses(s, seed, rules, crew)
 
 describe('kidney stone pathway (KS-01)', () => {
   it('uses only symptoms the crew can log', () => {
-    for (const w of rules.pathways) for (const l of [...w.core, ...w.supporting, ...w.urgent]) expect(seed.symptoms.options).toContain(l);
+    for (const w of rules.pathways) for (const l of [...w.core, ...w.supporting, ...w.urgent]) expect([...seed.symptoms.options, ...(seed.symptoms.followUps ?? [])]).toContain(l);
+  });
+  it('keeps a follow-up question off the general symptom list', () => {
+    for (const f of seed.symptoms.followUps ?? []) expect(seed.symptoms.options).not.toContain(f);
+  });
+  it('keeps the early warning and its steps when a core symptom alone is logged (crew-1, low fluid)', () => {
+    const before = pathwayStatuses(initialState(seed), seed, rules, 'crew-1').find((x) => x.pathway.id === 'KS-01')!;
+    expect(before.level).toBe('early');
+    const after = pathwayStatuses(log(initialState(seed), 'crew-1', 'Pain in side or lower back'), seed, rules, 'crew-1').find((x) => x.pathway.id === 'KS-01')!;
+    expect(after.level).toBe('early');
+    expect(after.steps).toEqual(before.steps);
+    expect(after.matched.core).toEqual(['Pain in side or lower back']);
+  });
+  it('adds the matched pattern to the early warning and does not replace it', () => {
+    const s = pathwayStatuses(log(initialState(seed), 'crew-1', 'Pain in side or lower back', 'Blood in urine'), seed, rules, 'crew-1').find((x) => x.pathway.id === 'KS-01')!;
+    expect(s.level).toBe('amber');
+    expect(s.earlier?.ruleId).toBe('KS-00');
   });
   it('raises nothing without the core symptom', () => {
     expect(pathwayStatuses(log(initialState(seed), 'crew-4', 'Nauseous', 'Blood in urine'), seed, rules, 'crew-4')).toEqual([]);

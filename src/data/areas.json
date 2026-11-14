@@ -1,0 +1,28 @@
+{
+ "status": "Placeholder lists and record types, awaiting clinician review (CR-52)",
+ "note": "Record only. Nothing here raises an alert or sets a result until a clinician writes a rule for it.",
+ "areas": [
+  { "id": "mind", "label": "Mind and sleep", "short": "Mind and sleep", "group": "Mind and sleep", "symptoms": ["Low mood", "Tired", "Headache", "Confused"], "records": [] },
+  { "id": "eyes", "label": "Eyes", "short": "Eyes", "group": "Eyes", "symptoms": ["Blurred vision"], "records": ["amsler", "retinal-scan", "eye-pressure", "visual-field"] },
+  { "id": "lungs", "label": "Lungs and breathing", "short": "Lungs", "symptoms": ["Cough", "Short of breath", "Chest pain", "Sore throat"], "records": [] },
+  { "id": "heart", "label": "Heart", "short": "Heart", "group": "Heart", "together": true, "symptoms": ["Chest pain", "Dizzy on standing"], "records": ["ecg", "hrv"] },
+  { "id": "gut", "label": "Stomach and gut", "short": "Gut", "symptoms": ["Nauseous", "Vomiting", "Diarrhoea", "Constipated", "Belly pain"], "records": ["bowels"] },
+  { "id": "blood", "label": "Blood, immune and hormones", "short": "Blood and immune", "group": "Blood", "symptoms": ["Fever or chills", "Sore throat", "Cold sore"], "records": ["wcc", "cortisol", "vbg-ph", "vbg-lactate"] },
+  { "id": "skin", "label": "Skin", "short": "Skin", "symptoms": ["Rash", "Itchy skin", "Cut slow to heal", "Cold sore"], "records": [] },
+  { "id": "muscle", "label": "Muscle and bone", "short": "Muscle and bone", "group": "Muscle and bone", "symptoms": ["Muscle or joint pain", "Stiffness"], "records": ["msk-pain"] }
+ ],
+ "kinds": [
+  { "id": "ecg", "label": "ECG (heart tracing)", "how": "Take the tracing on the ECG device, then log that it was done. No tracing is kept in this demo.", "optionLabel": "Type", "options": ["6-lead", "12-lead"], "note": true },
+  { "id": "hrv", "label": "Heart rate variability", "how": "Enter the value your wearable or ECG device reports after a resting recording.", "number": { "unit": "ms", "min": 1, "max": 300, "dp": 0 }, "demo": [62, 58, 60, 55, 57, 54] },
+  { "id": "amsler", "label": "Amsler grid", "how": "Hold the screen 30 cm away with your usual glasses on. Cover one eye. Look only at the centre dot.", "grid": true, "option2Label": "Eye", "options2": ["Right eye", "Left eye"], "optionLabel": "What you see", "options": ["All lines straight, none missing", "Some lines wavy, blurred or missing"] },
+  { "id": "retinal-scan", "label": "Retinal scan (OCT)", "how": "OCT is optical coherence tomography, a scan of the back of the eye. Log that the scan was done. No scan is kept in this demo.", "option2Label": "Eye", "options2": ["Right eye", "Left eye", "Both eyes"], "optionLabel": "Scan", "options": ["Done"], "note": true },
+  { "id": "eye-pressure", "label": "Eye pressure (tonometry)", "how": "Enter the reading from the tonometer, one eye at a time.", "option2Label": "Eye", "options2": ["Right eye", "Left eye"], "number": { "unit": "mmHg", "min": 1, "max": 80, "dp": 0 } },
+  { "id": "visual-field", "label": "Visual field test", "how": "Log that the test was done. No result is kept in this demo.", "option2Label": "Eye", "options2": ["Right eye", "Left eye", "Both eyes"], "optionLabel": "Test", "options": ["Done"], "note": true },
+  { "id": "bowels", "label": "Bowels today", "how": "Tap what fits today.", "optionLabel": "Today", "options": ["Normal", "Loose", "Hard", "None today"] },
+  { "id": "wcc", "label": "White cell count", "how": "Enter the result from the blood analyser.", "number": { "unit": "×10⁹/L", "min": 0.1, "max": 100, "dp": 1 }, "demo": [6.1, 5.8, 6.4, 6.0, 5.7, 6.2] },
+  { "id": "cortisol", "label": "Salivary cortisol", "how": "Enter the result from the saliva test, taken at the same time of day each time.", "number": { "unit": "nmol/L", "min": 0, "max": 200, "dp": 1 }, "demo": [14.2, 15.1, 13.8, 16.0, 15.4, 16.3] },
+  { "id": "vbg-ph", "label": "Venous blood gas: pH", "how": "Enter the result from the blood gas analyser.", "number": { "unit": "pH", "min": 6.5, "max": 8, "dp": 2 } },
+  { "id": "vbg-lactate", "label": "Venous blood gas: lactate", "how": "Enter the result from the blood gas analyser.", "number": { "unit": "mmol/L", "min": 0, "max": 30, "dp": 1 } },
+  { "id": "msk-pain", "label": "Pain or stiffness", "how": "Tap what it is and where, then how bad it is now.", "optionLabel": "What", "options": ["Pain", "Stiffness"], "option2Label": "Where", "options2": ["Neck", "Shoulder", "Back", "Hip", "Knee", "Ankle or foot", "Hand or wrist", "Other"], "score": true, "note": true }
+ ]
+}

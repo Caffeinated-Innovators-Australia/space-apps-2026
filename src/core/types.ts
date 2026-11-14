@@ -103,7 +103,8 @@ export interface Seed {
   clockOptions: string[];
   slipMinutes: number;
   radiationDays: number[];
-  symptoms: { status: string; options: string[] };
+  /** `followUps` are questions about a symptom, asked only inside a pathway once that symptom is logged. They are not on the general list. */
+  symptoms: { status: string; options: string[]; followUps?: string[] };
   /** Symptoms grouped by where on the body they are felt, for the "Feeling off?" flow. */
   privacy?: { status: string; rows: { what: string; you: string; medic: string; surgeon: string; crew: string }[] };
   symptomZones?: { status: string; zones: { id: string; label: string; symptoms: string[] }[] };
@@ -159,6 +160,9 @@ export interface EmergencyRun { id: string; crewId: string; startedAt: number; e
 /** A wound or skin problem being watched as it heals. No photo is kept. */
 export interface Wound { id: string; crewId: string; label: string; startedAt: number; checks: { at: number; status: 'better' | 'same' | 'worse' }[] }
 
+/** One result logged for the record, such as an ECG taken or an eye pressure reading. Never scored: no rule reads it. */
+export interface HealthRecord { id: string; crewId: string; kindId: string; at: number; option?: string; option2?: string; value?: number; score?: number; note?: string }
+
 /** Everything the device remembers. One small document, saved after every action. */
 export interface State {
   version: 2;
@@ -182,7 +186,9 @@ export interface State {
   ultrasound?: Record<string, { stepsDone: string[]; at: number }>;
   crewChecks?: CrewCheck[];
   /** Detail of each reaction check, keyed by reading id: the median, and the lapses over the lapse time. */
-  reactionDetail?: Record<string, { median: number; lapses: number; trials: number }>;
+  reactionDetail?: Record<string, { median: number; lapses: number; trials: number; /** Taps made before the counter appeared. Recorded, not scored. */ falseStarts?: number }>;
+  /** Results logged for the record only. No rule reads them. */
+  records?: HealthRecord[];
   /** Alerts raised by the emergency module from vital signs, newest last. */
   moduleAlerts?: { at: number; crewId: string; construct: number; pathway: string; reasons: string[] }[];
   ui: { crewId: string; settingId: string; theme: string; doseLogged: boolean; clock: string; slipped: boolean; /** Real time at which the mission clock was last set, so logged times read as mission time. */ clockSetAt?: number; /** True while there is no link to Earth, for example at solar conjunction. Cases queue until it returns. */ linkDown?: boolean; /** Demo only: milliseconds the clock has been skipped ahead. */ skipMs?: number; /** Set when the place changes to one with different gravity: the old gravity band and when. */ gravityChange?: { from: string; at: number }; /** True when the crew set the place by hand because the automatic location was lost. */ locationManual?: boolean };

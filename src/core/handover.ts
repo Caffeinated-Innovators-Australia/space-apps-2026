@@ -45,6 +45,7 @@ export function isbar(content: CaseContent, opts: IsbarOptions = {}): IsbarSecti
       `Reading: ${r.indicator} ${r.value} ${r.unit}, taken at ${time(r.takenAt)}`,
       `Change from own baseline: ${r.changeFromBaseline}`,
       `Confirmed by a repeat reading today: ${content.assessment.confirmedByRepeatReading ? 'yes' : 'no'}`,
+      ...(content.reactionCheck ? [`Reaction check: median ${content.reactionCheck.median} ms, ${content.reactionCheck.lapses} lapses, ${content.reactionCheck.trials} taps counted, ${content.reactionCheck.falseStarts ?? 0} taps too early (recorded, not scored)`] : []),
     ];
     const background = [
       `Own range: ${t.ownRange[0]} to ${t.ownRange[1]} ${r.unit} (baseline average ${t.baselineMean})`,
@@ -52,6 +53,7 @@ export function isbar(content: CaseContent, opts: IsbarOptions = {}): IsbarSecti
       `Today: ${list(t.today.map(String), 'no readings')}`,
       `Symptoms logged: ${list(symptoms, 'none')}`,
       `Other signals today: ${list(others, 'none')}`,
+      ...(content.records.length ? [`Logged for the record, not scored: ${list(content.records, 'none')}`] : []),
     ];
     const assessment = [
       `Tier: ${tw(content.assessment.tier)}`,
@@ -75,6 +77,7 @@ export function isbar(content: CaseContent, opts: IsbarOptions = {}): IsbarSecti
     ...(content.vitals ? [`Vital signs: ${content.vitals}`] : []),
     ...(content.ultrasound ? [content.ultrasound] : []),
     `Other signals today: ${list(others, 'none')}`,
+    ...(content.records.length ? [`Logged for the record, not scored: ${list(content.records, 'none')}`] : []),
   ];
   const assessment = [
     `Tier: ${a.tier ? tw(a.tier) : 'none now'}`,

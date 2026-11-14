@@ -1,0 +1,15 @@
+/* Body area screen. Every class starts with x-ar-. AI assistance: drafted with Claude Code (see AI_USE.md). */
+.x-ar-row { display: flex; flex-direction: column; gap: 6px; padding: 8px 0; }
+.x-ar-name { font-weight: 600; font-size: 18px; }
+.x-ar-done { color: var(--ink); font-weight: 700; }
+.x-ar-tag { font-size: 16px; color: var(--ink-muted); border: 1px solid var(--line-strong); border-radius: 4px; padding: 2px 8px; white-space: nowrap; }
+.x-ar-note { display: flex; flex-direction: column; gap: 6px; }
+.x-ar-note input { background: var(--surface-200); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 8px; padding: 10px 12px; font: inherit; font-size: 16px; min-height: 44px; }
+.x-ar-amsler { width: 100%; max-width: 260px; display: block; margin: 0 auto; border-radius: 4px; }
+.x-ar-amsler-bg { fill: #ffffff; }
+.x-ar-amsler-line { stroke: #111111; stroke-width: 1; fill: none; }
+.x-ar-amsler-dot { fill: #111111; }
+.x-ar-spark { width: 100%; max-width: 320px; display: block; }
+.x-ar-spark-line { fill: none; stroke: var(--line-strong); stroke-width: 2; }
+.x-ar-spark-demo { fill: var(--ink-muted); }
+.x-ar-spark-own { fill: var(--action); stroke: var(--ink); stroke-width: 1.5; }

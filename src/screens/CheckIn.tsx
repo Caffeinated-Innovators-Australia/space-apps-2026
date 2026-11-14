@@ -38,6 +38,8 @@ export function CheckIn({ state, commit, setting, crewId, seed, rules, go, say, 
   };
 
   const mine = state.symptoms.filter((s) => s.crewId === crewId);
+  // Symptoms are grouped by body area, so the list reads as a few short rows and not one long one.
+  const zones = (seed.symptomZones?.zones?.length ? seed.symptomZones.zones : [{ id: 'all', label: 'Symptoms', symptoms: seed.symptoms.options }]).map((z) => ({ ...z, symptoms: z.symptoms.filter((o) => seed.symptoms.options.includes(o)) })).filter((z) => z.symptoms.length > 0);
   const nothing = state.nothingToReport.includes(crewId);
   const question = pathwayStatuses(state, seed, rules, crewId).find((p) => p.level === 'early' || p.level === 'check');
 
@@ -108,6 +110,7 @@ export function CheckIn({ state, commit, setting, crewId, seed, rules, go, say, 
                       <span className="x-ci-unit">{ind.unit}</span>
                     </div>
                     <button type="button" className="x-ci-step" aria-label={`More ${ind.name.toLowerCase()}`} onClick={() => nudge(ind, 1)}>+</button>
+                    <input type="range" className="x-ci-range" aria-label={`${ind.name}, slide to set`} min={ind.input.min} max={ind.input.max} step={10 ** -ind.dp} value={Number.isFinite(Number(text(ind))) && text(ind).trim() !== '' ? Math.min(ind.input.max, Math.max(ind.input.min, Number(text(ind)))) : demoValue(seed, crewId, ind.id)} onChange={(e) => set(ind, fmt(ind, Number(e.target.value)))} />
                   </div>
                 )}
                 {err ? <p className="x-ci-error" id={`${id}-err`} role="alert">{err}</p> : null}
@@ -123,12 +126,19 @@ export function CheckIn({ state, commit, setting, crewId, seed, rules, go, say, 
 
         <section className="card" aria-labelledby="x-ci-feel">
           <div className="card-head"><h2 className="title" id="x-ci-feel">Anything else today?</h2><SyntheticTag /></div>
-          <div className="chips" role="group" aria-labelledby="x-ci-feel">
-            {seed.symptoms.options.map((o) => (
-              <button key={o} type="button" className="chip chip-toggle" aria-pressed={mine.some((x) => x.label === o)} onClick={() => commit(toggleSymptom(state, crewId, o, Date.now()))}>{o}</button>
-            ))}
+          <div className="chips" role="group" aria-label="Nothing to report">
             <button type="button" className="chip chip-toggle" aria-pressed={nothing} onClick={() => commit(reportNothing(state, crewId))}>Nothing to report</button>
           </div>
+          {zones.map((z) => (
+            <div className="x-ci-zonegroup" key={z.id}>
+              <span className="group-name" id={`x-ci-z-${z.id}`}>{z.label}</span>
+              <div className="chips" role="group" aria-labelledby={`x-ci-z-${z.id}`}>
+                {z.symptoms.map((o) => (
+                  <button key={o} type="button" className="chip chip-toggle" aria-pressed={mine.some((x) => x.label === o)} onClick={() => commit(toggleSymptom(state, crewId, o, Date.now()))}>{o}</button>
+                ))}
+              </div>
+            </div>
+          ))}
           {mine.length > 0 ? (
             <p aria-live="polite">Logged: {mine.map((x) => `${x.label.toLowerCase()} at ${hhmm(x.at)}`).join(', ')}.</p>
           ) : nothing ? <p aria-live="polite">Logged: nothing to report.</p> : null}

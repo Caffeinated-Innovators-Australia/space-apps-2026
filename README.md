@@ -14,13 +14,13 @@ Fifteen indicators in seven groups, by body system:
 
 - Mind and sleep: sleep, mood, reaction time.
 - Heart: resting heart rate, blood pressure (upper and lower).
-- Eyes: near vision, a self-check built into the app.
+- Eyes: visual acuity, a self-check built into the app.
 - Muscle and bone: exercise plan done, grip strength, body mass.
 - Food and fluid: fluid intake, food energy.
 - Blood: haemoglobin.
 - Cabin and radiation: cabin carbon dioxide, radiation dose.
 
-Six check-ins are daily (sleep, resting heart rate, mood, exercise plan done, fluid intake, food energy). The weekly ones each fall due on their own day of the mission week; near vision is due on Day 214. Reaction time is asked for when the rules call for it. Cabin carbon dioxide and radiation dose come from sensors, SYNTHETIC in the demo.
+Six check-ins are daily (sleep, resting heart rate, mood, exercise plan done, fluid intake, food energy). The weekly ones each fall due on their own day of the mission week; visual acuity is due on Day 214. Reaction time is asked for when the rules call for it. Cabin carbon dioxide and radiation dose come from sensors, SYNTHETIC in the demo.
 
 Most indicators are compared with the person's own baseline. Some also have a sourced limit. Grip strength has a floor of 80% of the person's own baseline, from NASA-STD-3001 Volume 1. Radiation dose is a running total judged against NASA's career limit of 600 mSv, not against a personal range. Every indicator has an explanation card (how to measure, why it matters, what to do, the NASA hazards, sources). Results are sorted into three tiers, each a colour, a shape and a word: Nothing to do (green circle), Watch (amber triangle) and Act now (red square). Emergency is a mode opened from an Act now alert, not a tier. A prompt scheduler never asks for a check-in during a critical operation such as an EVA (extravehicular activity, a spacewalk). An honest-reporting loop counts check-ins, never results. Location profiles (Mars base, In transit, Moon base, Space station, Remote Australia) change the reply delay and guidance, and carry the gravity, the cabin atmosphere and how far help is. Rules decide; no AI model runs in the app.
 
@@ -28,9 +28,11 @@ Symptoms can form a pattern too. If a crew member logs pain in the side or lower
 
 The app also has a one-screen daily check-in, a three-step "Feeling off?" flow, an early warning before any symptom, a handover in clinical order with an Earth inbox where the remote doctor replies, a crew medic overview that shows only what people have chosen to share, and an Emergency button on every screen. Jo is the crew member in the story. Sam is the station hand in the remote Australia twin.
 
+After the team's clinicians reviewed the build, the app gained eight body areas (mind and sleep, eyes, lungs and breathing, heart, stomach and gut, blood immune and hormones, skin, muscle and bone). Each area shows its check-ins, the symptoms to report, and results logged for the record only, such as an ECG taken, heart rate variability, an Amsler grid, eye pressure, a blood gas or a pain score by site. Record-only results are sent with a case and are never scored: no rule reads them until a clinician writes one. The crew has its own Replies inbox; the Earth inbox is a demo control in the Menu.
+
 Built from our clinical lead's build pack v3.3: vital signs, with monitor alert rules for possible sepsis and possible shock (never from oxygen saturation alone); a four-result urine test strip; a guided ultrasound that keeps no image and never says what an image means; a weekly crew check-in that only the flight psychologist sees; and the team's emergency module, a separate team prototype opened inside the app and fed our readings. The emergency module is not for clinical use. Some of its checklists hold medicine names and doses that still need clinical review, and these never appear on our own screens. Every value from the pack is a placeholder awaiting sign-off.
 
-This is an assessment and next-steps tool. It does not diagnose. It is a hackathon prototype and makes no clinical accuracy claim. The near-vision self-check is not a calibrated eye chart and not a test for any eye condition; the app says so. There is no in-flight way to measure bone directly, so exercise and grip strength stand in for it. Not built: voice input on our own screens, sensor connections, a rover profile, rules that change by environment, any calibrated or clinical eye test (for example retinal imaging), and any direct bone measurement.
+This is an assessment and next-steps tool. It does not diagnose. It is a hackathon prototype and makes no clinical accuracy claim. The visual acuity self-check is not a calibrated eye chart and not a test for any eye condition; the app says so. There is no in-flight way to measure bone directly, so exercise and grip strength stand in for it. Not built: voice input on our own screens, sensor connections, a rover profile, rules that change by environment, any calibrated or clinical eye test (for example retinal imaging), and any direct bone measurement.
 
 ## Status
 

@@ -4,6 +4,7 @@
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { assess, RANK, type Assessment, type RuleFile, type Tier } from './rules.ts';
 import { pathwayCaseContent } from './pathways.ts';
+import { recordsSummary } from './records.ts';
 import { applySlip, plan, type CheckIn, type PlanItem } from './schedule.ts';
 import type { CasePack, CrewProfile, Indicator, Reading, Seed, Setting, State, Symptom, TimelineBlock } from './types.ts';
 
@@ -319,6 +320,8 @@ export function casePackContent(state: State, seed: Seed, rules: RuleFile, packI
     stepsGiven: a.steps,
     stepsDone: reading.stepsDone,
     symptoms: state.symptoms.filter((s) => s.crewId === pack.crewId).map((s) => ({ label: s.label, at: new Date(s.at).toISOString() })),
+    records: recordsSummary(state, pack.crewId),
+    reactionCheck: state.reactionDetail?.[reading.id],
     note: 'Assessment and next steps only. Not a diagnosis.',
   };
 }

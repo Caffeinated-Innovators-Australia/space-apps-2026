@@ -91,7 +91,7 @@ export function VisionTest({ onResult }: { onResult: (worseEyeLines: number) => 
         {phase === 'idle' ? (
           <>
             <p className="x-vt-text">
-              Hold the screen at arm's length, about 40 cm. Wear your usual glasses or contact lenses. You will check one eye at a time.
+              Hold the screen 30 cm from your eyes. If you cannot measure it, use your own arm's length, the same every time. Wear your usual glasses or contact lenses. You will check one eye at a time.
             </p>
             <button type="button" className="btn x-vt-btn" onClick={start}>Start the vision check</button>
           </>

@@ -249,7 +249,7 @@
   {
    "id": "vision",
    "group": "Eyes",
-   "name": "Near vision",
+   "name": "Visual acuity",
    "region": "Eyes",
    "unit": "lines",
    "dp": 0,
@@ -261,13 +261,13 @@
     "kind": "vision",
     "min": 0,
     "max": 8,
-    "prompt": "Near-vision check: one eye at a time"
+    "prompt": "Visual acuity check: one eye at a time"
    },
    "hazards": [
     "G"
    ],
    "card": {
-    "how": "Hold the screen at arm's length with your usual glasses on. Cover one eye and read the smallest line you can, then swap eyes. The tool keeps the worse eye.",
+    "how": "Hold the screen 30 cm from your eyes with your usual glasses on. If you cannot measure it, use your own arm's length, the same every time. Cover one eye and read the smallest line you can, then swap eyes. The tool keeps the worse eye.",
     "why": "Changes to the eye and vision are a risk particular to spaceflight, linked to fluid shifting towards the head. A weekly self-check against your own earlier results shows a change early.",
     "what": "If you read fewer lines than your own range, repeat the check in good light. If it holds, tell your crew medic so a proper eye exam can be arranged.",
     "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
@@ -14475,60 +14475,80 @@
   144
  ],
  "symptoms": {
-  "status": "Placeholder list, awaiting clinician review (CR-10)",
+  "status": "Placeholder list, awaiting clinician review (CR-10, CR-51)",
   "options": [
-   "Comes in waves",
+   "Tired",
+   "Fever or chills",
    "Confused",
    "Headache",
-   "Tired",
    "Dizzy on standing",
-   "Nauseous",
    "Blurred vision",
-   "Rash",
-   "Fever or chills",
-   "Sore throat",
-   "Cut slow to heal",
-   "Cold sore",
    "Low mood",
+   "Sore throat",
+   "Cough",
+   "Short of breath",
+   "Chest pain",
+   "Nauseous",
+   "Vomiting",
+   "Diarrhoea",
+   "Constipated",
+   "Belly pain",
    "Pain in side or lower back",
    "Blood in urine",
    "Pain passing urine",
-   "Cannot pass urine"
+   "Cannot pass urine",
+   "Rash",
+   "Itchy skin",
+   "Cut slow to heal",
+   "Cold sore",
+   "Muscle or joint pain",
+   "Stiffness"
+  ],
+  "followUps": [
+   "Comes in waves"
   ]
  },
  "symptomZones": {
-  "status": "Placeholder grouping, awaiting clinician review (CR-10)",
+  "status": "Placeholder grouping, awaiting clinician review (CR-10, CR-51)",
   "zones": [
    {
+    "id": "whole",
+    "label": "Whole body",
+    "symptoms": [
+     "Tired",
+     "Fever or chills",
+     "Confused"
+    ]
+   },
+   {
     "id": "head",
-    "label": "Head and mind",
+    "label": "Head, eyes and mind",
     "symptoms": [
      "Headache",
      "Dizzy on standing",
-     "Low mood",
-     "Tired"
+     "Blurred vision",
+     "Low mood"
     ]
    },
    {
-    "id": "eyes",
-    "label": "Eyes",
-    "symptoms": [
-     "Blurred vision"
-    ]
-   },
-   {
-    "id": "throat",
-    "label": "Mouth and throat",
+    "id": "chest",
+    "label": "Throat, chest and breathing",
     "symptoms": [
      "Sore throat",
-     "Cold sore"
+     "Cough",
+     "Short of breath",
+     "Chest pain"
     ]
    },
    {
-    "id": "stomach",
-    "label": "Stomach",
+    "id": "gut",
+    "label": "Stomach and gut",
     "symptoms": [
-     "Nauseous"
+     "Nauseous",
+     "Vomiting",
+     "Diarrhoea",
+     "Constipated",
+     "Belly pain"
     ]
    },
    {
@@ -14536,7 +14556,6 @@
     "label": "Kidneys and urine",
     "symptoms": [
      "Pain in side or lower back",
-     "Comes in waves",
      "Blood in urine",
      "Pain passing urine",
      "Cannot pass urine"
@@ -14547,16 +14566,17 @@
     "label": "Skin",
     "symptoms": [
      "Rash",
-     "Cut slow to heal"
+     "Itchy skin",
+     "Cut slow to heal",
+     "Cold sore"
     ]
    },
    {
-    "id": "whole",
-    "label": "Whole body",
+    "id": "msk",
+    "label": "Muscles and joints",
     "symptoms": [
-     "Fever or chills",
-     "Confused",
-     "Tired"
+     "Muscle or joint pain",
+     "Stiffness"
     ]
    }
   ]
