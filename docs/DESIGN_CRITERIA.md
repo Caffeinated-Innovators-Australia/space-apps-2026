@@ -46,7 +46,7 @@ This is NASA's guidance on how a crew display should behave. It is not NASA bran
 | # | Criterion | Source | How the app meets it | Status |
 |---|---|---|---|---|
 | D-22 | A fixed area that is always visible for time and alerts | Appendix F.4.2f | A bar stays at the top of every screen with mission time and the alert that most needs attention | Met |
-| D-23 | Time shown as label dddd/hh:mm:ss on a 24-hour clock | Appendix F.6.1f | "Mission time 0087/06:45:00" | Met |
+| D-23 | Time shown as label dddd/hh:mm:ss on a 24-hour clock | Appendix F.6.1f | "Mission time 0214/06:45:00" | Met |
 | D-24 | Consistent appearance and layout | [V2 10005] | One set of components and tokens across all screens | Met |
 | D-25 | Critical information in the most prominent place | [V2 10032] | The combined alert card sits at the top of the day; the alert bar is always visible | Met |
 | D-26 | Avoid horizontal scrolling; vertical scrolling for lists and procedures | Appendix F.4.1 | No horizontal scrolling at any width. The Today screen is a vertical list of cards | Partly met: Today is long |

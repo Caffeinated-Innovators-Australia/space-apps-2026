@@ -5,7 +5,7 @@ This is a hackathon prototype. It is built the way a real crew tool would have t
 ## Built and working
 
 - Runs with no network once loaded, in tablet, laptop and phone browsers, and can be installed to the home screen.
-- The Day 87 Mars base story, inside a wider check-in: fifteen indicators in seven groups (Mind and sleep, Heart, Eyes, Muscle and bone, Food and fluid, Blood, Cabin and radiation). Most are compared with that person's own baseline. Six are daily; the weekly ones each fall due on their own day of the mission week.
+- The Day 214 Mars base story, inside a wider check-in: fifteen indicators in seven groups (Mind and sleep, Heart, Eyes, Muscle and bone, Food and fluid, Blood, Cabin and radiation). Most are compared with that person's own baseline. Six are daily; the weekly ones each fall due on their own day of the mission week.
 - A near-vision self-check inside the app: one eye at a time, eight lines of letters, the worse eye kept and compared with the person's own earlier results. It says on screen that it is not a calibrated eye chart.
 - Sourced limits that depend on the person: grip strength below 80% of their own baseline (NASA-STD-3001 Volume 1) is Urgent when it is also below their own range. Radiation dose is a running total shown as a share of NASA's career limit of 600 mSv (NASA-STD-3001 Volume 1), and a lower total is refused.
 - Six rule kinds in one rules engine: level, trend, sustained, limit, combined and prompt. A slow sleep trend is flagged even when every night is inside the band, and two or more flagged signals are shown together on one card.

@@ -1,6 +1,6 @@
 # Crew health check: page for AI agents and developers
 
-This is a hackathon prototype (NASA Space Apps Challenge 2026, Caffeinated Innovators Australia). It follows one story, Day 87 on a Mars base. It covers fifteen indicators in seven groups (Mind and sleep, Heart, Eyes, Muscle and bone, Food and fluid, Blood, Cabin and radiation). Most are compared with a crew member's own baseline; radiation dose is a running total judged against NASA's career limit of 600 mSv instead. Each assessment returns a tier, a plain-language reason with its source, and next steps. Its rules cover a single reading, a slow trend, a run of readings, a sourced limit, a combined picture and a prompt for a reaction-time check. Assessment and next steps only. Not a diagnosis. Every rule is a placeholder until a clinician signs it off, and every crew value is SYNTHETIC. NASA does not endorse this project.
+This is a hackathon prototype (NASA Space Apps Challenge 2026, Caffeinated Innovators Australia). It follows one story, Day 214 on a Mars base. It covers fifteen indicators in seven groups (Mind and sleep, Heart, Eyes, Muscle and bone, Food and fluid, Blood, Cabin and radiation). Most are compared with a crew member's own baseline; radiation dose is a running total judged against NASA's career limit of 600 mSv instead. Each assessment returns a tier, a plain-language reason with its source, and next steps. Its rules cover a single reading, a slow trend, a run of readings, a sourced limit, a combined picture and a prompt for a reaction-time check. Assessment and next steps only. Not a diagnosis. Every rule is a placeholder until a clinician signs it off, and every crew value is SYNTHETIC. NASA does not endorse this project.
 
 ## What you can do
 
@@ -33,7 +33,7 @@ Commands (all print JSON; errors print `{"error": "..."}` and exit 1). Crew ids:
 | `export [--out FILE]` | Write queued cases to a file and mark them exported |
 | `demo --crew ID --indicator ID` | The example value for today's demo |
 
-One example each, following the Day 87 story:
+One example each, following the Day 214 story:
 
 ```
 npm run crew-health -- crew

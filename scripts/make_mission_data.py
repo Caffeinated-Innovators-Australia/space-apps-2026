@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the demo mission: four crew, fifteen indicators across the main spaceflight health areas, a pre-flight baseline and 86 mission days,
+"""Build the demo mission: four crew, fifteen indicators across the main spaceflight health areas, a pre-flight baseline and 213 mission days,
 plus the fixed configuration (indicators, environments, crew timeline, privacy).
 
 Writes src/data/seed.json. Everything about the crew is SYNTHETIC: made up, labelled, and
@@ -18,7 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 rng = random.Random(2026)
-MISSION_DAY = 87
+MISSION_DAY = 214
 MISSION_START = dt.date(2026, 11, 14) - dt.timedelta(days=MISSION_DAY - 1)
 osd = json.loads((ROOT / "src/data/osd569_cbc.json").read_text())
 donki = json.loads((ROOT / "src/data/donki_sep.json").read_text())
@@ -62,19 +62,19 @@ INDICATORS = [
      "card": {"how": "Read automatically from the cabin sensor as a one-hour average. You can also type a reading from a handheld monitor.",
               "why": "Cabin carbon dioxide is linked to headaches and slower thinking. It builds up in a closed habitat.",
               "what": "Above the cabin limit: tell the commander so the air system can be checked, and do a reaction-time check."}},
-    {"id": "bp-sys", "group": "Heart", "name": "Blood pressure, upper", "region": "Heart", "unit": "mmHg", "dp": 0, "watch": "both", "cadence": "weekly", "weekDay": 1, "slot": "morning",
+    {"id": "bp-sys", "group": "Heart", "name": "Blood pressure, upper", "region": "Heart", "unit": "mmHg", "dp": 0, "watch": "both", "cadence": "weekly", "weekDay": 2, "slot": "morning",
      "input": {"kind": "number", "min": 50, "max": 260, "prompt": "Upper (systolic) blood pressure"},
      "hazards": ["G"],
      "card": {"how": "Sit and rest for five minutes. Put the cuff on your upper arm at heart level. Stay still and quiet while it measures.",
               "why": "The heart and blood vessels adapt to changed gravity, and blood pressure shifts with them. Good technique matters: a rushed reading gives a false alarm.",
               "what": "One odd reading: rest five minutes and repeat it. If it stays outside your range, tell your crew medic."}},
-    {"id": "bp-dia", "group": "Heart", "name": "Blood pressure, lower", "region": "Heart", "unit": "mmHg", "dp": 0, "watch": "both", "cadence": "weekly", "weekDay": 1, "slot": "morning",
+    {"id": "bp-dia", "group": "Heart", "name": "Blood pressure, lower", "region": "Heart", "unit": "mmHg", "dp": 0, "watch": "both", "cadence": "weekly", "weekDay": 2, "slot": "morning",
      "input": {"kind": "number", "min": 30, "max": 160, "prompt": "Lower (diastolic) blood pressure"},
      "hazards": ["G"],
      "card": {"how": "Take it from the same reading as the upper number: seated, rested five minutes, cuff at heart level.",
               "why": "The two blood pressure numbers are read together. A change in either away from your own normal is worth a second look.",
               "what": "One odd reading: rest five minutes and repeat it. If it stays outside your range, tell your crew medic."}},
-    {"id": "vision", "group": "Eyes", "name": "Near vision", "region": "Eyes", "unit": "lines", "dp": 0, "watch": "low", "cadence": "weekly", "weekDay": 3, "slot": "morning",
+    {"id": "vision", "group": "Eyes", "name": "Near vision", "region": "Eyes", "unit": "lines", "dp": 0, "watch": "low", "cadence": "weekly", "weekDay": 4, "slot": "morning",
      "input": {"kind": "vision", "min": 0, "max": 8, "prompt": "Near-vision check: one eye at a time"},
      "hazards": ["G"],
      "card": {"how": "Hold the screen at arm's length with your usual glasses on. Cover one eye and read the smallest line you can, then swap eyes. The tool keeps the worse eye.",
@@ -87,14 +87,14 @@ INDICATORS = [
      "card": {"how": "At the end of the day, enter how much of the planned exercise you completed, as a percentage. A missed session is 0, a full day is 100.",
               "why": "Muscle and bone are lost quickly in reduced gravity. Exercise is the main protection, so sticking to the plan is itself a health signal.",
               "what": "A missed day is logged and nothing more. If sessions keep slipping, talk to your crew medic about what is getting in the way."}},
-    {"id": "grip", "group": "Muscle and bone", "name": "Grip strength", "region": "Muscle and bone", "unit": "kg", "dp": 1, "watch": "low", "cadence": "weekly", "weekDay": 5, "slot": "morning",
+    {"id": "grip", "group": "Muscle and bone", "name": "Grip strength", "region": "Muscle and bone", "unit": "kg", "dp": 1, "watch": "low", "cadence": "weekly", "weekDay": 6, "slot": "morning",
      "input": {"kind": "number", "min": 1, "max": 120, "prompt": "Grip strength, stronger hand"},
      "limit": {"lowFraction": 0.8, "label": "NASA strength standard (80% of your baseline)", "source": "NASA-STD-3001 Volume 1: in-mission skeletal muscle strength at or above 80% of baseline", "grade": "A"},
      "hazards": ["G"],
      "card": {"how": "Use the hand dynamometer with your stronger hand, elbow at your side. Squeeze as hard as you can for three seconds. Take the best of three.",
               "why": "Grip strength is a quick stand-in for overall muscle strength, which falls in reduced gravity. There is no direct way to measure bone in flight, so strength and exercise stand in for it.",
               "what": "Below your own range: check your exercise plan is being met. Below 80% of your baseline: tell your crew medic."}},
-    {"id": "body-mass", "group": "Muscle and bone", "name": "Body mass", "region": "Muscle and bone", "unit": "kg", "dp": 1, "watch": "low", "cadence": "weekly", "weekDay": 5, "slot": "morning",
+    {"id": "body-mass", "group": "Muscle and bone", "name": "Body mass", "region": "Muscle and bone", "unit": "kg", "dp": 1, "watch": "low", "cadence": "weekly", "weekDay": 6, "slot": "morning",
      "input": {"kind": "number", "min": 30, "max": 200, "prompt": "Body mass"},
      "hazards": ["G", "E"],
      "card": {"how": "Use the body mass device before breakfast, once a week, in the same clothing.",
@@ -119,7 +119,7 @@ INDICATORS = [
      "card": {"how": "Read the running total from your personal dosimeter. It can only go up.",
               "why": "Radiation is one of the five hazards of spaceflight. Dose adds up over a career, so the total matters more than any one day.",
               "what": "The tool shows how much of the career limit you have used. After a solar particle event, log the reading so the flight surgeon can see the step."}},
-    {"id": "haemoglobin", "group": "Blood", "name": "Haemoglobin", "region": "Blood", "unit": "g/dL", "dp": 1, "watch": "both", "cadence": "weekly", "weekDay": 0, "slot": "morning",
+    {"id": "haemoglobin", "group": "Blood", "name": "Haemoglobin", "region": "Blood", "unit": "g/dL", "dp": 1, "watch": "both", "cadence": "weekly", "weekDay": 1, "slot": "morning",
      "input": {"kind": "number", "min": 3, "max": 25, "prompt": "Haemoglobin from the blood analyser"},
      "ref": {"M": {"min": 13.2, "max": 17.1}, "F": {"min": 11.7, "max": 15.5}},
      "refSource": "Laboratory reference range as reported in NASA OSDR, OSD-569 (LSDS-7)",
@@ -146,7 +146,7 @@ CREW = [
 ]
 DP = {i["id"]: i["dp"] for i in INDICATORS}
 BY_ID = {i["id"]: i for i in INDICATORS}
-DAYS = MISSION_DAY - 1  # days 1 to 86 are history; day 87 is today
+DAYS = MISSION_DAY - 1  # days 1 to 213 are history; day 214 is today
 
 
 def clip(ind, v):
@@ -233,27 +233,27 @@ seed = {
     "crew": crew_out,
     "today": {"crew-1": {"sleep": 6.2, "resting-hr": 59, "mood": 4, "reaction": 318, "cabin-co2": 3.4, "haemoglobin": 13.1, "vision": 7, "exercise": 90, "fluid": JO_FLUID_TODAY, "energy": 2300, "bp-sys": 113, "bp-dia": 71, "grip": 30.6, "body-mass": 61.7}},
     "settings": [
-        {"id": "mars-base", "label": "Mars, 22 min", "kicker": "Mars surface base · Mission day 87", "replySeconds": 2676,
+        {"id": "mars-base", "label": "Mars, 22 min", "kicker": "Mars surface base · Mission day 214", "replySeconds": 2676,
          "gapLabel": "Earth reply possible in", "nowLabel": "Earth reply possible now", "detail": "One-way delay 22 min 18 s, with Mars at its farthest",
          "basis": "Light-time arithmetic: about 401 million km at the speed of light, there and back. Relay and processing time would add to this.",
          "advice": "No one on Earth can answer for about 45 minutes. Start the steps now. Do not wait.", "scenarioSynthetic": False,
          "risks": "Partial gravity, dust, long-term radiation, behavioural health", "twist": "Months of trend data; a reply takes 6 to 45 minutes"},
-        {"id": "mars-18", "label": "Mars, 18 min", "kicker": "Mars surface base · Mission day 87", "replySeconds": 2160,
+        {"id": "mars-18", "label": "Mars, 18 min", "kicker": "Mars surface base · Mission day 214", "replySeconds": 2160,
          "gapLabel": "Earth reply possible in", "nowLabel": "Earth reply possible now", "detail": "One-way delay 18 min, with Mars about 324 million km away",
          "basis": "Light-time arithmetic: about 324 million km at the speed of light, there and back. Relay and processing time would add to this.",
          "advice": "No one on Earth can answer for about 36 minutes. Start the steps now. Do not wait.", "scenarioSynthetic": False,
          "risks": "Partial gravity, dust, long-term radiation, behavioural health", "twist": "Months of trend data; a reply takes 6 to 45 minutes"},
-        {"id": "transit", "label": "In transit", "kicker": "Spacecraft in transit to Mars · Mission day 87", "replySeconds": 364,
+        {"id": "transit", "label": "In transit", "kicker": "Spacecraft in transit to Mars · Mission day 214", "replySeconds": 364,
          "gapLabel": "Earth reply possible in", "nowLabel": "Earth reply possible now", "detail": "One-way delay 3 min 2 s, at Mars-closest distance",
          "basis": "Light-time arithmetic: about 54.6 million km at the speed of light, there and back. The delay grows as the spacecraft travels.",
          "advice": "No one on Earth can answer for about 6 minutes. Start the steps now.", "scenarioSynthetic": False,
          "risks": "Radiation, isolation, confinement", "twist": "The delay grows every day, so the crew must act on its own"},
-        {"id": "moon", "label": "Moon base", "kicker": "Lunar surface base · Mission day 87", "replySeconds": 2.6,
+        {"id": "moon", "label": "Moon base", "kicker": "Lunar surface base · Mission day 214", "replySeconds": 2.6,
          "gapLabel": "Earth reply possible in", "nowLabel": "Earth can answer now", "detail": "One-way delay 1.3 s",
          "basis": "Light-time arithmetic: about 384,400 km at the speed of light, there and back.",
          "advice": "Earth can answer within seconds. Call the flight surgeon and do the steps together.", "scenarioSynthetic": False,
          "risks": "Partial gravity, dust, radiation", "twist": "Ground support within seconds"},
-        {"id": "station", "label": "Space station", "kicker": "Space station, low Earth orbit · Mission day 87", "replySeconds": 0.5,
+        {"id": "station", "label": "Space station", "kicker": "Space station, low Earth orbit · Mission day 214", "replySeconds": 0.5,
          "gapLabel": "Earth reply possible in", "nowLabel": "Earth can answer now", "detail": "Real-time link while in coverage",
          "basis": "In low Earth orbit the signal delay is a fraction of a second.",
          "advice": "Ground support is in real time. Call the flight surgeon now.", "scenarioSynthetic": False,

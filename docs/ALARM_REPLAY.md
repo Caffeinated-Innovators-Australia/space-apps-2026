@@ -4,31 +4,31 @@ We ran the rules over every past mission day in the demo data, one day at a time
 
 This is a check of the rule numbers on SYNTHETIC data. It is not a clinical evaluation. It says how often the placeholder rules would speak up from ordinary variation alone, and how soon they catch the three changes the demo data was built with.
 
-## Result (86 past mission days, four crew, 2,439 readings)
+## Result (213 past mission days, four crew, 6,045 readings)
 
 | Measure | Result |
 |---|---|
-| Readings on series nobody changed | 2,405 |
-| Raised as Crew medic | 187 |
-| Raised as Urgent | 2 |
-| Raised per 100 readings | 7.9 |
-| Raised per person per week | 3.8 |
-| Of those, raised twice running (what the app marks as confirmed) | 74, or 1.5 per person per week |
-| By rule | PB-01 level: 133. TR-01 trend: 81. SU-01 sustained: 2 |
+| Readings on series nobody changed | 6,010 |
+| Raised as Crew medic | 439 |
+| Raised as Urgent | 8 |
+| Raised per 100 readings | 7.4 |
+| Raised per person per week | 3.7 |
+| Of those, raised twice running (what the app marks as confirmed) | 190, or 1.6 per person per week |
+| By rule | PB-01 level: 288. TR-01 trend: 212. SU-01 sustained: 8 |
 
 | Change built into the data | Began | First raised | Days taken | How |
 |---|---|---|---|---|
-| Jo's sleep slides over three weeks | Day 66 | Day 83 | 17 | Crew medic, trend rule TR-01 |
-| Jo's fluid intake is low for a week | Day 80 | Day 85 | 5 | Crew medic, trend rule TR-01. The early warning KS-00 fired on day 84 |
-| Cabin carbon dioxide creeps up over a week | Day 80 | Day 83 | 3 | Crew medic, level rule PB-01 |
+| Jo's sleep slides over three weeks | Day 193 | Day 207 | 14 | Crew medic, trend rule TR-01 |
+| Jo's fluid intake is low for a week | Day 207 | Day 213 | 6 | Crew medic, trend rule TR-01. The early warning KS-00 fired on day 211 |
+| Cabin carbon dioxide creeps up over a week | Day 207 | Day 210 | 3 | Crew medic, level rule PB-01 |
 
-The early warning KS-00 (low fluid for three logged days) fired 3 times across 323 person-days on series nobody changed.
+The early warning KS-00 (low fluid for three logged days) fired 6 times across 816 person-days on series nobody changed.
 
 ## What this means
 
-- **The rules catch all three changes.** The slow sleep slide takes 17 days to raise, which is slow. The trend rule waits for a seven-reading average to move one standard deviation.
+- **The rules catch all three changes.** The slow sleep slide takes 14 days to raise, which is slow. The trend rule waits for a seven-reading average to move one standard deviation.
 - **The rules speak up too often.** About four raised results per person per week from ordinary variation is too many. Crews would learn to ignore them. A band of two standard deviations from only 14 baseline readings will flag about one reading in twenty by chance, and the trend rule adds more.
-- **Asking for a second reading helps, but not enough.** It brings the figure down to 1.5 per person per week. Most of what remains is the trend rule, which stays raised from one day to the next.
+- **Asking for a second reading helps, but not enough.** It brings the figure down to 1.6 per person per week. Most of what remains is the trend rule, which stays raised from one day to the next.
 
 ## What it does not show
 

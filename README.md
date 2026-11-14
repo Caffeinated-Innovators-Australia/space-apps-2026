@@ -6,7 +6,7 @@ Challenge: Create Health Monitoring Software for Astronauts on Space Missions. M
 
 On the way to Mars, a question to Earth's doctors can take up to 45 minutes to come back. This tool helps an astronaut who is not a medical expert act in that gap.
 
-The demo is one story. Jo is on Day 87 at a Mars base, 18 light-minutes from Earth. Three days of low fluid raise an early warning that names kidney stone risk, with NASA's evidence report as its source. Then pain starts: three taps, and the rules say who to tell and what to do first. A case goes to Earth as a clinical handover, and a countdown shows that no answer can arrive for 36 minutes, so the crew starts the steps. The doctor's reply lands as a step, and fever turns the result Urgent. Then the same case runs for Sam, a station hand in outback Australia, 640 km from the nearest doctor.
+The demo is one story. Jo is on Day 214 at a Mars base, 18 light-minutes from Earth. Three days of low fluid raise an early warning that names kidney stone risk, with NASA's evidence report as its source. Then pain starts: three taps, and the rules say who to tell and what to do first. A case goes to Earth as a clinical handover, and a countdown shows that no answer can arrive for 36 minutes, so the crew starts the steps. The doctor's reply lands as a step, and fever turns the result Urgent. Then the same case runs for Sam, a station hand in outback Australia, 640 km from the nearest doctor.
 
 A second thread runs the same day. Jo's sleep has slid over three weeks, although each night stayed inside her own range. Cabin carbon dioxide has crept up and today's one-hour average is 3.4 mmHg, above NASA's cabin limit of 3 mmHg. The tool spots the sleep trend, treats the cabin reading as an air-system matter first, asks for a reaction-time check (a tap test in the app, about thirty seconds), and shows the flagged signals together on one card.
 
@@ -20,7 +20,7 @@ Fifteen indicators in seven groups, by body system:
 - Blood: haemoglobin.
 - Cabin and radiation: cabin carbon dioxide, radiation dose.
 
-Six check-ins are daily (sleep, resting heart rate, mood, exercise plan done, fluid intake, food energy). The weekly ones each fall due on their own day of the mission week; near vision is due on Day 87. Reaction time is asked for when the rules call for it. Cabin carbon dioxide and radiation dose come from sensors, SYNTHETIC in the demo.
+Six check-ins are daily (sleep, resting heart rate, mood, exercise plan done, fluid intake, food energy). The weekly ones each fall due on their own day of the mission week; near vision is due on Day 214. Reaction time is asked for when the rules call for it. Cabin carbon dioxide and radiation dose come from sensors, SYNTHETIC in the demo.
 
 Most indicators are compared with the person's own baseline. Some also have a sourced limit. Grip strength has a floor of 80% of the person's own baseline, from NASA-STD-3001 Volume 1. Radiation dose is a running total judged against NASA's career limit of 600 mSv, not against a personal range. Every indicator has an explanation card (how to measure, why it matters, what to do, the NASA hazards, sources). Results are sorted into three tiers: Self-manage, Crew medic, Urgent. A prompt scheduler never asks for a check-in during a critical operation such as an EVA (extravehicular activity, a spacewalk). An honest-reporting loop counts check-ins, never results. Five environment profiles (Mars base, In transit, Moon base, Space station, Remote Australia) change the reply delay and guidance. Rules decide; no AI model runs in the app.
 
@@ -49,7 +49,7 @@ Each ask in the challenge statement is mapped to a screen in `docs/CHALLENGE.md`
 - NASA Human Research Program hazards and risks pages (linked as sources on every explanation card, beside its hazard chips): https://www.nasa.gov/hrp/hazards/ and https://www.nasa.gov/hrp/risks/
 - NASA Human Research Program, Ongoing HRP Research in Space: https://www.nasa.gov/hrp/ongoing-hrp-research/
 - Canadian Space Agency: https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp and https://www.asc-csa.gc.ca/eng/iss/science/why-do-we-conduct-science-experiments-in-space.asp
-- Every synthetic value in the app is labelled SYNTHETIC. The four crew, their baselines, 86 mission days and the radiation dosimeter totals are made by `scripts/make_mission_data.py` with a fixed seed.
+- Every synthetic value in the app is labelled SYNTHETIC. The four crew, their baselines, 213 mission days and the radiation dosimeter totals are made by `scripts/make_mission_data.py` with a fixed seed.
 - NASA does not endorse this project. No NASA logos are used.
 - Full list: `REFERENCES.md` and `docs/DATA_DICTIONARY.md`.
 

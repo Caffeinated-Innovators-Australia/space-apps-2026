@@ -20,7 +20,7 @@ describe('seed data', () => {
   });
 });
 
-describe('the day 87 story', () => {
+describe('the day 214 story', () => {
   it('spots the sleep slide, the raised carbon dioxide, prompts a reaction test and reads them together', () => {
     let s = initialState(seed);
     expect(daySummary(s, seed, rules, 'crew-1').prompt).toBeUndefined();
@@ -164,7 +164,7 @@ describe('honest reporting', () => {
   it('counts check-ins, never results', () => {
     const s0 = initialState(seed);
     const before = streak(s0, seed, 'crew-1');
-    expect(before).toBe(19);
+    expect(before).toBe(146);
     let s = s0;
     const daily = seed.indicators.filter((i) => i.cadence === 'daily').map((i) => i.id);
     for (const id of daily) s = rec(s, id, id === 'mood' ? 1 : demoValue(seed, 'crew-1', id), 1000).state;
