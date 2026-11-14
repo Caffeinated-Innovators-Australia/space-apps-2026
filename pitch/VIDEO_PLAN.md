@@ -1,6 +1,6 @@
 # Demo video plan
 
-The current `demo-draft.mp4` (29.1 seconds, 1920 by 1080, no sound) predates this plan. It shows the old single-blood-count story and will be recut. The final cut follows the official 2026 suggested outline, uses real screen capture of the new app, and carries our doctor's voice, the team's own story (with the family's agreement, and no child's name, image or voice) and the chosen project name.
+`demo-draft.mp4` is a draft cut of this plan: 28.5 seconds, 1920 by 1080, no sound, with captions. It follows the official 2026 suggested outline and shows the Day 87 story on the live app. It carries a small "Draft cut, assembled with AI assistance" mark. The team replaces it with the final cut: our doctor's voice, the team's names and faces in the opening, and the chosen project name. The final cut follows the official 2026 suggested outline, uses real screen capture of the new app, and carries our doctor's voice, the team's own story (with the family's agreement, and no child's name, image or voice) and the chosen project name.
 
 ## Shot list (follows the official 2026 suggested outline)
 

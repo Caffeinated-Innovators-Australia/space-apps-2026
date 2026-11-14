@@ -1,6 +1,6 @@
 # Crew health check: page for AI agents and developers
 
-This is a hackathon prototype (NASA Space Apps Challenge 2026, Caffeinated Innovators Australia). It follows one story, Day 87 on a Mars base. It compares each of six daily indicators (sleep, resting heart rate, mood, reaction time, cabin carbon dioxide, haemoglobin) with a crew member's own baseline, and returns a tier, a plain-language reason with its source, and next steps. Its rules cover a single reading, a slow trend, a run of readings, a sourced limit, a combined picture and a prompt for a reaction-time check. Assessment and next steps only. Not a diagnosis. Every rule is a placeholder until a clinician signs it off, and every crew value is SYNTHETIC. NASA does not endorse this project.
+This is a hackathon prototype (NASA Space Apps Challenge 2026, Caffeinated Innovators Australia). It follows one story, Day 87 on a Mars base. It compares each of six indicators (sleep, resting heart rate, mood, reaction time, cabin carbon dioxide, haemoglobin) with a crew member's own baseline, and returns a tier, a plain-language reason with its source, and next steps. Its rules cover a single reading, a slow trend, a run of readings, a sourced limit, a combined picture and a prompt for a reaction-time check. Assessment and next steps only. Not a diagnosis. Every rule is a placeholder until a clinician signs it off, and every crew value is SYNTHETIC. NASA does not endorse this project.
 
 ## What you can do
 
@@ -16,24 +16,55 @@ cd space-apps-2026
 npm install
 ```
 
-Commands (all print JSON; errors print `{"error": "..."}` and exit 1):
+Commands (all print JSON; errors print `{"error": "..."}` and exit 1). Crew ids: `crew-1` to `crew-4`. Indicator ids: `sleep`, `resting-hr`, `mood`, `reaction`, `cabin-co2`, `haemoglobin`. Place ids for `--setting`: `mars-base`, `transit`, `moon`, `station`, `earth` (Remote Australia).
+
+| Command | What it does |
+|---|---|
+| `crew` | List crew members |
+| `indicators` | List indicators, units, limits and explanation cards |
+| `assess --crew ID --indicator ID --value N` | Assess a value; saves nothing |
+| `record --crew ID --indicator ID --value N` | Assess and save a reading for today |
+| `day --crew ID` | Today: what is due, what is flagged, the combined picture |
+| `plan --crew ID [--clock HH:MM]` | Today's prompts fitted around the crew timeline |
+| `history --crew ID --indicator ID` | Baseline, the mission so far and today's readings |
+| `streak --crew ID` | Check-in streak and the shared crew goal |
+| `send --reading ID [--setting ID]` | Queue a case for the next link to Earth |
+| `outbox` | List queued and exported cases |
+| `export [--out FILE]` | Write queued cases to a file and mark them exported |
+| `demo --crew ID --indicator ID` | The example value for today's demo |
+
+One example each, following the Day 87 story:
 
 ```
 npm run crew-health -- crew
 npm run crew-health -- indicators
-npm run crew-health -- assess  --crew crew-2 --indicator haemoglobin --value 13.4
-npm run crew-health -- record  --crew crew-2 --indicator haemoglobin --value 13.4
-npm run crew-health -- history --crew crew-2 --indicator haemoglobin
-npm run crew-health -- send    --reading READING_ID --setting mars-far
+npm run crew-health -- assess  --crew crew-1 --indicator sleep --value 6.2
+npm run crew-health -- record  --crew crew-1 --indicator cabin-co2 --value 3.4
+npm run crew-health -- day     --crew crew-1
+npm run crew-health -- plan    --crew crew-1 --clock 09:30
+npm run crew-health -- history --crew crew-1 --indicator sleep
+npm run crew-health -- streak  --crew crew-1
+npm run crew-health -- send    --reading READING_ID --setting mars-base
 npm run crew-health -- outbox
 npm run crew-health -- export  --out cases.json
+npm run crew-health -- demo    --crew crew-1 --indicator reaction
 ```
 
-`assess` saves nothing. `record`, `send` and `export` change a local state file (`.crew-health-state.json`, or the path given with `--state`). Nothing is sent over a network.
+`READING_ID` is the `reading.id` that `record` prints. `assess`, `demo`, `day`, `plan`, `history`, `streak` and `outbox` save nothing. `record`, `send` and `export` change a local state file (`.crew-health-state.json`, or the path given with `--state FILE`). Nothing is sent over a network. `export` writes a file in the format `crew-health-case-export/2`; each case includes the other signals flagged that day.
 
 ## What an assessment contains
 
-`tier` (`green` = Self-manage, `amber` = Crew medic, `red` = Urgent; the team has not yet settled what amber and red mean, CR-18), `title`, `why`, `steps`, `source`, `confidence`, `placeholder` (true while the rule is unsigned), `reviewedBy`, `band` (the person's own range), `deltaText`, `ruleId`.
+`assess` and `record` return an assessment with these fields:
+
+- `tier`: `green` (Self-manage), `amber` (Crew medic) or `red` (Urgent). The team has not yet settled what amber and red mean (CR-18).
+- `title`: one plain line, for example "Sleep: change from your own range".
+- `why`: the plain-language reason, with the numbers filled in.
+- `findings`: one entry per rule that fired, each with `ruleId`, `tier`, `why`, `source`, `confidence`, `placeholder` and `reviewedBy`.
+- `steps`: the numbered next steps for the tier.
+- `source`, `confidence`, `placeholder` (true while the rule is unsigned) and `reviewedBy` (a clinician role, or null): for the top finding.
+- `band`: the person's own range: `low`, `high`, `mean` and `sd`.
+- `delta` and `deltaText`: the change from the person's baseline, as a number and in words.
+- `ruleId`: the rules that fired, joined with " + " (for example "LM-01 + SU-01 + TR-01"), or "none".
 
 ## Rules for agents
 
@@ -49,4 +80,4 @@ npm run crew-health -- export  --out cases.json
 - Crew, indicators and settings: `src/data/seed.json`
 - Action layer: `src/core/actions.ts` (pure functions: state in, new state out)
 - Evidence and limits: `docs/EVIDENCE.md`
-- What is built and what is not: `docs/ROAD_TO_FLIGHT.md`
+- What is built and what is not: `docs/ROAD_TO_FLIGHT.md`, and the app's "Privacy and limits" screen

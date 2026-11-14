@@ -12,15 +12,34 @@ One astronaut on a Mars-class mission who is not a medical expert, taking a rout
 
 ## Demo story
 
-A reading is taken, compared with the astronaut's own baseline, explained in plain words with its source, and followed by a clear action and a countdown to Earth's earliest reply.
+Day 87 on a Mars base. Crew member 1's sleep has slid for three weeks, although each night stayed inside their own range. Cabin carbon dioxide has crept up and today reads 3.4 mmHg, above NASA's cabin limit of 3 mmHg. The tool flags the sleep trend and the cabin reading, asks for a thirty-second reaction test, and shows the three flagged signals together on one card. Each result explains itself in plain words with its source. Sending the case opens a countdown to Earth's earliest reply, beside the steps to take meanwhile. All crew values are SYNTHETIC.
 
 ## In scope
 
-One complete journey for one indicator; the same baseline rule shown working on real NASA crew data (NASA OSDR, OSD-569); offline demo; public deployment.
+- Six indicators: sleep, resting heart rate, mood, reaction time (a tap test in the app), cabin carbon dioxide and haemoglobin. Each is compared with the person's own baseline and has an explanation card.
+- A rules file with level, trend, sustained, limit, combined and prompt rules. Every rule shows its source and is marked as a placeholder until a clinician signs it.
+- Four SYNTHETIC crew members and 86 past mission days, made by a script with a fixed seed.
+- Check-ins fitted around a mock crew day, never during a critical operation.
+- A check-in streak and a shared crew goal that count check-ins, never results.
+- Five places to compare: Mars base, In transit, Moon base, Space station and Remote Australia.
+- Case packs that queue on the device and leave as one file when a link opens.
+- The same personal-band rule shown on real NASA crew data (NASA OSDR, OSD-569).
+- A "Privacy and limits" screen: who sees what, and what is built, placeholder and still needed.
+- One action layer for the screens, a command-line tool and AI agents.
+- Offline use and a public deployment.
 
 ## Out of scope
 
-Diagnosis; live device integration; accounts or sign-in; a language model at run time; any clinical threshold not written and signed off by the team's clinicians.
+- Diagnosis, and any clinical accuracy claim.
+- Any clinical threshold not written and signed off by the team's clinicians.
+- Live connections to sensors or devices, voice input, a rover profile and the vision self-check.
+- Rules that change by environment.
+- Accounts or sign-in, a server, and a shared record across devices.
+- A language model at run time.
+
+## Source of the design
+
+The team's challenge brief (a design guide written by the team) is the source of the indicator list and the recommended product shape.
 
 ## Team
 

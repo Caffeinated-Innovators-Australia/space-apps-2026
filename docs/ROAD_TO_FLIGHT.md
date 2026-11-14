@@ -1,26 +1,26 @@
 # Road to flight
 
-This is a hackathon prototype. It is built the way a real crew tool would have to be built: everything on the device, nothing that depends on a link to Earth. This page says exactly where it stands. We make no claim of clinical accuracy, agency approval or connection to any NASA system. NASA does not endorse this project.
+This is a hackathon prototype. It is built the way a real crew tool would have to be built: everything on the device, nothing that depends on a link to Earth. This page says exactly where it stands. We make no claim of clinical accuracy, agency approval or connection to any NASA system. NASA does not endorse this project. The app's "Privacy and limits" screen shows a short version of these lists.
 
 ## Built and working
 
 - Runs with no network once loaded, in tablet, laptop and phone browsers, and can be installed to the home screen.
 - The Day 87 Mars base story: six daily indicators (sleep, resting heart rate, mood, reaction time, cabin carbon dioxide, haemoglobin), each compared with that person's own baseline.
-- Six rule kinds in one rules engine: level, trend, sustained, limit, combined and prompt. A slow sleep trend is flagged even when every night is inside the band.
-- A real 30-second reaction tap test inside the app.
+- Six rule kinds in one rules engine: level, trend, sustained, limit, combined and prompt. A slow sleep trend is flagged even when every night is inside the band, and two or more flagged signals are shown together on one card.
+- A reaction tap test inside the app (five rounds, about thirty seconds).
 - An explanation card on every indicator, with NASA hazard links (draft wording, awaiting clinician sign-off).
-- A prompt scheduler on a mock crew timeline that never prompts during a critical operation and re-plans when a task runs late.
-- An honest-reporting loop: a streak that counts check-ins and never results, a shared crew goal with no ranking, and insights that unlock after 14 and 30 days.
-- Five environment profiles (Mars base fully built; In transit, Moon base, Space station and Remote Australia change the reply delay, who answers, the risks and the guidance line).
-- A "Who sees what" privacy table (draft policy).
+- A prompt scheduler on a mock crew timeline that never prompts during a critical operation (the demo EVA, 08:00 to 12:00) and re-plans when it runs 45 minutes late.
+- An honest-reporting loop: a streak that counts check-ins and never results, a shared crew goal with no ranking, and insights that unlock at 14 and 30 days of streak.
+- Five environment profiles (Mars base, In transit, Moon base, Space station and Remote Australia). Each changes the reply delay, who answers, the risks and the guidance line.
+- A "Who sees what" privacy table on the "Privacy and limits" screen (draft policy).
 - Input checks that refuse physically impossible readings.
-- Readings, check-ins and cases saved on the device (IndexedDB, the database built into the browser). Cases queue and leave as one file when a link opens (store and forward).
+- Readings, check-ins and cases saved on the device (IndexedDB, the database built into the browser). Cases queue and leave as one file when a link opens (store and forward); each case includes the other signals flagged that day.
 - One action layer (`src/core/`) serves the screens, a command-line tool and AI agents, so all give the same answer.
 - Real NASA data on screen: crew blood counts (OSDR, OSD-569), space weather (DONKI) and the NASA cabin carbon dioxide limit (NASA-STD-3001 Volume 2).
 
 ## Placeholder today
 
-- Every rule number (band factor 2, trend window 7, trend shift 1 standard deviation, run of 3), every tier meaning, every threshold and every line of advice. Clinicians on our team must write and sign each one (CLINICIAN_REVIEW.md).
+- Every rule number (band factor 2, trend window 7, trend shift 1 standard deviation, run of 3, combined minimum of 2), every tier meaning, every threshold and every line of advice. Clinicians on our team must write and sign each one (CLINICIAN_REVIEW.md).
 - The explanation card wording, taken from the team's challenge brief.
 - The privacy table, the mood scale words and the streak and insight design.
 - Which indicators a crew would really measure in flight, and how.
