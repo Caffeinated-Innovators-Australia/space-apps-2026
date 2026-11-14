@@ -24,7 +24,7 @@ The story, set by the team lead on 14 November 2026: **the first 20 seconds are 
 
 ## The trailer (chosen cut)
 
-`trailer-draft.mp4`, third version: 29.6 seconds, 1920 by 1080. The copy in this repository has no sound. The picture is cut to the team's recorded voice-over, phrase by phrase, so each screen holds for as long as its words take. The team lead set the day to 214 to match the voice. The app's demo mission was moved to day 214 afterwards to match. These captures were taken just before that with the mission clock hidden; nothing else on the app screens is changed. App screens are stills of the live app, shown large, one element per shot.
+`trailer-draft.mp4`, fourth version: 29.6 seconds, 1920 by 1080. The copy in this repository has no sound. The picture is cut to the team's recorded voice-over, phrase by phrase, so each screen holds for as long as its words take. The team lead set the day to 214 to match the voice. The app's demo mission was moved to day 214 to match, and the app shots were retaken afterwards, so the mission clock on screen reads 0214. Nothing on the app screens is altered. App screens are stills of the live app, shown large, one element per shot.
 
 It uses one real photograph of the Simpson Desert by Ian Cochrane (CC BY 2.0, cropped and colour graded, credited on the end card). No image is AI-generated.
 
