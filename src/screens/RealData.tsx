@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { BaselineChart, ChartLegend, type ChartPoint } from '../components/BaselineChart';
 import { TierPill } from '../components/ui';
-import { personalBand, tierFor, type Rule, type Tier } from '../core/index.ts';
+import { personalBand, tierFor, type Tier } from '../core/index.ts';
 import donki from '../data/donki_sep.json';
 import osd from '../data/osd569_cbc.json';
 import seedJson from '../data/seed.json';
@@ -13,7 +13,7 @@ function decimals(values: number[]): number {
   return Math.min(2, Math.max(...values.map((v) => (String(v).split('.')[1] ?? '').length)));
 }
 
-export function CrewData({ rule }: { rule: Rule }) {
+export function CrewData({ k }: { k: number }) {
   const subjects = [...new Set(osd.series.map((s) => s.subject))];
   const analytes = [...new Set(osd.series.map((s) => s.analyte))];
   const [subject, setSubject] = useState(subjects[1] ?? subjects[0]);
@@ -23,7 +23,7 @@ export function CrewData({ rule }: { rule: Rule }) {
   const post = s.points.filter((p) => p.phase === 'post-flight');
   const dp = decimals(s.points.map((p) => p.value));
   const sd = (osd.variation as Record<string, { pooledSd: number }>)[analyte].pooledSd;
-  const band = personalBand(pre.map((p) => p.value), rule.band.k, sd);
+  const band = personalBand(pre.map((p) => p.value), k, sd);
   const tiers = post.map((p) => tierFor(p.value, band, s.refMin, s.refMax));
   const points: ChartPoint[] = [
     ...pre.map((p) => ({ label: p.t, value: p.value, kind: 'baseline' as const })),

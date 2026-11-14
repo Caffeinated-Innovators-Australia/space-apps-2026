@@ -170,3 +170,7 @@ button { font: inherit; color: inherit; }
 .gap a { color: var(--advisory); }
 .confirm { font-size: 14px; border-left: 3px solid var(--ink-muted); padding: 2px 0 2px 10px; color: var(--ink-muted); }
 .confirm.ok { border-left-color: var(--advisory); color: var(--ink); }
+.prompt-card { border-color: var(--advisory); }
+.pack dd { margin: 0; }
+.sw-limit { width: 18px; border-top: 2px solid var(--ink); opacity: 0.6; }
+.also { font-size: 14px; color: var(--ink-muted); }

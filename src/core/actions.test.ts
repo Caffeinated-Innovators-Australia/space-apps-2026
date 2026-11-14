@@ -1,60 +1,135 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { assessValue, casePackContent, confirmation, demoValues, exportOutbox, history, initialState, parseRules, recordReading, sendCase, toggleStep, toggleSymptom, type Seed } from './index.ts';
+import { applySlip, assessValue, casePackContent, confirmation, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, initialState, parseRules, plan, recordReading, reportNothing, sendCase, streak, toggleStep, toggleSymptom, type Seed, type State } from './index.ts';
 
-const rule = parseRules(readFileSync('rules/rules.yaml', 'utf8'))[0];
+const rules = parseRules(readFileSync('rules/rules.yaml', 'utf8'));
 const seed = JSON.parse(readFileSync('src/data/seed.json', 'utf8')) as Seed;
+const rec = (s: State, indicatorId: string, value: number, at: number, crewId = 'crew-1') => recordReading(s, seed, rules, { crewId, indicatorId, value, at });
 
-describe('action layer', () => {
-  it('uses the variation figures computed from the real NASA crew data', () => {
+describe('seed data', () => {
+  it('takes haemoglobin variation from the real NASA crew data', () => {
     const osd = JSON.parse(readFileSync('src/data/osd569_cbc.json', 'utf8')) as { variation: Record<string, { pooledSd: number }> };
-    for (const i of seed.indicators) expect(i.withinPersonSd).toBe(osd.variation[i.name].pooledSd);
+    expect(seed.indicators.find((i) => i.id === 'haemoglobin')!.fixedSd).toBe(osd.variation.Haemoglobin.pooledSd);
   });
-  it('assesses the same value differently for different people', () => {
-    expect(assessValue(seed, rule, 'crew-2', 'haemoglobin', 13.4).tier).toBe('amber');
-    expect(assessValue(seed, rule, 'crew-1', 'haemoglobin', 13.4).tier).toBe('green');
-  });
-  it('works for every crew member and indicator, one demo value per tier', () => {
-    for (const c of seed.crew) for (const i of seed.indicators) {
-      const tiers = demoValues(seed, rule, c.id, i.id).map((v) => assessValue(seed, rule, c.id, i.id, v).tier);
-      expect(tiers[0]).toBe('green');
-      expect(tiers[tiers.length - 1]).toBe('red');
+  it('has six indicators, each with a full explanation card and at least one hazard', () => {
+    expect(seed.indicators).toHaveLength(6);
+    for (const i of seed.indicators) {
+      expect(i.card.how && i.card.why && i.card.what).toBeTruthy();
+      expect(i.hazards.length).toBeGreaterThan(0);
     }
   });
-  it('refuses unknown people, unknown indicators and bad values in plain words', () => {
-    expect(() => assessValue(seed, rule, 'nobody', 'haemoglobin', 13)).toThrow(/Unknown crew member/);
-    expect(() => assessValue(seed, rule, 'crew-1', 'pulse', 60)).toThrow(/Unknown indicator/);
-    expect(() => assessValue(seed, rule, 'crew-1', 'haemoglobin', -1)).toThrow(/above zero/);
+});
+
+describe('the day 87 story', () => {
+  it('spots the sleep slide, the raised carbon dioxide, prompts a reaction test and reads them together', () => {
+    let s = initialState(seed);
+    expect(daySummary(s, seed, rules, 'crew-1').prompt).toBeUndefined();
+    const sleep = rec(s, 'sleep', demoValue(seed, 'crew-1', 'sleep'), 1000);
+    expect(sleep.assessment.tier).toBe('amber');
+    expect(sleep.assessment.ruleId).toContain('TR-01');
+    s = sleep.state;
+    expect(daySummary(s, seed, rules, 'crew-1').prompt?.indicatorId).toBe('reaction');
+    const co2 = rec(s, 'cabin-co2', demoValue(seed, 'crew-1', 'cabin-co2'), 2000);
+    expect(co2.assessment.tier).toBe('red');
+    expect(co2.assessment.ruleId).toContain('LM-01');
+    s = co2.state;
+    const rt = rec(s, 'reaction', demoValue(seed, 'crew-1', 'reaction'), 3000);
+    expect(rt.assessment.tier).toBe('amber');
+    s = rt.state;
+    const day = daySummary(s, seed, rules, 'crew-1');
+    expect(day.flagged).toHaveLength(3);
+    expect(day.combined?.tier).toBe('red');
+    expect(day.combined?.why).toContain('sleep');
+  });
+  it('a steady crew member on a steady day stays green', () => {
+    let s = initialState(seed);
+    for (const id of ['sleep', 'resting-hr', 'mood']) s = rec(s, id, demoValue(seed, 'crew-3', id), 1000, 'crew-3').state;
+    const day = daySummary(s, seed, rules, 'crew-3');
+    expect(day.flagged).toHaveLength(0);
+    expect(day.combined).toBeUndefined();
+  });
+});
+
+describe('action layer', () => {
+  it('refuses unknown people, unknown indicators and impossible readings in plain words', () => {
+    expect(() => assessValue(seed, rules, 'nobody', 'sleep', 7)).toThrow(/Unknown crew member/);
+    expect(() => assessValue(seed, rules, 'crew-1', 'pulse', 60)).toThrow(/Unknown indicator/);
+    expect(() => assessValue(seed, rules, 'crew-1', 'sleep', 30)).toThrow(/between 0 and 24/);
+    expect(() => assessValue(seed, rules, 'crew-1', 'resting-hr', 5)).toThrow(/between 20 and 250/);
   });
   it('marks a raised result as unconfirmed until a second reading agrees', () => {
-    let s = initialState(seed);
-    const a = recordReading(s, seed, rule, { crewId: 'crew-2', indicatorId: 'haemoglobin', value: 13.4, at: 1000 });
+    const a = rec(initialState(seed), 'resting-hr', 80, 1000);
+    expect(a.assessment.tier).toBe('amber');
     expect(confirmation(a.state, a.reading).status).toBe('unconfirmed');
-    const b = recordReading(a.state, seed, rule, { crewId: 'crew-2', indicatorId: 'haemoglobin', value: 13.3, at: 2000 });
+    const b = rec(a.state, 'resting-hr', 81, 2000);
     expect(confirmation(b.state, b.reading).status).toBe('confirmed');
-    const c = recordReading(b.state, seed, rule, { crewId: 'crew-2', indicatorId: 'haemoglobin', value: 14.7, at: 3000 });
-    expect(confirmation(c.state, c.reading).status).toBe('not-needed');
-    s = c.state;
-    expect(s.readings).toHaveLength(3);
   });
-  it('records a reading, queues one case per reading and exports it once', () => {
-    let s = initialState(seed);
-    const r = recordReading(s, seed, rule, { crewId: 'crew-2', indicatorId: 'haemoglobin', value: 13.4, at: 1000 });
-    s = toggleStep(r.state, r.reading.id, 'Repeat the reading to confirm.');
-    s = toggleSymptom(s, 'crew-2', 'Headache', 1500);
-    const sent = sendCase(s, { readingId: r.reading.id, settingId: 'mars-far', at: 2000 });
-    expect(sendCase(sent.state, { readingId: r.reading.id, settingId: 'mars-far', at: 3000 }).state.outbox).toHaveLength(1);
-    const content = casePackContent(sent.state, seed, rule, sent.pack.id);
-    expect(content.assessment.tier).toBe('amber');
-    expect(content.assessment.placeholderRule).toBe(true);
-    expect(content.stepsDone).toEqual(['Repeat the reading to confirm.']);
-    expect(content.symptoms[0].label).toBe('Headache');
-    expect(content.synthetic).toBe(true);
-    const out = exportOutbox(sent.state, seed, rule, 4000);
-    expect(out.file.cases).toHaveLength(1);
+  it('queues one case per reading, includes the other signals, and exports once', () => {
+    let s = rec(initialState(seed), 'sleep', 6.2, 1000).state;
+    const co2 = rec(s, 'cabin-co2', 3.4, 2000);
+    s = toggleStep(co2.state, co2.reading.id, 'Tell your crew medic now.');
+    s = toggleSymptom(s, 'crew-1', 'Headache', 2500);
+    const sent = sendCase(s, { readingId: co2.reading.id, settingId: 'mars-base', at: 3000 });
+    expect(sendCase(sent.state, { readingId: co2.reading.id, settingId: 'mars-base', at: 4000 }).state.outbox).toHaveLength(1);
+    const c = casePackContent(sent.state, seed, rules, sent.pack.id);
+    expect(c.assessment.tier).toBe('red');
+    expect(c.assessment.rules[0].placeholder).toBe(true);
+    expect(c.otherSignalsToday.map((x) => x.indicator)).toContain('Sleep');
+    expect(c.stepsDone).toEqual(['Tell your crew medic now.']);
+    expect(c.symptoms[0].label).toBe('Headache');
+    expect(c.synthetic).toBe(true);
+    const out = exportOutbox(sent.state, seed, rules, 5000);
     expect(out.file.cases[0].status).toBe('exported');
-    expect(out.state.outbox[0].status).toBe('exported');
-    expect(exportOutbox(out.state, seed, rule, 5000).file.cases).toHaveLength(0);
-    expect(history(out.state, seed, 'crew-2', 'haemoglobin').recorded).toHaveLength(1);
+    expect(exportOutbox(out.state, seed, rules, 6000).file.cases).toHaveLength(0);
+  });
+});
+
+describe('prompt scheduler', () => {
+  const checks = [{ id: 'sleep', label: 'Sleep', slot: 'morning' as const }, { id: 'mood', label: 'Mood', slot: 'evening' as const }];
+  it('offers morning check-ins after waking and keeps evening ones for later', () => {
+    const p = plan(seed.timeline, checks, '06:45', []);
+    expect(p[0]).toMatchObject({ id: 'sleep', status: 'due', at: '06:45' });
+    expect(p[1]).toMatchObject({ id: 'mood', status: 'later', at: '21:10' });
+  });
+  it('never prompts during a critical operation: it holds the check-in until the operation ends', () => {
+    const p = plan(seed.timeline, checks, '09:30', []);
+    expect(p[0]).toMatchObject({ status: 'held', at: '12:05' });
+    expect(p[0].note).toContain('EVA');
+  });
+  it('re-plans when the operation runs late', () => {
+    const late = applySlip(seed.timeline, 45);
+    expect(late[2].end).toBe('12:45');
+    expect(late[3].start).toBe('12:45');
+    expect(plan(late, checks, '12:10', [])[0]).toMatchObject({ status: 'held', at: '12:50' });
+    expect(plan(seed.timeline, checks, '12:10', [])[0]).toMatchObject({ status: 'due', at: '12:10' });
+  });
+  it('builds the whole day for a person, with the asked-for reaction test', () => {
+    let s = initialState(seed);
+    s = rec(s, 'sleep', 6.2, 1000).state;
+    const day = dayPlan(s, seed, rules, 'crew-1');
+    expect(day.items.find((x) => x.id === 'sleep')?.status).toBe('done');
+    expect(day.items.find((x) => x.id === 'reaction')?.label).toContain('asked for today');
+    expect(day.items.some((x) => x.id === 'cabin-co2')).toBe(false);
+  });
+});
+
+describe('honest reporting', () => {
+  it('counts check-ins, never results', () => {
+    const s0 = initialState(seed);
+    const before = streak(s0, seed, 'crew-1');
+    expect(before).toBe(19);
+    let s = s0;
+    for (const id of ['sleep', 'resting-hr', 'mood']) s = rec(s, id, id === 'mood' ? 1 : demoValue(seed, 'crew-1', id), 1000).state;
+    expect(streak(s, seed, 'crew-1')).toBe(before + 1);
+    const g0 = crewGoal(s0, seed);
+    const g1 = crewGoal(s, seed);
+    expect(g1.done).toBe(g0.done + 3);
+    expect(g1.total).toBe(g0.total);
+  });
+  it('treats nothing to report as a check-in, and a symptom replaces it', () => {
+    let s = reportNothing(initialState(seed), 'crew-1');
+    expect(s.nothingToReport).toEqual(['crew-1']);
+    s = toggleSymptom(s, 'crew-1', 'Headache', 1);
+    expect(s.nothingToReport).toEqual([]);
   });
 });

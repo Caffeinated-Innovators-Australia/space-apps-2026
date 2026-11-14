@@ -1,44 +1,87 @@
 # Tiering rules. Rules decide; AI only explains.
-# Every rule needs a source and a signed_off_by field, or the app refuses to load it.
+# Every rule needs a source, a confidence label and a signed_off_by field, or the app refuses to load.
 # signed_off_by is a clinician ROLE (never a name), or the word "placeholder".
 #
-# STATUS: every value and every line of wording below is a PLACEHOLDER awaiting clinician review.
-# See CLINICIAN_REVIEW.md (CR-02, CR-03, CR-04). Nothing here is clinical advice.
-version: "0.1"
+# STATUS: every rule, number and line of wording below is a PLACEHOLDER awaiting clinician review.
+# The numbers are common statistical conventions, not clinical thresholds. Nothing here is clinical advice.
+# See CLINICIAN_REVIEW.md (CR-02, CR-04, CR-12, CR-14, CR-16) and docs/EVIDENCE.md.
+version: "0.2"
+
+# The personal band: the person's own baseline mean, plus or minus k standard deviations of their own
+# baseline readings. For haemoglobin the standard deviation comes from real crew data (NASA OSDR, OSD-569).
+band:
+  method: baseline-mean-sd
+  k: 2
+
+green:
+  title: "{region}: within your own range"
+  why: "Your {indicator} is {value} {unit}. That is inside your own expected range of {bandLow} to {bandHigh} {unit}."
+
+titles:
+  amber: "{region}: change from your own range"
+  red: "{region}: needs action now"
+
 rules:
-  - id: PB-01
-    name: Personal baseline band
-    # The band is the person's own pre-flight mean, plus or minus k standard deviations of
-    # within-person variation. The standard deviation comes from real crew data: the pooled
-    # variation of pre-flight draws in NASA OSDR, OSD-569 (four crew, three draws each).
-    # k = 2 is the usual statistical convention, not a clinical decision (CR-02).
-    band:
-      method: baseline-mean-sd
-      k: 2
-    source: "Placeholder rule, awaiting clinician review. Band width from within-person variation in NASA OSDR, OSD-569 pre-flight draws; laboratory reference range as reported in OSD-569 (LSDS-7)."
+  - id: LM-01
+    kind: limit
+    tier: red
+    why: "Your {indicator} is {value} {unit}. That is {direction} than your own expected range of {bandLow} to {bandHigh} {unit}, and beyond the {limitLabel} of {limit} {unit}."
+    source: "Placeholder rule, awaiting clinician review. The limit itself is sourced: see the indicator."
     confidence: Low
     signed_off_by: placeholder
-    tiers:
-      green:
-        when: inside_band
-        title: "{region}: within your baseline"
-        why: "Your {indicator} is {value} {unit}. That is inside your own expected range of {bandLow} to {bandHigh} {unit}."
-        steps:
-          - "Log the reading."
-          - "Repeat at your next scheduled check."
-      amber:
-        when: outside_band_inside_reference
-        title: "{region}: change from your baseline"
-        why: "Your {indicator} is {value} {unit}. That is {direction} than your own expected range of {bandLow} to {bandHigh} {unit}. It is still inside the laboratory reference range of {refMin} to {refMax} {unit}."
-        steps:
-          - "Repeat the reading to confirm."
-          - "Tell your crew medic."
-          - "Send the case to Earth."
-      red:
-        when: outside_band_outside_reference
-        title: "{region}: large change from your baseline"
-        why: "Your {indicator} is {value} {unit}. That is {direction} than your own expected range of {bandLow} to {bandHigh} {unit}, and outside the laboratory reference range of {refMin} to {refMax} {unit}."
-        steps:
-          - "Tell your crew medic now."
-          - "Repeat the reading to confirm."
-          - "Send the case to Earth."
+  - id: SU-01
+    kind: sustained
+    tier: red
+    count: 3
+    why: "Your last {count} readings of {indicator} were all {direction} than your own expected range of {bandLow} to {bandHigh} {unit}. One reading can be a slip. Three in a row is a pattern."
+    source: "Placeholder rule, awaiting clinician review. Three consecutive readings is a statistical convention."
+    confidence: Low
+    signed_off_by: placeholder
+  - id: PB-01
+    kind: level
+    tier: amber
+    why: "Your {indicator} is {value} {unit}. That is {direction} than your own expected range of {bandLow} to {bandHigh} {unit}."
+    source: "Placeholder rule, awaiting clinician review. The band is your own baseline mean plus or minus 2 standard deviations."
+    confidence: Low
+    signed_off_by: placeholder
+  - id: TR-01
+    kind: trend
+    tier: amber
+    window: 7
+    shift_sd: 1
+    why: "Your {indicator} has drifted. Your last {window} readings average {trendMean} {unit}, against your baseline of {baselineMean} {unit}. Each reading alone can look fine while the trend does not."
+    source: "Placeholder rule, awaiting clinician review. A seven-reading average that moves one standard deviation is a statistical convention."
+    confidence: Low
+    signed_off_by: placeholder
+
+# Day-level rules: they look across indicators for one person on one day.
+combined:
+  id: CM-01
+  min_flags: 2
+  title: "Several signals have moved together"
+  why: "{count} of your check-ins are outside your own range today: {list}. Signals that move together matter more than any one alone."
+  source: "Placeholder rule, awaiting clinician review."
+  confidence: Low
+  signed_off_by: placeholder
+
+prompts:
+  - id: PR-01
+    when_flagged: [sleep, cabin-co2]
+    then_prompt: reaction
+    why: "Poor sleep and raised cabin carbon dioxide can both slow thinking. A thirty-second reaction test shows whether they have."
+    source: "Placeholder rule, awaiting clinician review. The link is described in the team's challenge brief."
+    confidence: Low
+    signed_off_by: placeholder
+
+steps:
+  green:
+    - "Log the reading."
+    - "Check in again at your next scheduled time."
+  amber:
+    - "Repeat the reading to confirm."
+    - "Tell your crew medic."
+    - "Send the case to Earth."
+  red:
+    - "Tell your crew medic now."
+    - "Repeat the reading to confirm."
+    - "Send the case to Earth."

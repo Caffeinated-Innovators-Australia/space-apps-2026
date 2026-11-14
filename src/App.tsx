@@ -4,23 +4,34 @@ import { useEffect, useMemo, useState } from 'react';
 import rulesText from '../rules/rules.yaml?raw';
 import { BaselineChart, ChartLegend, type ChartPoint } from './components/BaselineChart';
 import { BodyFigure } from './components/BodyFigure';
+import { ExplainCard } from './components/ExplainCard';
+import { PrivacyTable } from './components/PrivacyTable';
+import { ReactionTest } from './components/ReactionTest';
+import { ScaleInput } from './components/ScaleInput';
+import { StreakCard } from './components/StreakCard';
+import { Timeline } from './components/Timeline';
 import { AlertCard, ReadingTile, SyntheticTag, TierPill, TIER_WORD, TierWords } from './components/ui';
 import {
-  assessValue, casePackContent, confirmation, crewById, demoValues, exportOutbox, history, indicatorById, initialState, latestReading, parseRules,
-  recordReading, sendCase, settingById, tierFor, toggleStep, toggleSymptom,
-  type Assessment, type Indicator, type Reading as SavedReading, type Rule, type Seed, type Setting, type State, type Tier,
+  assessReading, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
+  initialState, insights, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
+  toggleStep, toggleSymptom,
+  type Assessment, type DaySummary, type Indicator, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
 import osd from './data/osd569_cbc.json';
-import resources from './data/resources.json';
 import seedJson from './data/seed.json';
 import { CrewData, SpaceWeather } from './screens/RealData';
 import { deviceStore } from './store/indexeddb.ts';
 
-interface Extras { problem: Record<'space' | 'earth', { text: string; source: string; link: string }>; settingStatus: string; earthBenefit: { figure: string; text: string; source: string; link: string } }
+interface Extras {
+  problem: Record<'space' | 'earth', { text: string; source: string; link: string }>;
+  settingStatus: string;
+  earthBenefit: { figure: string; text: string; source: string; link: string };
+  privacy: { status: string; rows: { what: string; you: string; medic: string; surgeon: string; crew: string }[] };
+}
 const seed = seedJson as unknown as Seed & Extras;
 const store = deviceStore();
+const K = 2; // matches band.k in rules/rules.yaml; the engine itself always reads the file
 const REPO = 'https://github.com/Caffeinated-Innovators-Australia/space-apps-2026';
-const RANK: Record<Tier, number> = { green: 0, amber: 1, red: 2 };
 
 const hhmm = (t: number) => new Date(t).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: false });
 /** Swap setting-specific words (for example "Earth" becomes "the on-call doctor" in remote Australia). */
@@ -34,6 +45,7 @@ function clock(totalSeconds: number): string {
   const s = Math.max(0, Math.ceil(totalSeconds));
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
+const shown = (i: Indicator, v: number) => (i.input.kind === 'scale' ? `${v.toFixed(0)}` : v.toFixed(i.dp));
 
 interface Route { name: 'home' | 'reading' | 'result' | 'gap' | 'crew' | 'outbox' | 'about'; arg?: string }
 function readRoute(): Route {
@@ -53,11 +65,11 @@ export function App() {
     window.addEventListener('hashchange', on);
     return () => window.removeEventListener('hashchange', on);
   }, []);
-  useEffect(() => { void store.load().then((s) => setState(s && s.version === 1 ? s : initialState(seed))); }, []);
+  useEffect(() => { void store.load().then((s) => setState(s && s.version === 2 ? s : initialState(seed))); }, []);
   useEffect(() => { if (state) document.documentElement.dataset.theme = state.ui.theme; }, [state]);
 
-  const loaded = useMemo<{ rule?: Rule; error?: string }>(() => {
-    try { return { rule: parseRules(rulesText)[0] }; } catch (e) { return { error: (e as Error).message }; }
+  const loaded = useMemo<{ rules?: RuleFile; error?: string }>(() => {
+    try { return { rules: parseRules(rulesText) }; } catch (e) { return { error: (e as Error).message }; }
   }, []);
 
   if (!state) return <div className="app"><p className="muted">Opening the record on this device…</p></div>;
@@ -67,7 +79,7 @@ export function App() {
   const crew = crewById(seed, seed.crew.some((c) => c.id === state.ui.crewId) ? state.ui.crewId : seed.crew[0].id);
   const tierWords = { ...TIER_WORD, ...(setting.tierWords ?? {}) };
   const queued = state.outbox.filter((p) => p.status === 'queued').length;
-  const rule = loaded.rule;
+  const rules = loaded.rules;
   const reading = route.arg ? state.readings.find((r) => r.id === route.arg) : undefined;
   const shared = { state, commit, ui, setting, crewId: crew.id };
 
@@ -77,41 +89,41 @@ export function App() {
         <header className="top">
           <button className="brand" onClick={() => go('home')}>Crew health check</button>
           <nav className="nav" aria-label="Main">
-            <button aria-current={['home', 'reading', 'result', 'gap'].includes(route.name) ? 'page' : undefined} onClick={() => go('home')}>My health</button>
+            <button aria-current={['home', 'reading', 'result', 'gap'].includes(route.name) ? 'page' : undefined} onClick={() => go('home')}>Today</button>
             <button aria-current={route.name === 'crew' ? 'page' : undefined} onClick={() => go('crew')}>Real crew data</button>
             <button aria-current={route.name === 'outbox' ? 'page' : undefined} onClick={() => go('outbox')}>Outbox{queued ? ` (${queued})` : ''}</button>
-            <button aria-current={route.name === 'about' ? 'page' : undefined} onClick={() => go('about')}>Road to flight</button>
+            <button aria-current={route.name === 'about' ? 'page' : undefined} onClick={() => go('about')}>Privacy and limits</button>
           </nav>
           <button className="ghost" onClick={() => ui({ theme: state.ui.theme === 'cabin' ? 'day' : 'cabin' })}>{state.ui.theme === 'cabin' ? 'Day theme' : 'Cabin theme'}</button>
         </header>
 
         <main className="stack">
-          {!rule ? (
+          {!rules ? (
             <div className="error" role="alert">
               <h2 className="title">Rules file refused</h2>
               <p>{loaded.error}</p>
               <p className="caption">The app will not assess readings until the rules file is fixed.</p>
             </div>
           ) : route.name === 'crew' ? (
-            <CrewData rule={rule} />
+            <CrewData k={rules.band.k} />
           ) : route.name === 'outbox' ? (
-            <Outbox {...shared} rule={rule} />
+            <Outbox {...shared} rules={rules} />
           ) : route.name === 'about' ? (
             <About />
           ) : route.name === 'reading' ? (
-            <ReadingScreen {...shared} rule={rule} indicatorId={seed.indicators.some((i) => i.id === route.arg) ? route.arg! : seed.indicators[0].id} />
+            <ReadingScreen {...shared} rules={rules} indicatorId={seed.indicators.some((i) => i.id === route.arg) ? route.arg! : seed.indicators[0].id} />
           ) : route.name === 'result' && reading ? (
-            <Result {...shared} rule={rule} reading={reading} />
+            <Result {...shared} rules={rules} reading={reading} />
           ) : route.name === 'gap' && reading ? (
-            <Gap {...shared} rule={rule} reading={reading} />
+            <Gap {...shared} rules={rules} reading={reading} />
           ) : (
-            <Home {...shared} rule={rule} />
+            <Home {...shared} rules={rules} />
           )}
         </main>
 
         <footer className="foot">
           <span>Assessment and next steps only. Not a diagnosis. Hackathon prototype; rules are placeholders until our clinicians sign them off.</span>
-          <span>{osd.credit} (real crew data, pre-flight and post-flight). Demo crew values are SYNTHETIC. NASA does not endorse this project.</span>
+          <span>{osd.credit} · Data: NASA DONKI · Cabin carbon dioxide limit: NASA-STD-3001 Volume 2. Crew values are SYNTHETIC. NASA does not endorse this project.</span>
           <span>Readings stay on this device. Caffeinated Innovators Australia · NASA Space Apps Challenge 2026 · <a href={REPO}>Source and references</a> · <a href="agents.md">For AI agents</a></span>
         </footer>
       </div>
@@ -141,17 +153,55 @@ function Where({ setting, onPick }: { setting: Setting; onPick: (id: string) => 
   );
 }
 
-function Home({ state, commit, ui, setting, crewId, rule }: Shared & { rule: Rule }) {
+function CombinedCard({ day, setting, onOpen }: { day: DaySummary; setting: Setting; onOpen: (r: SavedReading) => void }) {
+  if (!day.combined) return null;
+  const top = [...day.flagged].sort((a, b) => RANK[b.assessment!.tier] - RANK[a.assessment!.tier])[0];
+  return (
+    <section className={`alert alert-${day.combined.tier}`} aria-live="polite">
+      <div className="card-head"><TierPill tier={day.combined.tier} /><SyntheticTag /></div>
+      <h2 className="title">{day.combined.title}</h2>
+      <p>{day.combined.why}</p>
+      <ul className="rows">
+        {day.flagged.map((x) => (
+          <li key={x.indicator.id}>
+            <button className="row" onClick={() => onOpen(x.reading!)}>
+              <span className="row-name">{x.indicator.name}</span>
+              <span className="row-val"><span className="mono">{shown(x.indicator, x.reading!.value)}</span> {x.indicator.unit}</span>
+              <TierPill tier={x.assessment!.tier} />
+              <span className="chev" aria-hidden="true">›</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <p className="source">Rule {day.combined.ruleId}. Source: {day.combined.source} Confidence: {day.combined.confidence}</p>
+      {day.combined.placeholder ? <span className="placeholder">Placeholder rule, awaiting clinician review</span> : null}
+      <div className="btn-row">
+        <button className="btn" onClick={() => onOpen(top.reading!)}>{say('See what to do, and send the case to Earth', setting)}</button>
+      </div>
+    </section>
+  );
+}
+
+function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: RuleFile }) {
   const mine = state.symptoms.filter((s) => s.crewId === crewId);
-  const latest = seed.indicators.map((i) => ({ i, r: latestReading(state, crewId, i.id) }));
-  const worst = latest.reduce<Tier | undefined>((w, x) => (x.r && (!w || RANK[x.r.tier] > RANK[w]) ? x.r.tier : w), undefined);
+  const nothing = state.nothingToReport.includes(crewId);
+  const day = daySummary(state, seed, rules, crewId);
+  const plan = dayPlan(state, seed, rules, crewId);
+  const days = streak(state, seed, crewId);
+  const goal = crewGoal(state, seed);
   const queued = state.outbox.filter((p) => p.status === 'queued').length;
-  const used = state.readings.length > 0 || state.symptoms.length > 0 || state.ui.doseLogged;
-  void rule;
+  const used = state.readings.length > 0 || state.symptoms.length > 0 || state.ui.doseLogged || nothing;
+  const tiers = Object.fromEntries(day.items.map((x) => [x.indicator.id, x.assessment?.tier]));
+  const next = plan.items.find((p) => p.status === 'due');
+  const promptOpen = day.prompt && !day.items.find((x) => x.indicator.id === day.prompt!.indicatorId)?.reading;
+  const crew = crewById(seed, crewId);
+  const sleep = indicatorById(seed, 'sleep');
+  const open = (id: string) => { const r = day.items.find((x) => x.indicator.id === id)?.reading; go(r ? 'result' : 'reading', r ? r.id : id); };
+  const reset = () => commit({ ...initialState(seed), ui: { ...state.ui, doseLogged: false } });
   return (
     <>
       <Context setting={setting} crewId={crewId} />
-      <h1 className="display">Which part of you are we checking today?</h1>
+      <h1 className="display">Day {seed.missionDay}. Here is your day.</h1>
       <div className="where-row">
         <div className="where">
           <span className="caption">Who are you?</span>
@@ -161,25 +211,63 @@ function Home({ state, commit, ui, setting, crewId, rule }: Shared & { rule: Rul
         </div>
         <Where setting={setting} onPick={(id) => ui({ settingId: id })} />
       </div>
+
+      <CombinedCard day={day} setting={setting} onOpen={(r) => go('result', r.id)} />
+
+      {promptOpen ? (
+        <section className="card prompt-card" aria-live="polite">
+          <div className="card-head"><span className="why-label">Asked for today</span><SyntheticTag /></div>
+          <h2 className="title">A thirty-second reaction-time check</h2>
+          <p>{day.prompt!.why}</p>
+          <p className="source">Rule {day.prompt!.ruleId}. Placeholder rule, awaiting clinician review.</p>
+          <div className="btn-row"><button className="btn" onClick={() => go('reading', day.prompt!.indicatorId)}>Start the reaction test</button></div>
+        </section>
+      ) : null}
+
       <div className="grid">
-        <div className="card">
-          <BodyFigure onOpen={() => go('reading', seed.indicators[0].id)} tier={worst} />
-        </div>
         <div className="stack">
           <div className="card">
             <div className="card-head">
-              <h2 className="title">Blood</h2>
+              <h2 className="title">Your check-ins, fitted around your day</h2>
               <SyntheticTag />
             </div>
+            <div className="where">
+              <span className="caption">Mission clock</span>
+              <div className="seg" role="group" aria-label="Mission clock">
+                {seed.clockOptions.map((c) => <button key={c} aria-pressed={c === state.ui.clock} onClick={() => ui({ clock: c })}>{c}</button>)}
+              </div>
+              <button className="chip chip-toggle" aria-pressed={state.ui.slipped} onClick={() => ui({ slipped: !state.ui.slipped })}>EVA runs {seed.slipMinutes} min late</button>
+            </div>
+            {next ? <p><strong>Next:</strong> {next.label.toLowerCase()}, due now. It takes under a minute.</p> : <p className="muted">Nothing is due right now. Check-ins never interrupt a critical operation.</p>}
+            <Timeline blocks={plan.blocks} items={plan.items} now={state.ui.clock} onOpen={open} />
+          </div>
+          <div className="card">
+            <h2 className="title">Where you are: {setting.label}</h2>
+            <dl className="pack">
+              <dt>Main risks here</dt><dd>{setting.risks}</dd>
+              <dt>What changes</dt><dd>{setting.twist}</dd>
+              <dt>If you need help</dt><dd>{setting.advice}</dd>
+            </dl>
+            <span className="placeholder">{seed.settingStatus}</span>
+          </div>
+        </div>
+
+        <div className="stack">
+          <div className="card">
+            <div className="card-head">
+              <h2 className="title">Your signals</h2>
+              <SyntheticTag />
+            </div>
+            <BodyFigure onOpen={open} tiers={tiers} />
             <ul className="rows">
-              {latest.map(({ i, r }) => {
-                const last = crewById(seed, crewId).mission[i.id]?.slice(-1)[0];
+              {day.items.map(({ indicator: i, reading: r, assessment: a, prompted }) => {
+                const past = crew.mission[i.id]?.filter((v): v is number => v !== null).slice(-1)[0];
                 return (
                   <li key={i.id}>
-                    <button className="row" onClick={() => go(r ? 'result' : 'reading', r ? r.id : i.id)}>
-                      <span className="row-name">{i.name}</span>
-                      <span className="row-val"><span className="mono">{(r ? r.value : last?.value ?? 0).toFixed(i.dp)}</span> {i.unit}</span>
-                      {r ? <TierPill tier={r.tier} /> : <span className="caption">{last ? last.t : ''}</span>}
+                    <button className="row" onClick={() => open(i.id)}>
+                      <span className="row-name">{i.name}{prompted && !r ? ' · asked for today' : ''}</span>
+                      <span className="row-val">{r || past !== undefined ? <><span className="mono">{shown(i, r ? r.value : past!)}</span> {i.unit}</> : null}</span>
+                      {a ? <TierPill tier={a.tier} /> : <span className="caption">{i.cadence === 'weekly' ? 'Weekly' : i.cadence === 'prompted' && !prompted ? 'When asked' : 'Not logged today'}</span>}
                       <span className="chev" aria-hidden="true">›</span>
                     </button>
                   </li>
@@ -187,11 +275,20 @@ function Home({ state, commit, ui, setting, crewId, rule }: Shared & { rule: Rul
               })}
             </ul>
             <div className="btn-row">
-              <button className="btn" onClick={() => go('reading', seed.indicators[0].id)}>Take a reading</button>
               {queued ? <button className="btn secondary" onClick={() => go('outbox')}>Outbox ({queued})</button> : null}
+              {used ? <button className="link" onClick={reset}>Reset the demo</button> : null}
             </div>
-            {used ? <button className="link" onClick={() => { commit({ ...initialState(seed), ui: { ...state.ui, doseLogged: false } }); }}>Reset the demo</button> : null}
           </div>
+
+          <StreakCard streakDays={days} crewDone={goal.done} crewTotal={goal.total} unlocked={insights(days)}>
+            {days >= 14 ? (
+              <>
+                <BaselineChart points={missionPoints(state, crewId, sleep, 28)} band={personalBand(crew.baseline.sleep, rules.band.k)} unit={sleep.unit} dp={sleep.dp} title="Your sleep over the past four weeks against your own range." readingLabel="Past four weeks" baselineLabel="Before launch" />
+                <ChartLegend bandLabel="Own expected range" reference={false} />
+              </>
+            ) : null}
+          </StreakCard>
+
           <div className="card">
             <div className="card-head">
               <h2 className="title">Feeling off? Tell us in one tap</h2>
@@ -201,24 +298,30 @@ function Home({ state, commit, ui, setting, crewId, rule }: Shared & { rule: Rul
               {seed.symptoms.options.map((o) => (
                 <button key={o} className="chip chip-toggle" aria-pressed={mine.some((x) => x.label === o)} onClick={() => commit(toggleSymptom(state, crewId, o, Date.now()))}>{o}</button>
               ))}
+              <button className="chip chip-toggle" aria-pressed={nothing} onClick={() => commit(reportNothing(state, crewId))}>Nothing to report</button>
             </div>
             {mine.length > 0 ? (
               <p aria-live="polite">Logged: {mine.map((x) => `${x.label.toLowerCase()} at ${hhmm(x.at)}`).join(', ')}. {say('This goes in your next case to Earth.', setting)}</p>
+            ) : nothing ? (
+              <p aria-live="polite">Logged: nothing to report. That is a check-in too.</p>
             ) : (
               <p className="muted">Nothing logged today. One tap is enough.</p>
             )}
+            <p className="caption">Only you see this unless you send it. <button className="link" onClick={() => go('about')}>Who sees what</button></p>
             <span className="placeholder">{seed.symptoms.status}</span>
           </div>
+
           {setting.id === 'earth' ? null : <SpaceWeather doseLogged={state.ui.doseLogged} onDose={() => ui({ doseLogged: !state.ui.doseLogged })} />}
+
           <div className="card">
             <h2 className="title">The same problem, back on Earth</h2>
             <p><span className="num stat">{seed.earthBenefit.figure}</span> {seed.earthBenefit.text}</p>
             <p className="muted">A crew far from Earth and a family hours from a hospital need the same thing: care that starts before the expert arrives.</p>
             <p className="caption">Source: <a href={seed.earthBenefit.link}>{seed.earthBenefit.source}</a>.</p>
-            <div><button className="btn secondary" onClick={() => ui({ settingId: setting.id === 'earth' ? 'mars-far' : 'earth' })}>{setting.id === 'earth' ? 'Back to Mars' : 'See it in remote Australia'}</button></div>
+            <div><button className="btn secondary" onClick={() => ui({ settingId: setting.id === 'earth' ? seed.settings[0].id : 'earth' })}>{setting.id === 'earth' ? 'Back to the Mars base' : 'See it in remote Australia'}</button></div>
           </div>
           <div className="card">
-            <h2 className="title">The same rule, on real crew data</h2>
+            <h2 className="title">The same idea, on real crew data</h2>
             <p className="muted">See four real crew members' blood counts measured against their own pre-flight baselines.</p>
             <p className="caption">{osd.credit}</p>
             <div><button className="btn secondary" onClick={() => go('crew')}>Open real crew data</button></div>
@@ -229,63 +332,83 @@ function Home({ state, commit, ui, setting, crewId, rule }: Shared & { rule: Rul
   );
 }
 
-function ReadingScreen({ state, commit, setting, crewId, rule, indicatorId }: Shared & { rule: Rule; indicatorId: string }) {
+/** Chart points: the baseline, the most recent mission days, then anything saved today. */
+function missionPoints(state: State, crewId: string, ind: Indicator, lastDays: number, today?: { reading: SavedReading; a: Assessment }): ChartPoint[] {
+  const crew = crewById(seed, crewId);
+  const band = personalBand(crew.baseline[ind.id], K, ind.fixedSd);
+  const ref = ind.ref?.[crew.sex];
+  const lo = ind.limit?.low ?? ref?.min;
+  const hi = ind.limit?.high ?? ref?.max;
+  const h = history(state, seed, crewId, ind.id);
+  const start = Math.max(0, h.mission.length - lastDays);
+  const pts: ChartPoint[] = h.baseline.slice(-7).map((v, i) => ({ label: i === 0 ? 'Base' : '', value: v, kind: 'baseline' as const }));
+  h.mission.slice(start).forEach((v, i) => {
+    if (v !== null) pts.push({ label: `Day ${start + i + 1}`, value: v, kind: 'reading', tier: tierFor(v, band, lo, hi, ind.watch) });
+  });
+  if (today) {
+    for (const r of h.recorded.filter((x) => x.at < today.reading.at).slice(-2)) pts.push({ label: hhmm(r.at), value: r.value, kind: 'reading', tier: r.tier });
+    pts.push({ label: 'Today', value: today.reading.value, kind: 'reading', tier: today.a.tier, highlight: true });
+  }
+  return pts;
+}
+
+function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: Shared & { rules: RuleFile; indicatorId: string }) {
   const ind = indicatorById(seed, indicatorId);
   const crew = crewById(seed, crewId);
   const [text, setText] = useState('');
   useEffect(() => setText(''), [indicatorId, crewId]);
   const n = Number(text);
-  const max = ind.ref[crew.sex].max * 3;
-  const valid = text.trim() !== '' && Number.isFinite(n) && n > 0 && n < max;
+  const valid = text.trim() !== '' && plausible(ind, n);
+  const band = personalBand(crew.baseline[ind.id], rules.band.k, ind.fixedSd);
+  const demo = demoValue(seed, crewId, ind.id);
   const submit = () => {
     if (!valid) return;
-    const r = recordReading(state, seed, rule, { crewId, indicatorId, value: Number(n.toFixed(ind.dp)), at: Date.now() });
+    const r = recordReading(state, seed, rules, { crewId, indicatorId, value: Number(n.toFixed(ind.dp)), at: Date.now() });
     commit(r.state);
     go('result', r.reading.id);
   };
   return (
     <>
       <Context setting={setting} crewId={crewId} />
-      <h1 className="display">{ind.region}: {ind.name.toLowerCase()}</h1>
-      <div className="seg" role="group" aria-label="Which blood measure">
+      <h1 className="display">{ind.region === ind.name ? ind.name : `${ind.region}: ${ind.name.toLowerCase()}`}</h1>
+      <div className="seg" role="group" aria-label="Which check-in">
         {seed.indicators.map((i) => <button key={i.id} aria-pressed={i.id === ind.id} onClick={() => go('reading', i.id)}>{i.name}</button>)}
       </div>
       <div className="grid">
-        <form className="card" onSubmit={(e) => { e.preventDefault(); submit(); }}>
-          <label className="title" htmlFor="reading">Enter your reading</label>
-          <div className="field">
-            <input id="reading" inputMode="decimal" autoComplete="off" autoFocus value={text} onChange={(e) => setText(e.target.value)} placeholder={(0).toFixed(ind.dp)} aria-describedby="reading-unit" />
-            <span className="unit" id="reading-unit">{ind.unit}</span>
-          </div>
-          {text.trim() !== '' && !valid ? <p className="caption" role="alert">Enter a number between 0 and {max.toFixed(0)} {ind.unit}.</p> : null}
-          <div className="chips">
-            <SyntheticTag />
-            <span className="caption">Demo values:</span>
-            {demoValues(seed, rule, crewId, ind.id).map((v) => (
-              <button type="button" className="chip" key={v} onClick={() => setText(v.toFixed(ind.dp))}>{v.toFixed(ind.dp)}</button>
-            ))}
-          </div>
-          <div className="btn-row">
-            <button className="btn" type="submit" disabled={!valid}>Check against my baseline</button>
-            <button className="btn secondary" type="button" onClick={() => go('home')}>Back</button>
-          </div>
-        </form>
         <div className="stack">
-          <div className="card">
-            <span className="why-label">Why this check?</span>
-            <p>{ind.whyCheck}</p>
-            <span className="why-label">How is it measured in flight?</span>
-            <p>{ind.howMeasured}</p>
-            <span className="why-label">Background from NASA and partner agencies</span>
-            <ul className="links">
-              {resources.map((r) => <li key={r.url}><a href={r.url} target="_blank" rel="noreferrer">{r.agency}: {r.title}</a></li>)}
-            </ul>
-          </div>
+          <form className="card" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+            <label className="title" htmlFor="reading">{ind.input.prompt}</label>
+            {ind.input.kind === 'scale' ? (
+              <ScaleInput labels={ind.input.labels ?? []} value={valid ? n : undefined} onPick={(v) => setText(String(v))} />
+            ) : ind.input.kind === 'test' ? (
+              <ReactionTest onResult={(ms) => setText(String(ms))} />
+            ) : null}
+            {ind.input.kind === 'sensor' ? <p className="muted">The cabin sensor reports <span className="mono">{demo.toFixed(ind.dp)}</span> {ind.unit} as the latest one-hour average. Log it, or type a reading from a handheld monitor.</p> : null}
+            {ind.input.kind !== 'scale' ? (
+              <div className="field">
+                <input id="reading" inputMode="decimal" autoComplete="off" autoFocus={ind.input.kind === 'number'} value={text} onChange={(e) => setText(e.target.value)} placeholder={(0).toFixed(ind.dp)} aria-describedby="reading-unit" />
+                <span className="unit" id="reading-unit">{ind.unit}</span>
+              </div>
+            ) : null}
+            {text.trim() !== '' && !valid ? <p className="caption" role="alert">That cannot be right: {ind.name.toLowerCase()} must be between {ind.input.min} and {ind.input.max} {ind.unit}. Check and enter it again.</p> : null}
+            <div className="chips">
+              <SyntheticTag />
+              <span className="caption">{ind.input.kind === 'sensor' ? 'Sensor value:' : 'Demo value for today:'}</span>
+              <button type="button" className="chip" onClick={() => setText(shown(ind, demo))}>{shown(ind, demo)}</button>
+            </div>
+            <div className="btn-row">
+              <button className="btn" type="submit" disabled={!valid}>Check against my baseline</button>
+              <button className="btn secondary" type="button" onClick={() => go('home')}>Back</button>
+            </div>
+          </form>
           <div className="card">
             <span className="why-label">Your baseline</span>
-            <p>{say('Before launch', setting)} you measured {(crew.baseline[ind.id] ?? []).map((b) => b.value.toFixed(ind.dp)).join(', ')} {ind.unit}. Every reading is compared with your own numbers, not only with a population range.</p>
+            <p>{say(ind.baselineLabel ?? 'Before launch', setting)}, your average was {band.mean.toFixed(ind.dp)} {ind.unit}. Your own expected range is {band.low.toFixed(ind.dp)} to {band.high.toFixed(ind.dp)} {ind.unit}. Every reading is compared with your own numbers.</p>
+            {ind.limit ? <p className="caption">{ind.limit.label}: {(ind.limit.high ?? ind.limit.low)!.toFixed(ind.dp)} {ind.unit}. Source: {ind.limit.source}.</p> : null}
+            {ind.variationSource ? <p className="caption">Range width from: {ind.variationSource}.</p> : null}
           </div>
         </div>
+        <ExplainCard how={ind.card.how} why={ind.card.why} what={say(ind.card.what, setting)} status={ind.card.status} hazards={ind.hazards.map((code) => ({ code, name: seed.hazards[code] }))} sources={ind.card.sources} />
       </div>
     </>
   );
@@ -295,59 +418,82 @@ function localise(a: Assessment, s: Setting): Assessment {
   return { ...a, why: say(a.why, s), title: say(a.title, s), steps: a.steps.map((x) => cap(say(x, s))) };
 }
 
-function trendPoints(state: State, r: SavedReading, ind: Indicator, a: Assessment, ref: { min: number; max: number }): ChartPoint[] {
-  const h = history(state, seed, r.crewId, r.indicatorId);
-  const earlier = h.recorded.filter((x) => x.at < r.at).slice(-2);
-  return [
-    ...h.baseline.map((b) => ({ label: b.t, value: b.value, kind: 'baseline' as const })),
-    ...h.mission.slice(earlier.length ? -(4 - earlier.length) : -4).map((m) => ({ label: m.t, value: m.value, kind: 'reading' as const, tier: tierFor(m.value, a.band, ref.min, ref.max) })),
-    ...earlier.map((x) => ({ label: hhmm(x.at), value: x.value, kind: 'reading' as const, tier: x.tier })),
-    { label: 'Today', value: r.value, kind: 'reading' as const, tier: a.tier, highlight: true },
-  ].map((p) => ({ ...p, value: Number(p.value.toFixed(ind.dp)) }));
-}
-
-function Result({ state, commit, setting, rule, reading }: Shared & { rule: Rule; reading: SavedReading }) {
+function Result({ state, commit, setting, rules, reading }: Shared & { rules: RuleFile; reading: SavedReading }) {
   const ind = indicatorById(seed, reading.indicatorId);
-  const ref = ind.ref[crewById(seed, reading.crewId).sex];
-  const raw = assessValue(seed, rule, reading.crewId, reading.indicatorId, reading.value);
-  const a = localise(raw, setting);
+  const crew = crewById(seed, reading.crewId);
+  const ref = ind.ref?.[crew.sex];
+  const raw = assessReading(state, seed, rules, reading);
+  // The card leads with the strongest finding; any others are listed under it.
+  const a = localise({ ...raw, why: raw.findings[0]?.why ?? raw.why }, setting);
   const sent = state.outbox.some((p) => p.readingId === reading.id);
   const conf = confirmation(state, reading);
+  const day = daySummary(state, seed, rules, reading.crewId);
+  const promptOpen = day.prompt && day.prompt.indicatorId !== ind.id && !day.items.find((x) => x.indicator.id === day.prompt!.indicatorId)?.reading;
+  const others = day.flagged.filter((x) => x.indicator.id !== ind.id);
   const send = () => { commit(sendCase(state, { readingId: reading.id, settingId: setting.id, at: Date.now() }).state); go('gap', reading.id); };
+  const limit = ind.limit?.high ?? ind.limit?.low;
   return (
     <>
       <Context setting={setting} crewId={reading.crewId} />
       <div className="grid wide-left">
         <div className="stack">
-          <ReadingTile label={`${ind.name}, ${hhmm(reading.at)}`} value={reading.value.toFixed(ind.dp)} unit={ind.unit} delta={a.deltaText} />
+          <ReadingTile label={`${ind.name}, ${hhmm(reading.at)}`} value={shown(ind, reading.value)} unit={ind.unit} delta={a.deltaText} />
           <div className="card">
             <div className="card-head">
               <h2 className="title">Against your own baseline</h2>
               <SyntheticTag />
             </div>
-            <BaselineChart points={trendPoints(state, reading, ind, raw, ref)} band={raw.band} refMin={ref.min} refMax={ref.max} unit={ind.unit} dp={ind.dp} baselineLabel={`${say('Before launch', setting)} (your baseline)`} readingLabel={say('This mission', setting)} title={`${ind.name} over time against your own baseline. Today: ${reading.value.toFixed(ind.dp)} ${ind.unit}.`} />
-            <ChartLegend bandLabel={say('Own expected range', setting)} />
-            <p className="caption">{ind.refSource}.</p>
+            <BaselineChart points={missionPoints(state, reading.crewId, ind, 28, { reading, a: raw })} band={raw.band} refMin={ref?.min} refMax={ref?.max} limit={limit !== undefined && ind.limit ? { value: limit, label: ind.limit.label } : undefined} unit={ind.unit} dp={ind.dp} baselineLabel={say(ind.baselineLabel ?? 'Before launch', setting)} readingLabel="Past four weeks" title={`${ind.name} over the past four weeks against your own range. Today: ${shown(ind, reading.value)} ${ind.unit}.`} />
+            <ChartLegend bandLabel="Own expected range" reference={Boolean(ref)} limitLabel={ind.limit?.label} />
+            <p className="caption">{ind.refSource ? `${ind.refSource}. ` : ''}{ind.limit ? `${ind.limit.label}: ${ind.limit.source}.` : ''}</p>
           </div>
         </div>
-        <AlertCard a={a} synthetic>
-          {conf.status === 'unconfirmed' ? <p className="confirm" role="status">One reading so far. A second reading that agrees will mark this as confirmed.</p> : null}
-          {conf.status === 'confirmed' ? <p className="confirm ok" role="status">Confirmed by a second reading (the one at {hhmm(conf.previousAt!)} was also outside your range).</p> : null}
-          <div className="btn-row">
-            {a.tier === 'green' ? (
-              <button className="btn" onClick={() => go('home')}>Log and finish</button>
-            ) : (
-              <button className="btn" onClick={send}>{sent ? 'Open the case' : say('Send case to Earth', setting)}</button>
-            )}
-            <button className="btn secondary" onClick={() => go('reading', ind.id)}>Repeat the reading</button>
-          </div>
-        </AlertCard>
+        <div className="stack">
+          <AlertCard a={a} synthetic>
+            {raw.findings.length > 1 ? (
+              <ul className="plain also">
+                {raw.findings.slice(1).map((f) => <li key={f.ruleId}>{say(f.why, setting)}</li>)}
+              </ul>
+            ) : null}
+            {raw.findings.length > 0 ? <p className="caption">Rules that fired: {raw.findings.map((f) => f.ruleId).join(', ')}.</p> : null}
+            {conf.status === 'unconfirmed' ? <p className="confirm" role="status">One reading so far. A second reading that agrees will mark this as confirmed.</p> : null}
+            {conf.status === 'confirmed' ? <p className="confirm ok" role="status">Confirmed by a second reading (the one at {hhmm(conf.previousAt!)} was also outside your range).</p> : null}
+            <div className="btn-row">
+              {promptOpen ? <button className="btn" onClick={() => go('reading', day.prompt!.indicatorId)}>Next: thirty-second reaction test</button> : a.tier === 'green' ? (
+                <button className="btn" onClick={() => go('home')}>Log and finish</button>
+              ) : (
+                <button className="btn" onClick={send}>{sent ? 'Open the case' : say('Send case to Earth', setting)}</button>
+              )}
+              {promptOpen && a.tier !== 'green' ? <button className="btn secondary" onClick={send}>{say('Send case to Earth', setting)}</button> : null}
+              <button className="btn secondary" onClick={() => go('reading', ind.id)}>Repeat the reading</button>
+              <button className="btn secondary" onClick={() => go('home')}>Back to today</button>
+            </div>
+          </AlertCard>
+          {others.length > 0 ? (
+            <div className="card">
+              <span className="why-label">Also outside your range today</span>
+              <ul className="rows">
+                {others.map((x) => (
+                  <li key={x.indicator.id}>
+                    <button className="row" onClick={() => go('result', x.reading!.id)}>
+                      <span className="row-name">{x.indicator.name}</span>
+                      <span className="row-val"><span className="mono">{shown(x.indicator, x.reading!.value)}</span> {x.indicator.unit}</span>
+                      <TierPill tier={x.assessment!.tier} />
+                      <span className="chev" aria-hidden="true">›</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <p className="caption">These go in the same case pack, so Earth sees the whole picture.</p>
+            </div>
+          ) : null}
+        </div>
       </div>
     </>
   );
 }
 
-function Gap({ state, commit, ui, setting, rule, reading }: Shared & { rule: Rule; reading: SavedReading }) {
+function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: RuleFile; reading: SavedReading }) {
   const pack = state.outbox.find((p) => p.readingId === reading.id);
   const [startAt, setStartAt] = useState(pack?.createdAt ?? Date.now());
   const [now, setNow] = useState(Date.now());
@@ -355,10 +501,10 @@ function Gap({ state, commit, ui, setting, rule, reading }: Shared & { rule: Rul
     const id = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(id);
   }, []);
-  if (!pack) return <Result state={state} commit={commit} ui={ui} setting={setting} crewId={reading.crewId} rule={rule} reading={reading} />;
+  if (!pack) return <Result state={state} commit={commit} ui={ui} setting={setting} crewId={reading.crewId} rules={rules} reading={reading} />;
   const ind = indicatorById(seed, reading.indicatorId);
-  const raw = assessValue(seed, rule, reading.crewId, reading.indicatorId, reading.value);
-  const content = casePackContent(state, seed, rule, pack.id);
+  const raw = assessReading(state, seed, rules, reading);
+  const content = casePackContent(state, seed, rules, pack.id);
   const left = setting.replySeconds - (now - startAt) / 1000;
   const meanwhile = raw.steps.filter((st) => !/send the case/i.test(st));
   const problem = seed.problem[setting.id === 'earth' ? 'earth' : 'space'];
@@ -402,16 +548,17 @@ function Gap({ state, commit, ui, setting, rule, reading }: Shared & { rule: Rul
               <SyntheticTag />
             </div>
             <dl className="pack">
-              <dt>Reading</dt><dd>{ind.name} {reading.value.toFixed(ind.dp)} {ind.unit} ({raw.deltaText})</dd>
-              <dt>Trend</dt><dd>Baseline {content.trend.baseline.map((b) => b.value.toFixed(ind.dp)).join(', ')}; this mission {content.trend.mission.map((m) => m.value.toFixed(ind.dp)).join(', ')} {ind.unit}</dd>
-              <dt>Assessment</dt><dd>{TIER_WORD[raw.tier]}{content.assessment.confirmedByRepeatReading ? ', confirmed by a second reading' : ', one reading so far'}. Rule {raw.ruleId}. {raw.source}</dd>
+              <dt>Reading</dt><dd>{ind.name} {shown(ind, reading.value)} {ind.unit} ({raw.deltaText})</dd>
+              <dt>Own range</dt><dd>{content.trend.ownRange[0]} to {content.trend.ownRange[1]} {ind.unit}; the past 14 days and today's readings are attached</dd>
+              <dt>Assessment</dt><dd>{TIER_WORD[raw.tier]}{content.assessment.confirmedByRepeatReading ? ', confirmed by a second reading' : ', one reading so far'}. Rules {raw.ruleId}. {raw.source}</dd>
+              <dt>Other signals</dt><dd>{content.otherSignalsToday.length > 0 ? content.otherSignalsToday.map((x) => `${x.indicator} ${x.value} ${x.unit}`).join('; ') : 'None today.'}</dd>
               <dt>Done so far</dt><dd>{reading.stepsDone.length > 0 ? reading.stepsDone.map((x) => cap(say(x, setting))).join(' ') : 'Nothing ticked yet.'}</dd>
               <dt>How you feel</dt><dd>{content.symptoms.length > 0 ? content.symptoms.map((x) => x.label).join(', ') : 'Nothing logged today.'}</dd>
             </dl>
             <p className="caption">{pack.status === 'queued' ? `Queued on this device at ${hhmm(pack.createdAt)}. It leaves when a link opens, with anything you tick or log before then.` : `Exported at ${hhmm(pack.exportedAt ?? pack.createdAt)}.`}</p>
             <div className="btn-row">
               <button className="btn secondary" onClick={() => go('outbox')}>Open outbox</button>
-              <button className="btn secondary" onClick={() => go('home')}>Home</button>
+              <button className="btn secondary" onClick={() => go('home')}>Back to today</button>
             </div>
           </div>
         </div>
@@ -420,11 +567,11 @@ function Gap({ state, commit, ui, setting, rule, reading }: Shared & { rule: Rul
   );
 }
 
-function Outbox({ state, commit, rule }: Shared & { rule: Rule }) {
+function Outbox({ state, commit, rules }: Shared & { rules: RuleFile }) {
   const [file, setFile] = useState<string | null>(null);
   const queued = state.outbox.filter((p) => p.status === 'queued');
   const doExport = () => {
-    const r = exportOutbox(state, seed, rule, Date.now());
+    const r = exportOutbox(state, seed, rules, Date.now());
     const text = JSON.stringify(r.file, null, 2);
     commit(r.state);
     setFile(text);
@@ -443,10 +590,10 @@ function Outbox({ state, commit, rule }: Shared & { rule: Rule }) {
       <h1 className="display">Outbox</h1>
       <p className="muted">Cases wait here until a link opens, then leave as one file. Nothing needs a network until then.</p>
       <div className="card">
-        {state.outbox.length === 0 ? <p>No cases yet. A case is queued when a result needs your crew medic or is urgent.</p> : (
+        {state.outbox.length === 0 ? <p>No cases yet. A case is queued when you send a result that needs your crew medic or is urgent.</p> : (
           <ul className="rows">
             {[...state.outbox].reverse().map((p) => {
-              const c = casePackContent(state, seed, rule, p.id);
+              const c = casePackContent(state, seed, rules, p.id);
               return (
                 <li key={p.id}>
                   <button className="row" onClick={() => go('gap', p.readingId)}>
@@ -481,30 +628,34 @@ function Outbox({ state, commit, rule }: Shared & { rule: Rule }) {
 function About() {
   const built = [
     'Runs with no network once loaded, on tablet, laptop and phone browsers.',
-    'Readings, symptom logs and cases are saved on the device.',
-    'Four crew profiles and four blood measures, each compared with that person\'s own baseline.',
+    'Six check-ins tied to spaceflight risks, each compared with that person\'s own baseline and mission so far.',
+    'Trend, repeat and combined rules, so a slow slide is caught as well as one odd reading.',
+    'Prompts fitted around the crew timeline, never during a critical operation.',
+    'A streak and crew goal that reward checking in, never good numbers.',
     'Cases queue on the device and leave as one file when a link opens.',
-    'One action layer serves the screens, a command-line tool and AI agents, so all give the same answer.',
-    'Real NASA data on screen: crew blood counts (OSDR, OSD-569) and space weather (DONKI).',
+    'One action layer serves the screens, a command-line tool and AI agents.',
+    'Real NASA data: crew blood counts (OSDR, OSD-569), space weather (DONKI), the cabin carbon dioxide limit.',
   ];
   const placeholder = [
-    'Every tiering rule, every threshold and every line of advice. Clinicians on our team must write and sign each one.',
-    'Which indicators a crew would really measure in flight, and how.',
+    'Every rule, every number in it and every line of advice. Clinicians on our team must write and sign each one.',
+    'The explanation cards: draft wording from our own challenge brief.',
+    'Who sees what: a draft policy for the team to confirm.',
     'All crew values. They are SYNTHETIC.',
   ];
   const needed = [
-    'Rules written and tested by flight clinicians against real cases.',
-    'Links to the measuring devices a crew carries, instead of typed values.',
-    'One shared record across crew devices on the spacecraft\'s own network, with crew privacy controls.',
+    'Rules written and tested by flight clinicians against real cases, including rules that change by environment.',
+    'Links to the sensors a crew carries, and voice input, instead of typed values.',
+    'One shared record across crew devices on the spacecraft\'s own network, enforcing the privacy rules.',
     'A ground system that receives case files and returns replies.',
     'A space agency\'s own safety, security and hardware approval. We claim none of this.',
   ];
   const list = (items: string[]) => <ul className="plain">{items.map((x) => <li key={x}>{x}</li>)}</ul>;
   return (
     <>
-      <div className="context"><span className="kicker">What is built, what is placeholder, what real use needs</span></div>
-      <h1 className="display">Road to flight</h1>
-      <p className="muted">This is a hackathon prototype. It is built the way a real crew tool would have to be built: everything on the device, nothing that depends on a link to Earth. Here is exactly where it stands.</p>
+      <div className="context"><span className="kicker">Privacy, and what is built, placeholder and still needed</span></div>
+      <h1 className="display">Privacy and limits</h1>
+      <p className="muted">Crews report honestly only when they trust where the data goes. This is who sees what, and exactly where this prototype stands.</p>
+      <div className="card"><PrivacyTable rows={seed.privacy.rows} status={seed.privacy.status} /></div>
       <div className="grid three">
         <div className="card"><h2 className="title">Built and working</h2>{list(built)}</div>
         <div className="card"><h2 className="title">Placeholder today</h2>{list(placeholder)}</div>
@@ -513,7 +664,7 @@ function About() {
       <div className="card">
         <h2 className="title">For developers and AI agents</h2>
         <p>The same rules run from the command line and print JSON. See <a href="agents.md">the agent page</a> and the <a href={REPO}>source code</a>.</p>
-        <pre className="file">npm run crew-health -- assess --crew crew-2 --indicator haemoglobin --value 13.4</pre>
+        <pre className="file">npm run crew-health -- day --crew crew-1</pre>
       </div>
     </>
   );

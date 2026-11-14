@@ -2,23 +2,41 @@
 
 This file lists each value the app shows or uses. Nothing here is a clinical accuracy claim. The tool is a hackathon prototype for assessment and next steps, not diagnosis.
 
-Evidence grades: **A** physics or a published standard; **B** real data from a small group; **C** expert practice without outcome data; **D** carried over from Earth practice, not tested in spaceflight; **None** a build placeholder with no evidence behind it.
+Evidence grades: **A** physics or a published standard; **B** real data from a small group; **C** common statistical convention or expert practice; **D** carried over from Earth practice, not tested in spaceflight; **None** a build placeholder with no evidence behind it.
 
 ## Numbers and rules in the product
 
 | Item | Value | Source | Grade | Limits |
 |---|---|---|---|---|
-| Personal baseline band, method | The person's own pre-flight mean, plus or minus 2 standard deviations of within-person variation | Team design choice. The "mean plus or minus 2 standard deviations" form is a common statistical convention for an expected range | C | Not a clinical threshold. Awaits clinician review (CLINICIAN_REVIEW.md, CR-02) |
-| Within-person variation | Haemoglobin 0.60 g/dL; haematocrit 1.51%; red cells 0.19 million/µL; white cells 1.26 thousand/µL | Computed by `scripts/fetch_osd569.py` from NASA OSDR, OSD-569: pooled standard deviation of each crew member's three pre-flight draws | B | Four people, three draws each, on Earth before a three-day flight. Variation in flight may differ |
-| Tier logic | Inside band: Self-manage. Outside band, inside laboratory range: Crew medic. Outside both: Urgent | Team design choice | None | Placeholder. One reading can raise a tier; the result is marked "one reading so far" until a second reading agrees. Whether a second reading should be required first is a clinician decision (CR-12) |
+| Personal band, method | Each person's own baseline mean, plus or minus 2 standard deviations of their own baseline. For haemoglobin the standard deviation is the within-person variation from OSD-569 | Team design choice. "Mean plus or minus 2 standard deviations" is a common statistical convention for an expected range | C | Not a clinical threshold. The factor of 2 awaits clinician review (CLINICIAN_REVIEW.md, CR-02) |
+| Baseline length | 14 days before the mission for each daily indicator; 3 draws for haemoglobin; the first two mission weeks for cabin carbon dioxide | Team design choice | None | A short baseline is a small sample. Placeholder (CR-02) |
+| Rule PB-01, level | One reading outside the band is amber (Crew medic) and asks for a retest | Team design choice | C | Statistical convention, placeholder until a clinician signs it (CR-02, CR-12) |
+| Rule TR-01, trend | The average of the last 7 readings has moved more than 1 standard deviation from baseline in the direction that matters: amber, even when every reading is inside the band | Team design choice | C | Window of 7 and shift of 1 standard deviation are statistical conventions awaiting clinician review (CR-16). Not tested for missed or false alarms |
+| Rule SU-01, sustained | 3 readings in a row outside the band is red (Urgent) | Team design choice | C | A count of 3 is a statistical convention awaiting clinician review (CR-16) |
+| Rule LM-01, limit | Outside the band and beyond a sourced limit is red: NASA's cabin carbon dioxide limit, or the laboratory range for haemoglobin | NASA-STD-3001 Volume 2 (carbon dioxide); NASA OSDR, OSD-569 (haemoglobin range) | A and D (see below) | Combines two grades. The rule logic is the team's choice (CR-02) |
+| Rule CM-01, combined | When two or more indicators are flagged on the same day, they are shown together as one picture | Team design choice | None | Placeholder. Whether a combination should change the tier is a clinician decision (CR-16) |
+| Rule PR-01, prompt | A sleep trend or raised cabin carbon dioxide prompts a reaction-time check | Team design choice | None | Placeholder. The link between these signals and reaction time is drafted wording from the team's challenge brief, awaiting clinician sign-off (CR-03) |
+| Direction that matters, per indicator | Sleep: low. Mood: low. Reaction time: high. Cabin carbon dioxide: high. Resting heart rate: both. Haemoglobin: both | Team design choice | None | Placeholder (CR-14) |
+| Cabin carbon dioxide limit | 3 mmHg, one-hour average | NASA-STD-3001 Volume 2 | A | A habitat design requirement, not a clinical alert threshold. Using it as a prompt is the team's choice. Not a statement about any one person's health |
+| Within-person variation, haemoglobin | 0.60 g/dL | Computed by `scripts/fetch_osd569.py` from NASA OSDR, OSD-569: pooled standard deviation of each crew member's three pre-flight draws | B | Four people, three draws each, on Earth before a three-day flight. Variation in flight may differ |
 | Laboratory reference range, haemoglobin | 13.2 to 17.1 g/dL (male crew), 11.7 to 15.5 g/dL (female crew) | As reported by the laboratory in NASA OSDR, OSD-569 (LSDS-7) | D | An Earth laboratory range. Not tested for in-flight use |
-| Laboratory reference ranges, other blood measures | Haematocrit 38.5 to 50% (male), 35 to 45% (female); red cells 4.2 to 5.8 (male), 3.8 to 5.1 (female) million/µL; white cells 3.8 to 10.8 thousand/µL | As reported by the laboratory in NASA OSDR, OSD-569 (LSDS-7) | D | Earth laboratory ranges. Not tested for in-flight use |
-| Real crew blood counts | Four crew, three draws before launch, four after return | NASA OSDR, OSD-569, Inspiration4 | B | Four people, a three-day mission, no in-flight draws. Shown as pre-flight and post-flight only |
-| Demo crew baselines and readings (four crew) | All values | Made up by the team | None | SYNTHETIC, labelled on screen. Shows that the workflow runs, nothing more |
+| Real crew blood counts | Four crew, three draws before launch, four after return. Haemoglobin, haematocrit, red cells and white cells | NASA OSDR, OSD-569, Inspiration4 | B | Four people, a three-day mission, no in-flight draws. Shown on the "Real crew data" screen as pre-flight and post-flight only. The other three blood counts appear only there |
+| Laboratory reference ranges, other blood measures (real crew data screen only) | Haematocrit 38.5 to 50% (male), 35 to 45% (female); red cells 4.2 to 5.8 (male), 3.8 to 5.1 (female) million/µL; white cells 3.8 to 10.8 thousand/µL | As reported by the laboratory in NASA OSDR, OSD-569 (LSDS-7) | D | Earth laboratory ranges. Not tested for in-flight use |
+| Tier words | Green Self-manage, amber Crew medic, red Urgent | Team design system | None | The challenge brief reads amber as "watch or retest" and red as "act now, contact flight surgeon". The team must pick one meaning (CR-18) |
+| Mood scale | 1 to 5: Very low, Low, OK, Good, Very good | Team design choice | None | Placeholder (CR-15). A self-rating, not a clinical scale |
+| Reaction time test | A 30-second tap test inside the app: five rounds, tap when the panel turns bright. Result in ms | Team design choice | None | Not compared with any clinical instrument. Values depend on the device |
+| Explanation card wording (six indicators) | How to measure, why it matters, what to do, hazards, sources | Draft text taken from the team's challenge brief; hazard links to NASA Human Research Program pages | None | Draft wording awaiting clinician sign-off (CR-03). No review badge is shown |
+| Prompt scheduler | No prompt during a critical operation; held check-ins move to the end of the operation; the demo EVA (08:00 to 12:00) slips by 45 minutes | Team design choice, on a mock crew timeline | None | The timeline is made up. A real mission timeline would come from mission planning |
+| Honest-reporting loop | Streak counts check-ins, never results; shared crew goal with no ranking; insights unlock after 14 and 30 days of check-ins | Team design choice | None | Placeholder. The unlock days are not from any study |
+| Privacy table | Who sees what: you, crew medic, flight surgeon, rest of crew | Team design choice | None | Draft policy for the team to confirm (CR-13). Not a data-protection design |
+| Input checks | Physically impossible readings are refused (for example sleep above 24 hours) | Physical limits of the quantity | A | Refuses only the impossible. It does not judge whether a reading is plausible for a person |
+| Demo crew baselines and mission values (four crew, 86 days) | All values | Generated by `scripts/make_mission_data.py` with a fixed seed | None | SYNTHETIC, labelled on screen. Shows that the workflow runs, nothing more |
+| Cabin carbon dioxide values in the demo | 3.4 mmHg today; creeping up over the past week | Made up by the team | None | SYNTHETIC. No sensor is connected |
 | One-way signal delay, Moon | about 1.3 s | Arithmetic: about 384,400 km at the speed of light | A | Light time only; relay and processing add to it |
 | One-way signal delay, Mars | about 3 min (closest, 54.6 million km) to about 22 min (farthest, 401 million km) | Arithmetic from published distance ranges | A | Light time only; near solar conjunction links can be lost altogether |
+| Environment profiles | Reply delay, who answers, dominant risks and guidance line for five places | Light-time arithmetic for the delays; the rest written for the build | A for delays; None for the rest | Guidance lines are placeholders (CR-11). The rules do not yet change by environment (CR-17) |
 | Remote Australia retrieval time | 60 minutes | SYNTHETIC scenario | None | Labelled SYNTHETIC on screen |
-| Solar particle events | Latest event date; days with events in about the past year | NASA DONKI (CCMC, NASA Goddard Space Flight Center) | B | Records for near-Earth space. Not a dose, and not linked to any tier |
+| Solar particle events and radiation prompt days | Days inside the mission window on which a real solar particle event was recorded | NASA DONKI (CCMC, NASA Goddard Space Flight Center) | B | Records for near-Earth space. Not a dose, and not linked to any tier |
 | Radiation step | "Log your personal dosimeter reading." | Written for the build | None | Placeholder (CR-09) |
 | Symptom list | Six one-tap options | Written for the build | None | Placeholder (CR-10). Symptoms are logged only; they never change a tier |
 | Distance from Earth as a hazard | Medical care becomes harder to receive from Earth as crews travel deeper into space | NASA Human Research Program, 5 Hazards of Human Spaceflight (read 14 Nov 2026) | A | A statement of the problem. It gives no figure for how often crews need care |
@@ -30,12 +48,15 @@ On the "Real crew data" screen, one crew member's haemoglobin sat below the labo
 
 ## Known limits
 
-- Every tiering rule and every line of advice is a placeholder until a clinician on the team signs it off. The app shows this on screen and shows no review badge.
-- A baseline built from three draws is a small sample. Normal variation within one person is estimated from only four crew members' pre-flight draws.
-- No space-specific alert bands were found in published sources for haemoglobin, heart rate, blood pressure, oxygen saturation or temperature. Any such band is a team decision.
-- Complete blood counts are not a routine in-flight self-measurement today. The demo indicator was chosen because it is in the open NASA dataset, pending the clinicians' choice (CR-01).
+- Every rule number and every line of advice is a placeholder until a clinician on the team signs it off. The app shows this on screen and shows no review badge.
+- The band factor of 2, the trend window of 7 readings, the shift of 1 standard deviation and the sustained count of 3 are statistical conventions (grade C). They have not been tested against real in-flight data or real cases.
+- A 14-day baseline, and a 3-draw haemoglobin baseline, are small samples. Normal variation in haemoglobin is estimated from only four crew members' pre-flight draws.
+- The cabin carbon dioxide limit is a habitat design requirement. It is not a clinical alert threshold.
+- No space-specific alert bands were found in published sources for haemoglobin, heart rate, sleep, mood or reaction time. Any such band is a team decision.
+- The six indicators come from the team's challenge brief list and await clinician confirmation (CR-01). Complete blood counts are not a routine in-flight self-measurement today.
+- Not built: voice input, sensor connections, a rover profile, the vision self-check, and rules that change by environment.
 - Synthetic results are never evidence of clinical accuracy.
 
 ## Where this sits beside existing work
 
-NASA and the Canadian Space Agency already work on medical decision support and on wearable monitoring for crews, and on care that depends less on Earth. This prototype adds no sensors and replaces no flight surgeon or crew medical officer. It is a hackathon-scale sketch of one crew-facing slice: a routine self-check, a transparent rule with its source, and a clear view of how long a reply will take and what to do meanwhile. It is not connected to any NASA system.
+NASA and the Canadian Space Agency already work on medical decision support and on wearable monitoring for crews, and on care that depends less on Earth. This prototype adds no sensors and replaces no flight surgeon or crew medical officer. It is a hackathon-scale sketch of one crew-facing slice: a routine daily check-in, rules that show their source, a view of slow trends, and a clear picture of how long a reply will take and what to do meanwhile. It is not connected to any NASA system, and NASA does not endorse it.

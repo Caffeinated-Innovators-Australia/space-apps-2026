@@ -1,6 +1,6 @@
 # Crew health check: page for AI agents and developers
 
-This is a hackathon prototype (NASA Space Apps Challenge 2026, Caffeinated Innovators Australia). It compares a health reading with a crew member's own baseline and returns a tier, a plain-language reason with its source, and next steps. Assessment and next steps only. Not a diagnosis. Every tiering rule is a placeholder until a clinician signs it off, and every crew value is SYNTHETIC.
+This is a hackathon prototype (NASA Space Apps Challenge 2026, Caffeinated Innovators Australia). It follows one story, Day 87 on a Mars base. It compares each of six daily indicators (sleep, resting heart rate, mood, reaction time, cabin carbon dioxide, haemoglobin) with a crew member's own baseline, and returns a tier, a plain-language reason with its source, and next steps. Its rules cover a single reading, a slow trend, a run of readings, a sourced limit, a combined picture and a prompt for a reaction-time check. Assessment and next steps only. Not a diagnosis. Every rule is a placeholder until a clinician signs it off, and every crew value is SYNTHETIC. NASA does not endorse this project.
 
 ## What you can do
 
@@ -33,14 +33,15 @@ npm run crew-health -- export  --out cases.json
 
 ## What an assessment contains
 
-`tier` (`green` = Self-manage, `amber` = Crew medic, `red` = Urgent), `title`, `why`, `steps`, `source`, `confidence`, `placeholder` (true while the rule is unsigned), `reviewedBy`, `band` (the person's own range), `deltaText`, `ruleId`.
+`tier` (`green` = Self-manage, `amber` = Crew medic, `red` = Urgent; the team has not yet settled what amber and red mean, CR-18), `title`, `why`, `steps`, `source`, `confidence`, `placeholder` (true while the rule is unsigned), `reviewedBy`, `band` (the person's own range), `deltaText`, `ruleId`.
 
 ## Rules for agents
 
 - Ask the person before you record a reading, send a case or export. Those change their record.
 - Never present a result as a diagnosis, and never hide the `placeholder` flag or the source.
 - Do not invent thresholds or advice. Rules live in `rules/rules.yaml` and are changed only by the team's clinicians.
-- Crew values are synthetic. The real data is NASA OSDR OSD-569 (pre-flight and post-flight blood counts) and NASA DONKI (space weather), in `src/data/`.
+- Crew values are synthetic and come from `scripts/make_mission_data.py`. The real inputs are NASA OSDR OSD-569 (haemoglobin variation and laboratory ranges, and the pre-flight and post-flight blood counts), NASA DONKI (space weather and radiation prompt days) and NASA's cabin carbon dioxide limit (NASA-STD-3001 Volume 2), in `src/data/`.
+- Not built: voice input, sensor connections, a rover profile, the vision self-check, and rules that change by environment.
 
 ## Where things are
 

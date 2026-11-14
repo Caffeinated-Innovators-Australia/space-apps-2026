@@ -25,7 +25,7 @@ Data shapes (`Seed`, `State`, `Reading`, `CasePack`, `Indicator`, `CrewProfile`)
 
 ## Where to put things
 
-- A new indicator: add it to `src/data/seed.json` (id, name, region, unit, reference range and its source, a baseline for each crew member). No code change is needed. A clinician must supply the range and wording.
+- A new indicator: add it in `scripts/make_mission_data.py` (id, name, unit, valid range, which direction matters, cadence, explanation card, and a baseline and mission series for each crew member), then run `python3 scripts/make_mission_data.py` to regenerate `src/data/seed.json`. Do not edit `seed.json` by hand. A clinician must supply the range and wording.
 - A new rule: `rules/rules.yaml`, with a `source` and a `signed_off_by` field.
 - A new screen: a file in `src/screens/`, added to the route list in `src/App.tsx`.
 - New data from NASA or another agency: fetch it once with a script in `scripts/`, save JSON in `src/data/`, and add it to `REFERENCES.md` and `docs/DATA_DICTIONARY.md`.
