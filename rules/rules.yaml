@@ -86,13 +86,17 @@ pathways:
     supporting: ["Comes in waves", "Blood in urine", "Pain passing urine", "Nauseous"]
     min_supporting: 1
     urgent: ["Fever or chills", "Confused", "Cannot pass urine"]
+    # A measured fever in the latest vital signs counts as "Fever or chills" (CR-58). 38.0 °C is the fever line in
+    # ANZCOR Guideline 9.2.3 (approved December 2025) and the same value SEP-01 uses. Awaiting the clinical lead's confirmation.
+    from_vitals:
+      "Fever or chills": { temp: ">= 38" }
     context: [fluid, exercise]
     # Early warning, before any symptom: the indicator has sat more than shift_sd standard deviations below the
     # person's own baseline for count logged days in a row. It names a risk to act on early, not a finding.
     early:
       id: KS-00
       indicator: fluid
-      count: 3
+      count: 2
       shift_sd: 1
       title: "Kidneys and urine: low fluid for {count} days"
       why: "Your fluid intake has been below your usual level for {count} logged days in a row: {values} {unit}, against your baseline of {baselineMean} {unit}. NASA names dehydration and low urine output among the reasons kidney stones are a risk in spaceflight. This is a risk to act on early, not a finding."
@@ -100,9 +104,9 @@ pathways:
         - "Drink to your usual daily amount today."
         - "Log your fluid again this evening."
         - "Tell your crew medic if it is still low tomorrow."
-      source: "Placeholder rule, awaiting clinician review. Three days and one standard deviation are statistical conventions. The risk is NASA's: Evidence Report, Risk of Renal Stone Formation (2017), page 5."
+      source: "Two days set by the clinical lead on 15 Nov 2026 (CR-29), as low fluid is also a dehydration and low blood volume risk; one standard deviation is a statistical convention. The risk is NASA's: Evidence Report, Risk of Renal Stone Formation (2017), page 5."
       confidence: Low
-      signed_off_by: placeholder
+      signed_off_by: clinical lead
     # Simple tests the pathway asks for. The result is logged and sent with the case. It never changes a tier.
     tests:
       - id: urine-strip
@@ -118,7 +122,12 @@ pathways:
         label: "Specific gravity"
         options: ["1.005", "1.010", "1.015", "1.020", "1.025", "1.030", "Not done"]
     # One plain line shown when the strip results match exactly. Wording from the clinical lead, a placeholder until signed off.
+    # Only the earliest note whose results all match is shown, so the most specific is listed at the top (CR-41).
     test_notes:
+      - when: { urine-strip: "Present", urine-nitrite: "Positive", urine-leuk: "Positive" }
+        text: "Blood, nitrite and leucocytes present: possible infection."
+      - when: { urine-nitrite: "Positive", urine-leuk: "Positive" }
+        text: "Nitrite and leucocytes present: possible infection."
       - when: { urine-strip: "Present", urine-nitrite: "Negative", urine-leuk: "Negative" }
         text: "Blood present, no signs of infection."
     check:
@@ -195,7 +204,8 @@ monitor_alerts:
       - { temp: ">= 38", rr: ">= 22" }
       - { temp: "<= 36", sbp: "<= 100", rr: ">= 22" }
     steps:
-      - "Lie the person flat and keep them warm."
+      - { text: "Lie the person flat and keep them warm.", gravity: [lunar, martian, earth] }
+      - { text: "Keep the person warm.", gravity: [zero] }
       - { text: "Strap the person down so you can start CPR if needed.", gravity: [zero] }
       - "Record vitals from the monitor."
       - "Crew medic: follow your sepsis protocol."
@@ -210,7 +220,8 @@ monitor_alerts:
     when:
       - { sbp: "< 90", hr: "> 110" }
     steps:
-      - "Lie the person flat and keep them warm."
+      - { text: "Lie the person flat and keep them warm.", gravity: [lunar, martian, earth] }
+      - { text: "Keep the person warm.", gravity: [zero] }
       - { text: "Strap the person down so you can start CPR if needed.", gravity: [zero] }
       - "Record vitals from the monitor."
       - "Crew medic: work through a systems screen to look for the cause."
@@ -230,6 +241,6 @@ emergency_symptoms:
     "Chest pain": { construct: 5, label: "Open chest pain checklist" }
     "Short of breath": { construct: 2, label: "Open breathing checklist" }
   why: "Chest pain, shortness of breath and collapse are treated as an emergency until a clinician says otherwise."
-  source: "Placeholder list from the team's clinicians (review of the build, 15 Nov 2026), awaiting sign-off."
+  source: "List from the team's clinicians (review of the build, 15 Nov 2026), signed off by the clinical lead on 15 Nov 2026 (CR-59)."
   confidence: Low
-  signed_off_by: placeholder
+  signed_off_by: clinical lead

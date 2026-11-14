@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import seedJson from '../data/seed.json';
 import { acknowledge, caseContent, exportOutbox, initialState, toggleSymptom } from './actions.ts';
-import { emergencySymptoms, logPain, logPathwayTest, pathwayAlerts, pathwayStatuses, sendPathwayCase, togglePathwayStep } from './pathways.ts';
+import { emergencySymptoms, logPain, logPathwayTest, pathwayAlerts, pathwayStatuses, sendPathwayCase, testNote, togglePathwayStep } from './pathways.ts';
+import { recordVitals } from './vitals.ts';
 import { parseRules } from './rules.ts';
 import type { Seed, State } from './types.ts';
 
@@ -103,11 +104,11 @@ describe('kidney stone pathway (KS-01)', () => {
   it('refuses a pathway with no source or sign-off field', () => {
     expect(() => parseRules(text.replace(/    source: "Placeholder rule, awaiting clinician review. The symptom pattern[^\n]*\n/, ''))).toThrow(/KS-01 has no source/);
   });
-  it('warns early, before any symptom, when fluid has been low for three logged days, and names NASA as the source of the risk', () => {
+  it('warns early, before any symptom, when fluid has been low for two logged days (CR-29), and names NASA as the source of the risk', () => {
     const p = pathwayStatuses(initialState(seed), seed, rules, 'crew-1')[0];
     expect(p.level).toBe('early');
     expect(p.ruleId).toBe('KS-00');
-    expect(p.title).toBe('Kidneys and urine: low fluid for 3 days');
+    expect(p.title).toBe('Kidneys and urine: low fluid for 2 days');
     expect(p.why).toContain('not a finding');
     expect(p.source).toContain('Risk of Renal Stone Formation');
     expect(pathwayAlerts(initialState(seed), seed, rules, 'crew-1')[0].tier).toBe('amber');
@@ -137,7 +138,7 @@ describe('emergency symptoms (EMS-01)', () => {
       expect(hit?.title).toBe('Press Emergency now');
       expect(hit?.ruleId).toBe('EMS-01');
       expect(hit?.source).toBeTruthy();
-      expect(hit?.placeholder).toBe(true);
+      expect(hit?.placeholder).toBe(false);
     }
   });
   it('is not raised by other symptoms, or for another person', () => {
@@ -151,5 +152,42 @@ describe('emergency symptoms (EMS-01)', () => {
   });
   it('refuses the rule without a source', () => {
     expect(() => parseRules(text.replace(/(id: EMS-01[\s\S]*?)source: .*\n/, '$1'))).toThrow();
+  });
+});
+
+describe('a measured fever counts in the kidney pathway (CR-58)', () => {
+  const vitals = (st: State, temp: number, at: number) => recordVitals(st, { crewId: 'crew-4', values: { temp, hr: 90, sbp: 120, dbp: 80, rr: 16 }, at });
+  it('counts a temperature at or above the rule value as "Fever or chills" and says where it came from', () => {
+    const s = vitals(log(initialState(seed), 'crew-4', 'Pain in side or lower back', 'Nauseous'), 38.6, 5000);
+    const p = one(s);
+    expect(p.level).toBe('red');
+    expect(p.matched.urgent).toEqual(['Fever or chills']);
+    expect(p.fromVitals).toEqual([{ symptom: 'Fever or chills', reading: 'Temperature 38.6 °C' }]);
+    expect(p.why).toContain('Fever or chills is counted from your latest vital signs (Temperature 38.6 °C).');
+  });
+  it('is cleared by a newer set without a fever, and never opens the pathway by itself', () => {
+    let s = vitals(log(initialState(seed), 'crew-4', 'Pain in side or lower back', 'Nauseous'), 38.6, 5000);
+    s = vitals(s, 37.0, 6000);
+    expect(one(s).level).toBe('amber');
+    expect(one(s).fromVitals).toEqual([]);
+    expect(pathwayStatuses(vitals(initialState(seed), 39, 5000), seed, rules, 'crew-4').filter((x) => x.level !== 'early')).toEqual([]);
+  });
+  it('does not count the symptom twice when it was also logged', () => {
+    const s = vitals(log(initialState(seed), 'crew-4', 'Pain in side or lower back', 'Fever or chills'), 38.6, 5000);
+    expect(one(s).fromVitals).toEqual([]);
+    expect(one(s).matched.urgent).toEqual(['Fever or chills']);
+  });
+  it('refuses a from_vitals symptom that is not on the pathway', () => {
+    expect(() => parseRules(text.replace('"Fever or chills": { temp:', '"Headache": { temp:'))).toThrow(/from_vitals/);
+  });
+});
+
+describe('urine strip notes (CR-41)', () => {
+  const ks = rules.pathways.find((p) => p.id === 'KS-01')!;
+  it('notes possible infection for nitrite and leucocytes, with or without blood, and keeps the blood-only line', () => {
+    expect(testNote(ks, { 'urine-strip': 'Present', 'urine-nitrite': 'Positive', 'urine-leuk': 'Positive' })).toBe('Blood, nitrite and leucocytes present: possible infection.');
+    for (const blood of ['Not present', 'Not done']) expect(testNote(ks, { 'urine-strip': blood, 'urine-nitrite': 'Positive', 'urine-leuk': 'Positive' })).toBe('Nitrite and leucocytes present: possible infection.');
+    expect(testNote(ks, { 'urine-strip': 'Present', 'urine-nitrite': 'Negative', 'urine-leuk': 'Negative' })).toBe('Blood present, no signs of infection.');
+    expect(testNote(ks, { 'urine-strip': 'Present', 'urine-nitrite': 'Positive', 'urine-leuk': 'Negative' })).toBeUndefined();
   });
 });

@@ -11,6 +11,13 @@ export interface EmergencyStep {
   detail?: string;
   ratio?: { compressions: number; breaths: number; source: string };
   pace?: { perMinute: number; range?: number[]; source: string };
+  /** A line shown and read before the step in one gravity band, for example strapping the person down at 0 g (CR-32). */
+  gravity?: Partial<Record<'zero' | 'lunar' | 'martian' | 'earth', string>>;
+}
+
+/** The gravity line for a step in this band, if the protocol has one. */
+export function gravityLine(step: EmergencyStep, band?: 'zero' | 'lunar' | 'martian' | 'earth'): string | undefined {
+  return band ? step.gravity?.[band] : undefined;
 }
 export interface EmergencyProtocol {
   id: string;

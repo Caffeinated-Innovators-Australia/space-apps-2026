@@ -84,6 +84,11 @@ export function latestVitals(state: State, crewId: string): VitalsEntry | undefi
   return best;
 }
 
+/** Whether every comparison in a group holds for this set. A missing value never matches. */
+export function groupHolds(group: MonitorComparison[], values: VitalSigns): boolean {
+  return group.every((c) => holds(c, values));
+}
+
 function holds(c: MonitorComparison, values: VitalSigns): boolean {
   const v = values[c.field as MonitorField];
   if (v === undefined) return false;
@@ -91,7 +96,7 @@ function holds(c: MonitorComparison, values: VitalSigns): boolean {
 }
 
 /** The plain reasons for an alert: each vital sign named in a matching group, in a fixed order. Blood pressure is shown as upper/lower. */
-function reasonsFor(fields: Set<VitalField>, values: VitalSigns): string[] {
+export function reasonsFor(fields: Set<VitalField>, values: VitalSigns): string[] {
   const out: string[] = [];
   if (fields.has('temp')) out.push(`Temperature ${fmt('temp', values.temp!)} °C`);
   if (fields.has('hr')) out.push(`Pulse ${fmt('hr', values.hr!)} a minute`);

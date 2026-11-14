@@ -1,7 +1,7 @@
 // Emergency screen: walks a crew member who is not a medical expert through basic life support, one step at a time.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { activeEmergency, emergencySummary, endEmergency, reachStep, startEmergency, type EmergencyProtocol } from '../core/emergency.ts';
+import { activeEmergency, emergencySummary, endEmergency, gravityLine, reachStep, startEmergency, type EmergencyProtocol } from '../core/emergency.ts';
 import type { RuleFile, Seed, Setting, State } from '../core/index.ts';
 import protocolJson from '../data/emergency.json';
 import './emergency.css';
@@ -46,7 +46,7 @@ function mmss(ms: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-export function Emergency({ state, commit, crewId, go, hhmm }: EmergencyProps) {
+export function Emergency({ state, commit, crewId, go, hhmm, setting }: EmergencyProps) {
   const steps = protocol.steps;
   const run = activeEmergency(state);
   const [endedId, setEndedId] = useState<string | null>(null);
@@ -93,11 +93,12 @@ export function Emergency({ state, commit, crewId, go, hhmm }: EmergencyProps) {
     try {
       synth.cancel();
       if (!readAloud) return;
-      const u = new SpeechSynthesisUtterance(`${step.name}. ${step.say}`);
+      const g = gravityLine(step, setting.gravityBand);
+      const u = new SpeechSynthesisUtterance(`${step.name}. ${g ? `${g} ` : ''}${step.say}`);
       u.lang = 'en-AU';
       synth.speak(u);
     } catch { /* Speech is a help, never a requirement. */ }
-  }, [synth, readAloud, step, endedId]);
+  }, [synth, readAloud, step, endedId, setting.gravityBand]);
   useEffect(() => () => { try { speechOut()?.cancel(); } catch { /* ignore */ } }, []);
 
   // Listen for "next" and "back": experimental, off by default, shown only where the browser has it.
@@ -209,7 +210,7 @@ export function Emergency({ state, commit, crewId, go, hhmm }: EmergencyProps) {
   const notice = (
     <div className="x-em-notice" role="note">
       <p><strong>This guides basic life support. It does not diagnose. {protocol.status}.</strong></p>
-      <p>These steps were written for Earth. They have not been adapted for low gravity or for a habitat. That is for the mission's clinicians.</p>
+      <p>These steps were written for Earth. At 0 g the CPR step also asks you to strap the person down (set by the clinical lead). Nothing else has been adapted for low gravity or for a habitat.</p>
       <p className="source">Source: <a href={protocol.source.url} target="_blank" rel="noreferrer">{protocol.source.name}</a>, read {protocol.source.read}. Wording is ours, not the guideline's.</p>
     </div>
   );
@@ -265,6 +266,7 @@ export function Emergency({ state, commit, crewId, go, hhmm }: EmergencyProps) {
 
       <div className="x-em-step">
         <p className="x-em-stepname"><span aria-hidden="true">{step.letter} · </span>{step.name}</p>
+        {gravityLine(step, setting.gravityBand) ? <p className="x-em-say">{gravityLine(step, setting.gravityBand)}</p> : null}
         <p className="x-em-say" aria-live="assertive">{step.say}</p>
         {step.detail ? <p className="x-em-detail">{step.detail}</p> : null}
         {step.ratio ? <p className="source"><span className="mono">{step.ratio.compressions}</span> compressions to <span className="mono">{step.ratio.breaths}</span> breaths: {step.ratio.source}.</p> : null}

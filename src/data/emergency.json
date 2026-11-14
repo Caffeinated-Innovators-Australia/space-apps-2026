@@ -20,6 +20,7 @@
     {
       "id": "C", "letter": "C", "name": "CPR",
       "say": "Start CPR: 30 compressions, then 2 breaths.",
+      "gravity": { "zero": "Strap the person down before you start CPR." },
       "detail": "Push at about 100 to 120 a minute. Keep pauses short.",
       "ratio": { "compressions": 30, "breaths": 2, "source": "ANZCOR Guideline 8, section 3.0 step 6 and section 2.0; Basic Life Support flowchart, box C" },
       "pace": { "perMinute": 110, "range": [100, 120], "source": "ANZCOR Guideline 8, section 3.1 and Recommendation 5: about 100 to 120 a minute. The marker beats at 110, the middle of that range (the app's choice)." }

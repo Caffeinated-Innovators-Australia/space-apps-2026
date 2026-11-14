@@ -2,7 +2,7 @@
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { activeEmergency, emergencySummary, endEmergency, reachStep, startEmergency, type EmergencyProtocol } from './emergency.ts';
+import { activeEmergency, emergencySummary, endEmergency, gravityLine, reachStep, startEmergency, type EmergencyProtocol } from './emergency.ts';
 import type { State } from './types.ts';
 
 const protocol = JSON.parse(readFileSync('src/data/emergency.json', 'utf8')) as EmergencyProtocol;
@@ -65,5 +65,14 @@ describe('emergency runs', () => {
     let { state, run } = startEmergency(blank(), { crewId: 'crew-1', at: 0 });
     state = reachStep(state, run.id, 'D', 3000);
     expect(emergencySummary(activeEmergency(state)!, protocol).durationMs).toBe(3000);
+  });
+});
+
+describe('the CPR step at 0 g (CR-32)', () => {
+  it('asks for the person to be strapped down at 0 g only', () => {
+    const c = protocol.steps.find((x) => x.id === 'C')!;
+    expect(gravityLine(c, 'zero')).toBe('Strap the person down before you start CPR.');
+    for (const band of ['lunar', 'martian', 'earth', undefined] as const) expect(gravityLine(c, band)).toBeUndefined();
+    expect(protocol.steps.filter((x) => x.gravity).map((x) => x.id)).toEqual(['C']);
   });
 });

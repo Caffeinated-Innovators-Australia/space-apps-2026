@@ -86,6 +86,8 @@ describe('rulesAwaitingSignOff', () => {
     expect(list).toHaveLength(expected);
     expect(list.map((x) => x.id)).toEqual(expect.arrayContaining(['LM-01', 'CM-01', 'PR-01', 'KS-01', 'KS-00']));
     for (const x of list) expect(x.source && x.confidence && x.what).toBeTruthy();
-    expect(list.every((x) => x.placeholder)).toBe(true);
+    // Signed off by the clinical lead on 15 Nov 2026 (CR-29); every other rule here still awaits sign-off.
+    expect(list.find((x) => x.id === 'KS-00')?.placeholder).toBe(false);
+    expect(list.filter((x) => x.id !== 'KS-00').every((x) => x.placeholder)).toBe(true);
   });
 });

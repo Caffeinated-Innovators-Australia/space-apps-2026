@@ -1012,7 +1012,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
       <Context setting={setting} crewId={crewId} />
       {vitalsAlerts(state, rules, crewId, setting.gravityBand).map((v) => (
         <p key={v.key} className="confirm" role="note">
-          <TierPill tier="red" /> A vital signs alert is also active: {v.title}. It is a separate alert and is not part of this pattern.{' '}
+          <TierPill tier="red" /> A vital signs alert is also active: {v.title}. It is a separate alert; only a fever in it counts toward this pattern.{' '}
           <button className="btn secondary" onClick={() => go('vitals')}>Open vital signs</button>
         </p>
       ))}

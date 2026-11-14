@@ -36,6 +36,12 @@ export interface PathwayRule extends Signed {
   tests: { id: string; label: string; options: string[] }[];
   /** A plain line shown when the test results match exactly. Clinician wording; a placeholder until signed off. */
   test_notes?: { when: Record<string, string>; text: string }[];
+  /**
+   * Supporting or red-flag symptoms that a measured vital sign also counts as (CR-58), for example a temperature
+   * at or above a set value counts as "Fever or chills". Read from the latest set of vital signs; a newer set clears it.
+   */
+  from_vitals?: Record<string, Record<string, string>>;
+  vitalsGroups: Record<string, MonitorComparison[]>;
 }
 
 /** A vital-sign field a monitor alert may compare. spo2 may appear only beside another field, never alone. */
@@ -142,6 +148,21 @@ function signed(r: Partial<Signed> | undefined, id: string): void {
 }
 
 /** Parse and check the rules file. Throws a plain-language error if anything is unsafe to use. */
+/** One group of vital-sign comparisons, such as { temp: ">= 38", sbp: "<= 100" }. All must hold. */
+function parseGroup(who: string, g: Record<string, string> | undefined): MonitorComparison[] {
+  const entries = Object.entries(g ?? {});
+  if (entries.length === 0) throw new Error(`${who}: a condition group is empty.`);
+  const group = entries.map(([field, cond]) => {
+    if (!MONITOR_FIELDS.includes(field as MonitorField)) throw new Error(`${who}: unknown vital sign "${field}".`);
+    const hit = /^\s*(>=|<=|>|<)\s*(-?\d+(?:\.\d+)?)\s*$/.exec(String(cond));
+    if (!hit) throw new Error(`${who}: "${field}: ${cond}" is not a comparison such as ">= 38".`);
+    return { field: field as MonitorField, op: hit[1] as MonitorOp, value: Number(hit[2]) };
+  });
+  // Oxygen saturation is less reliable at low cabin pressure, so it never raises an alert by itself.
+  if (group.every((c) => c.field === 'spo2')) throw new Error(`${who}: oxygen saturation may never raise an alert on its own.`);
+  return group;
+}
+
 export function parseRules(text: string): RuleFile {
   const f = load(text) as RuleFile;
   if (!f || !Array.isArray(f.rules) || f.rules.length === 0) throw new Error('Rules file has no rules.');
@@ -197,6 +218,13 @@ export function parseRules(text: string): RuleFile {
   }
   f.monitor_alerts = f.monitor_alerts ?? [];
   if (!Array.isArray(f.monitor_alerts)) throw new Error('monitor_alerts must be a list of rules.');
+  for (const w of f.pathways) {
+    w.vitalsGroups = {};
+    for (const [symptom, g] of Object.entries(w.from_vitals ?? {})) {
+      if (!w.supporting.includes(symptom) && !w.urgent.includes(symptom)) throw new Error(`Pathway ${w.id}: from_vitals names "${symptom}", which is not one of its supporting or red-flag symptoms.`);
+      w.vitalsGroups[symptom] = parseGroup(`Pathway ${w.id}`, g);
+    }
+  }
   for (const m of f.monitor_alerts) {
     const id = m?.id ?? 'monitor alert';
     signed(m, id);
@@ -210,21 +238,9 @@ export function parseRules(text: string): RuleFile {
       if (!Array.isArray(o.gravity) || o.gravity.length === 0 || !o.gravity.every((g) => (GRAVITY_BANDS as readonly string[]).includes(String(g)))) throw new Error(`Monitor alert ${id}: a step's gravity must list one or more of ${GRAVITY_BANDS.join(', ')}.`);
       return { text: o.text, gravity: o.gravity as GravityBand[] };
     });
-    if (!m.steps.some((st) => !st.gravity)) throw new Error(`Monitor alert ${id}: needs at least one first step that shows in every gravity.`);
+    for (const band of GRAVITY_BANDS) if (!m.steps.some((st) => !st.gravity || st.gravity.includes(band))) throw new Error(`Monitor alert ${id}: needs at least one first step in every gravity (none for ${band}).`);
     if (!Array.isArray(m.when) || m.when.length === 0) throw new Error(`Monitor alert ${id}: needs at least one group of conditions under when.`);
-    m.groups = m.when.map((g) => {
-      const entries = Object.entries(g ?? {});
-      if (entries.length === 0) throw new Error(`Monitor alert ${id}: a condition group is empty.`);
-      const group = entries.map(([field, cond]) => {
-        if (!MONITOR_FIELDS.includes(field as MonitorField)) throw new Error(`Monitor alert ${id}: unknown vital sign "${field}".`);
-        const hit = /^\s*(>=|<=|>|<)\s*(-?\d+(?:\.\d+)?)\s*$/.exec(String(cond));
-        if (!hit) throw new Error(`Monitor alert ${id}: "${field}: ${cond}" is not a comparison such as ">= 38".`);
-        return { field: field as MonitorField, op: hit[1] as MonitorOp, value: Number(hit[2]) };
-      });
-      // Oxygen saturation is less reliable at low cabin pressure, so it never raises an alert by itself.
-      if (group.every((c) => c.field === 'spo2')) throw new Error(`Monitor alert ${id}: oxygen saturation may never raise an alert on its own.`);
-      return group;
-    });
+    m.groups = m.when.map((g) => parseGroup(`Monitor alert ${id}`, g));
   }
   return f;
 }

@@ -21,7 +21,7 @@ describe('the pack demo sets', () => {
     expect(ids(after(demo('stone')))).toEqual([]);
   });
   it('the 22:30 set raises possible sepsis, Act now, with plain reasons and the signed-off steps', () => {
-    const [a, ...rest] = vitalsAlerts(after(demo('infected')), rules, crew);
+    const [a, ...rest] = vitalsAlerts(after(demo('infected')), rules, crew, 'martian');
     expect(rest).toEqual([]);
     expect(a.id).toBe('SEP-01');
     expect(a.tier).toBe('red');
@@ -126,11 +126,14 @@ describe('rules file checks', () => {
 
 describe('first steps that depend on gravity (CR-38)', () => {
   const strap = 'Strap the person down so you can start CPR if needed.';
-  it('shows the strap-down step only in zero gravity', () => {
+  it('at 0 g shows the strap-down step and hides lying flat; elsewhere the reverse', () => {
     const s = after(demo('infected'));
-    expect(vitalsAlerts(s, rules, crew, 'zero')[0].steps).toEqual(['Lie the person flat and keep them warm.', strap, 'Record vitals from the monitor.', 'Crew medic: follow your sepsis protocol.']);
-    for (const band of ['lunar', 'martian', 'earth'] as const) expect(vitalsAlerts(s, rules, crew, band)[0].steps).not.toContain(strap);
-    expect(vitalsAlerts(s, rules, crew)[0].steps).not.toContain(strap);
+    expect(vitalsAlerts(s, rules, crew, 'zero')[0].steps).toEqual(['Keep the person warm.', strap, 'Record vitals from the monitor.', 'Crew medic: follow your sepsis protocol.']);
+    for (const band of ['lunar', 'martian', 'earth'] as const) {
+      const steps = vitalsAlerts(s, rules, crew, band)[0].steps;
+      expect(steps).not.toContain(strap);
+      expect(steps[0]).toBe('Lie the person flat and keep them warm.');
+    }
   });
   it('shock lists the systems screen and RUSH scan steps, and stays a placeholder', () => {
     const shk = rules.monitor_alerts.find((m) => m.id === 'SHK-01')!;
