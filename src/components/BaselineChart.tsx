@@ -1,6 +1,24 @@
 // Trend chart: shaded personal-baseline band, dashed laboratory reference lines, points with tier shapes.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
+import { useEffect, useRef, useState } from 'react';
 import type { Band, Tier } from '../core/rules.ts';
+
+/** The chart is drawn at its real width, one unit to one pixel, so its text is the same size as the text around it on every device. */
+function useWidth(): [React.RefObject<HTMLDivElement | null>, number] {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [w, setW] = useState(500);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => setW(Math.max(260, Math.min(640, Math.round(el.clientWidth))));
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, w];
+}
 
 export interface ChartPoint {
   label: string;
@@ -19,12 +37,13 @@ function Shape({ x, y, tier, r = 6 }: { x: number; y: number; tier: Tier; r?: nu
 }
 
 export function BaselineChart({ points, band, refMin, refMax, limit, unit, dp = 1, title, baselineLabel = 'Before launch (your baseline)', readingLabel = 'This mission' }: { points: ChartPoint[]; band: Band; refMin?: number; refMax?: number; limit?: { value: number; label: string }; unit: string; dp?: number; title: string; baselineLabel?: string; readingLabel?: string }) {
-  const W = 500, H = 260, L = 44, R = 14, T = 20, B = 42;
+  const [wrap, W] = useWidth();
+  const H = 290, L = 48, R = 14, T = 24, B = 68;
   const compact = points.length > 12;
   const hasRef = typeof refMin === 'number' && typeof refMax === 'number';
   const vals = [...points.map((p) => p.value), band.low, band.high, ...(hasRef ? [refMin, refMax] : []), ...(limit ? [limit.value] : [])];
   const n = points.length;
-  const step = Math.max(1, Math.round((n - 1) / 5));
+  const step = Math.max(1, Math.round((n - 1) / Math.max(2, Math.floor((W - L - R) / 80))));
   const showLabel = (i: number) => !compact || i === n - 1 || (i % step === 0 && n - 1 - i >= step / 2);
   const span = Math.max(...vals) - Math.min(...vals) || 1;
   const lo = Math.min(...vals) - span * 0.08;
@@ -35,7 +54,8 @@ export function BaselineChart({ points, band, refMin, refMax, limit, unit, dp = 
   const f = (v: number) => v.toFixed(dp);
   const d = points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(p.value).toFixed(1)}`).join('');
   return (
-    <svg className="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={title}>
+    <div ref={wrap} className="chart-wrap">
+    <svg className="chart" width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={title}>
       <rect className="band" x={L} y={y(band.high)} width={W - L - R} height={y(band.low) - y(band.high)} />
       <line className="bandline" x1={L} x2={W - R} y1={y(band.high)} y2={y(band.high)} />
       <line className="bandline" x1={L} x2={W - R} y1={y(band.low)} y2={y(band.low)} />
@@ -65,16 +85,17 @@ export function BaselineChart({ points, band, refMin, refMax, limit, unit, dp = 
             <Shape x={x(i)} y={y(p.value)} tier={p.tier} r={compact && p.tier === 'green' ? 2.5 : 6} />
           )}
           {!compact || p.highlight ? <text className="val" x={x(i)} y={y(p.value) - (p.highlight ? 18 : 12)} textAnchor="middle">{f(p.value)}</text> : null}
-          {showLabel(i) ? <text x={x(i)} y={H - B + 20} textAnchor="middle">{p.label}</text> : null}
+          {showLabel(i) ? <text x={i === n - 1 ? W - 2 : x(i)} y={H - B + 20} textAnchor={i === n - 1 ? 'end' : 'middle'}>{p.label}</text> : null}
         </g>
       ))}
       {firstReading > 0 ? (
         <>
-          <text x={(x(0) + x(firstReading - 1)) / 2} y={H - 4} textAnchor="middle">{baselineLabel}</text>
-          <text x={(x(firstReading) + x(points.length - 1)) / 2} y={H - 4} textAnchor="middle">{readingLabel}</text>
+          <text x={4} y={H - 6} textAnchor="start">{'\u2190'} {baselineLabel}</text>
+          <text x={W - R} y={H - 28} textAnchor="end">{readingLabel} {'\u2192'}</text>
         </>
       ) : null}
     </svg>
+    </div>
   );
 }
 

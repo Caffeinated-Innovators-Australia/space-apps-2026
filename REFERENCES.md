@@ -33,6 +33,8 @@ The NASA Human Research Program hazard pages are linked as hazard chips on every
 - NASA Ames Research Center, Using Color in Information Display Graphics (archived copies).
 - How each criterion is applied: docs/DESIGN_CRITERIA.md.
 
+- ISS Display and Graphics Commonality Standard, SSP 50313 (baseline, 2001). The source for the 12 point minimum text size. https://everyspec.com/NASA/NASA-JSC/NASA-SSP-PUBS/SSP_50313_3473/
+
 ## Code libraries (all open source)
 | Library | Licence | Use |
 |---|---|---|

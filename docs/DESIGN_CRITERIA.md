@@ -34,7 +34,7 @@ This is NASA's guidance on how a crew display should behave. It is not NASA bran
 
 | # | Criterion | Source | How the app meets it | Status |
 |---|---|---|---|---|
-| D-16 | Capital letter height of at least 0.25 degrees, 0.4 preferred | Appendix F.5.1g | Smallest text is 14 px and body text 18 px. At a 50 cm viewing distance and a nominal screen that is about 0.29 and 0.38 degrees. Our arithmetic, not NASA's | Met by analysis |
+| D-16 | Capital letter height of at least 0.25 degrees, 0.4 preferred | Appendix F.5.1g | Smallest text is 16 px (12 point) and body text 18 px. At a 50 cm viewing distance and a nominal screen that is about 0.33 and 0.38 degrees. Our arithmetic, not NASA's. 16 px also meets the 12 point minimum of the ISS Display and Graphics Commonality Standard (SSP 50313). Charts are drawn at their real width, so chart text is 16 px on every device | Met by analysis |
 | D-17 | Sans serif font | Appendix F.5.1b | IBM Plex Sans | Met |
 | D-18 | Fixed-width font for numbers and tables | Appendix F.5.1d | Every reading, time and count is in IBM Plex Mono | Met |
 | D-19 | Mixed case for text that is not an acronym | Appendix F.5.1h | All labels are mixed case. See deviation 1 | Met with one deviation |

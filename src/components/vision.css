@@ -5,7 +5,7 @@
 .x-vt-text { margin: 0; font-size: 16px; line-height: 1.5; }
 .x-vt-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
 .x-vt-eye { font-weight: 600; }
-.x-vt-count { margin-left: auto; font-size: 14px; color: var(--ink-muted); }
+.x-vt-count { margin-left: auto; font-size: 16px; color: var(--ink-muted); }
 .x-vt-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
 /* The one fixed colour pair: white panel, black letters, in every theme, so contrast is the same each time. */
