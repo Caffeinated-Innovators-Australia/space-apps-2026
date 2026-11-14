@@ -47,6 +47,54 @@ export function plausible(ind: Indicator, value: number): boolean {
   return Number.isFinite(value) && value >= ind.input.min && value <= ind.input.max;
 }
 
+/** The sourced limits that apply to one person for one indicator, if any. */
+export function limitsFor(seed: Seed, crewId: string, indicatorId: string): { low?: number; high?: number; label?: string; source?: string } {
+  const crew = crewById(seed, crewId);
+  const ind = indicatorById(seed, indicatorId);
+  const ref = ind.ref?.[crew.sex];
+  const base = crew.baseline[ind.id] ?? [];
+  const floor = ind.limit?.lowFraction && base.length ? (ind.limit.lowFraction * base.reduce((a, b) => a + b, 0)) / base.length : undefined;
+  return {
+    low: ind.limit?.low ?? floor ?? ref?.min,
+    high: ind.limit?.high ?? ref?.max,
+    label: ind.limit?.label ?? (ref ? 'laboratory reference range' : undefined),
+    source: ind.limit?.source ?? ind.refSource,
+  };
+}
+
+/** A running total (radiation dose) is judged against its limit, not against a personal band. */
+function assessCumulative(seed: Seed, rules: RuleFile, crew: CrewProfile, ind: Indicator, value: number, earlier: number[]): Assessment {
+  const past = [...logged(crew.mission[ind.id]), ...earlier];
+  const last = past.length ? past[past.length - 1] : 0;
+  if (value < last) throw new Error(`${ind.name} is a running total, so it cannot be lower than the last reading of ${last.toFixed(ind.dp)} ${ind.unit}. Check the reading and enter it again.`);
+  const limit = ind.limit?.high ?? Infinity;
+  const over = value > limit;
+  const rule = rules.rules.find((r) => r.kind === 'limit');
+  const placeholder = !rule || rule.signed_off_by.trim().toLowerCase() === 'placeholder';
+  const pct = ((value / limit) * 100).toFixed(1);
+  const why = over
+    ? `Your ${ind.name.toLowerCase()} for this mission so far is ${value.toFixed(ind.dp)} ${ind.unit}. That is over the ${ind.limit!.label} of ${limit} ${ind.unit}.`
+    : `Your ${ind.name.toLowerCase()} for this mission so far is ${value.toFixed(ind.dp)} ${ind.unit}. That is ${pct}% of the ${ind.limit?.label ?? 'limit'} of ${limit} ${ind.unit}. Dose from earlier flights is not counted here.`;
+  const tier = over ? 'red' : 'green';
+  const delta = Number((value - last).toFixed(ind.dp));
+  const finding = over && rule ? [{ ruleId: rule.id, tier: 'red' as const, why, source: rule.source, confidence: rule.confidence, placeholder, reviewedBy: placeholder ? null : rule.signed_off_by }] : [];
+  return {
+    tier,
+    title: over ? `${ind.region}: over the limit` : `${ind.region}: within the limit`,
+    why,
+    findings: finding,
+    steps: ind.steps?.[tier] ?? rules.steps[tier],
+    source: ind.limit?.source ?? 'No limit set.',
+    confidence: rule?.confidence ?? 'Low',
+    placeholder,
+    reviewedBy: null,
+    band: { low: 0, high: limit, mean: last, sd: 1 },
+    delta,
+    deltaText: `+${delta.toFixed(ind.dp)} ${ind.unit} since the last reading`,
+    ruleId: over && rule ? rule.id : 'none',
+  };
+}
+
 /**
  * Assess one value for one crew member against their own baseline and their mission so far.
  * `earlier` holds readings already saved today, oldest first. Changes nothing.
@@ -54,17 +102,20 @@ export function plausible(ind: Indicator, value: number): boolean {
 export function assessValue(seed: Seed, rules: RuleFile, crewId: string, indicatorId: string, value: number, earlier: number[] = []): Assessment {
   const crew = crewById(seed, crewId);
   const ind = indicatorById(seed, indicatorId);
+  if (!plausible(ind, value)) throw new Error(`${ind.name} must be between ${ind.input.min} and ${ind.input.max} ${ind.unit}. Check the reading and enter it again.`);
+  if (ind.mode === 'cumulative') return assessCumulative(seed, rules, crew, ind, value, earlier);
   const baseline = crew.baseline[ind.id] ?? [];
   if (baseline.length === 0) throw new Error(`${crew.name} has no baseline for ${ind.name}.`);
-  if (!plausible(ind, value)) throw new Error(`${ind.name} must be between ${ind.input.min} and ${ind.input.max} ${ind.unit}. Check the reading and enter it again.`);
-  const ref = ind.ref?.[crew.sex];
+  const lim = limitsFor(seed, crewId, indicatorId);
   const a = assess(rules, {
     region: ind.region, indicator: ind.name, unit: ind.unit, dp: ind.dp, watch: ind.watch, value, baseline,
     history: [...logged(crew.mission[ind.id]), ...earlier],
     fixedSd: ind.fixedSd,
-    limitLow: ind.limit?.low ?? ref?.min,
-    limitHigh: ind.limit?.high ?? ref?.max,
-    limitLabel: ind.limit?.label ?? (ref ? 'laboratory reference range' : undefined),
+    displayMin: ind.input.kind === 'scale' || ind.input.kind === 'vision' ? ind.input.min : undefined,
+    displayMax: ind.input.kind === 'scale' || ind.input.kind === 'vision' ? ind.input.max : undefined,
+    limitLow: lim.low,
+    limitHigh: lim.high,
+    limitLabel: lim.label,
   });
   const own = ind.steps?.[a.tier];
   return own ? { ...a, steps: own } : a;
@@ -117,7 +168,7 @@ export function daySummary(state: State, seed: Seed, rules: RuleFile, crewId: st
     const reading = latestReading(state, crewId, indicator.id);
     return {
       indicator,
-      due: indicator.cadence === 'daily' || indicator.cadence === 'sensor' || (indicator.cadence === 'weekly' && seed.missionDay % 7 === 0),
+      due: indicator.cadence === 'daily' || indicator.cadence === 'sensor' || (indicator.cadence === 'weekly' && seed.missionDay % 7 === (indicator.weekDay ?? 0)),
       prompted: false,
       reading,
       assessment: reading ? assessReading(state, seed, rules, reading) : undefined,
@@ -196,6 +247,12 @@ export function insights(streakDays: number): { days: number; title: string }[] 
   return [{ days: 14, title: 'your sleep pattern across the mission' }, { days: 30, title: 'how your mood and sleep move together' }].filter((x) => streakDays >= x.days);
 }
 
+/** Mark an alert as seen. The alert stays on the record; it stops asking for attention. */
+export function acknowledge(state: State, readingId: string): State {
+  const done = state.acknowledged ?? [];
+  return done.includes(readingId) ? state : { ...state, acknowledged: [...done, readingId] };
+}
+
 export function toggleStep(state: State, readingId: string, step: string): State {
   return { ...state, readings: state.readings.map((r) => (r.id !== readingId ? r : { ...r, stepsDone: r.stepsDone.includes(step) ? r.stepsDone.filter((s) => s !== step) : [...r.stepsDone, step] })) };
 }
@@ -264,6 +321,10 @@ export function demoValue(seed: Seed, crewId: string, indicatorId: string): numb
   const ind = indicatorById(seed, indicatorId);
   const story = seed.today[crewId]?.[indicatorId];
   if (story !== undefined) return story;
+  if (ind.mode === 'cumulative') {
+    const past = (crewById(seed, crewId).mission[indicatorId] ?? []).filter((v): v is number => v !== null);
+    return Number(((past[past.length - 1] ?? 0) + 0.7).toFixed(ind.dp));
+  }
   const b = crewById(seed, crewId).baseline[indicatorId] ?? [];
   return Number((b.reduce((x, y) => x + y, 0) / Math.max(1, b.length)).toFixed(ind.dp));
 }

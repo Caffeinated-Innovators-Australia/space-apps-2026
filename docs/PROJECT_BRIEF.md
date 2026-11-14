@@ -16,7 +16,7 @@ Day 87 on a Mars base. Crew member 1's sleep has slid for three weeks, although 
 
 ## In scope
 
-- Six indicators: sleep, resting heart rate, mood, reaction time (a tap test in the app), cabin carbon dioxide and haemoglobin. Each is compared with the person's own baseline and has an explanation card.
+- Fifteen indicators in seven groups: mind and sleep, heart, eyes, muscle and bone, food and fluid, blood, cabin and radiation. They include a near-vision self-check and a reaction-time test built into the app.
 - A rules file with level, trend, sustained, limit, combined and prompt rules. Every rule shows its source and is marked as a placeholder until a clinician signs it.
 - Four SYNTHETIC crew members and 86 past mission days, made by a script with a fixed seed.
 - Check-ins fitted around a mock crew day, never during a critical operation.
@@ -32,7 +32,7 @@ Day 87 on a Mars base. Crew member 1's sleep has slid for three weeks, although 
 
 - Diagnosis, and any clinical accuracy claim.
 - Any clinical threshold not written and signed off by the team's clinicians.
-- Live connections to sensors or devices, voice input, a rover profile and the vision self-check.
+- Live connections to sensors or devices, voice input, a rover profile, and any calibrated or clinical eye test.
 - Rules that change by environment.
 - Accounts or sign-in, a server, and a shared record across devices.
 - A language model at run time.

@@ -4,6 +4,8 @@ import type { Tier } from './rules.ts';
 
 export interface Indicator {
   id: string;
+  /** Body system or area, used to group the list and the body figure. */
+  group: string;
   name: string;
   region: string;
   unit: string;
@@ -11,12 +13,16 @@ export interface Indicator {
   /** Which side of the personal band matters. */
   watch: 'low' | 'high' | 'both';
   cadence: 'daily' | 'weekly' | 'prompted' | 'sensor';
+  /** For weekly check-ins: the day of the mission week it falls due (mission day modulo 7). */
+  weekDay?: number;
+  /** 'cumulative' marks a running total, such as radiation dose, which is judged against a limit and not a personal band. */
+  mode?: 'cumulative';
   slot: 'morning' | 'evening' | 'any';
   baselineLabel?: string;
   /** min and max are plausibility bounds: a value outside them is a typing slip, not a reading. */
-  input: { kind: 'number' | 'scale' | 'test' | 'sensor'; min: number; max: number; prompt: string; labels?: string[] };
+  input: { kind: 'number' | 'scale' | 'test' | 'sensor' | 'vision'; min: number; max: number; prompt: string; labels?: string[] };
   /** A sourced limit, such as NASA's cabin carbon dioxide limit. */
-  limit?: { low?: number; high?: number; label: string; source: string; grade: string };
+  limit?: { low?: number; high?: number; /** A floor set as a fraction of the person's own baseline, such as NASA's 80% strength standard. */ lowFraction?: number; label: string; source: string; grade: string };
   /** Laboratory reference range by sex, as reported in the source file. */
   ref?: Record<'F' | 'M', { min: number; max: number }>;
   refSource?: string;
@@ -27,6 +33,8 @@ export interface Indicator {
   steps?: Partial<Record<'green' | 'amber' | 'red', string[]>>;
   hazards: string[];
   card: { how: string; why: string; what: string; status: string; sources: { label: string; url: string }[] };
+  /** A plain statement of what this check is not. */
+  cardNote?: string;
 }
 
 export interface CrewProfile {
@@ -108,6 +116,8 @@ export interface State {
   /** Crew members who logged "nothing to report" today: an honest check-in in its own right. */
   nothingToReport: string[];
   outbox: CasePack[];
+  /** Readings whose alert the crew member has acknowledged. */
+  acknowledged?: string[];
   ui: { crewId: string; settingId: string; theme: string; doseLogged: boolean; clock: string; slipped: boolean };
 }
 

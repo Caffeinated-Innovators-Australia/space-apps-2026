@@ -62,7 +62,7 @@ export function CrewData({ k }: { k: number }) {
         </div>
         <span className="placeholder">Placeholder rule, awaiting clinician review. Not a clinical assessment of these crew members.</span>
         <p className="caption">
-          {osd.credit}. {osd.source}. <a style={{ color: 'var(--advisory)' }} href={osd.link}>{osd.link}</a>
+          {osd.credit}. {osd.source}. <a href={osd.link}>{osd.link}</a>
         </p>
       </div>
     </>

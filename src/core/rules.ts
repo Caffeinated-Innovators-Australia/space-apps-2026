@@ -61,6 +61,9 @@ export interface AssessInput {
   limitLow?: number;
   limitHigh?: number;
   limitLabel?: string;
+  /** For scales with fixed ends: the range is described within these ends. */
+  displayMin?: number;
+  displayMax?: number;
 }
 
 function signed(r: Partial<Signed> | undefined, id: string): void {
@@ -146,8 +149,8 @@ export function assess(file: RuleFile, input: AssessInput): Assessment {
     value: fmt(input.value, dp),
     unit: input.unit,
     direction: s === 'high' ? 'higher' : 'lower',
-    bandLow: fmt(band.low, dp),
-    bandHigh: fmt(band.high, dp),
+    bandLow: fmt(Math.max(band.low, input.displayMin ?? -Infinity), dp),
+    bandHigh: fmt(Math.min(band.high, input.displayMax ?? Infinity), dp),
     baselineMean: fmt(band.mean, dp),
     limitLabel: input.limitLabel ?? 'limit',
   };

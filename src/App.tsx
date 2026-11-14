@@ -10,10 +10,11 @@ import { ReactionTest } from './components/ReactionTest';
 import { ScaleInput } from './components/ScaleInput';
 import { StreakCard } from './components/StreakCard';
 import { Timeline } from './components/Timeline';
-import { AlertCard, ReadingTile, SyntheticTag, TierPill, TIER_WORD, TierWords } from './components/ui';
+import { VisionTest } from './components/VisionTest';
+import { AdvisoryPill, AlertCard, LimitArrow, ReadingTile, SyntheticTag, TierPill, TIER_WORD, TierWords } from './components/ui';
 import {
-  assessReading, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
-  initialState, insights, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
+  acknowledge, assessReading, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
+  initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
   toggleStep, toggleSymptom,
   type Assessment, type DaySummary, type Indicator, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
@@ -96,6 +97,7 @@ export function App() {
           </nav>
           <button className="ghost" onClick={() => ui({ theme: state.ui.theme === 'cabin' ? 'day' : 'cabin' })}>{state.ui.theme === 'cabin' ? 'Day theme' : 'Cabin theme'}</button>
         </header>
+        {rules ? <StatusBar state={state} commit={commit} rules={rules} crewId={crew.id} /> : null}
 
         <main className="stack">
           {!rules ? (
@@ -123,11 +125,38 @@ export function App() {
 
         <footer className="foot">
           <span>Assessment and next steps only. Not a diagnosis. Hackathon prototype; rules are placeholders until our clinicians sign them off.</span>
-          <span>{osd.credit} · Data: NASA DONKI · Cabin carbon dioxide limit: NASA-STD-3001 Volume 2. Crew values are SYNTHETIC. NASA does not endorse this project.</span>
+          <span>{osd.credit} · Data: NASA DONKI · Limits: NASA-STD-3001 Volumes 1 and 2. Crew values are SYNTHETIC. NASA does not endorse this project.</span>
           <span>Readings stay on this device. Caffeinated Innovators Australia · NASA Space Apps Challenge 2026 · <a href={REPO}>Source and references</a> · <a href="agents.md">For AI agents</a></span>
         </footer>
       </div>
     </TierWords.Provider>
+  );
+}
+
+/** Always on screen: mission time and the alert that most needs attention (NASA display standard, Appendix F.4.2 and F.6.1). */
+function StatusBar({ state, commit, rules, crewId }: { state: State; commit: (s: State) => void; rules: RuleFile; crewId: string }) {
+  const day = daySummary(state, seed, rules, crewId);
+  const flagged = [...day.flagged].sort((a, b) => RANK[b.assessment!.tier] - RANK[a.assessment!.tier]);
+  const done = state.acknowledged ?? [];
+  const open = flagged.filter((x) => !done.includes(x.reading!.id));
+  const top = open[0];
+  return (
+    <div className="statusbar" role="status" aria-label="Mission time and alerts">
+      <span>Mission time <span className="time">{String(seed.missionDay).padStart(4, '0')}/{state.ui.clock}:00</span></span>
+      <span className="alertline">
+        {top ? (
+          <>
+            <TierPill tier={top.assessment!.tier} />
+            <button className="open" onClick={() => go('result', top.reading!.id)}>{top.indicator.name}{open.length > 1 ? `, and ${open.length - 1} more` : ''}</button>
+            <button className="small" onClick={() => commit(acknowledge(state, top.reading!.id))}>Acknowledge</button>
+          </>
+        ) : flagged.length > 0 ? (
+          <span>{flagged.length} {flagged.length === 1 ? 'alert' : 'alerts'} acknowledged</span>
+        ) : (
+          <span className="muted">No alerts</span>
+        )}
+      </span>
+    </div>
   );
 }
 
@@ -166,7 +195,7 @@ function CombinedCard({ day, setting, onOpen }: { day: DaySummary; setting: Sett
           <li key={x.indicator.id}>
             <button className="row" onClick={() => onOpen(x.reading!)}>
               <span className="row-name">{x.indicator.name}</span>
-              <span className="row-val"><span className="mono">{shown(x.indicator, x.reading!.value)}</span> {x.indicator.unit}</span>
+              <span className="row-val"><span className="mono">{shown(x.indicator, x.reading!.value)}</span> {x.indicator.unit}<LimitArrow tier={x.assessment!.tier} delta={x.assessment!.delta} /></span>
               <TierPill tier={x.assessment!.tier} />
               <span className="chev" aria-hidden="true">›</span>
             </button>
@@ -191,7 +220,12 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
   const goal = crewGoal(state, seed);
   const queued = state.outbox.filter((p) => p.status === 'queued').length;
   const used = state.readings.length > 0 || state.symptoms.length > 0 || state.ui.doseLogged || nothing;
-  const tiers = Object.fromEntries(day.items.map((x) => [x.indicator.id, x.assessment?.tier]));
+  const groups = [...new Set(seed.indicators.map((i) => i.group))];
+  const tiers: Record<string, Tier | undefined> = {};
+  for (const x of day.items) {
+    const t = x.assessment?.tier;
+    if (t && (!tiers[x.indicator.group] || RANK[t] > RANK[tiers[x.indicator.group]!])) tiers[x.indicator.group] = t;
+  }
   const next = plan.items.find((p) => p.status === 'due');
   const promptOpen = day.prompt && !day.items.find((x) => x.indicator.id === day.prompt!.indicatorId)?.reading;
   const crew = crewById(seed, crewId);
@@ -216,7 +250,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
 
       {promptOpen ? (
         <section className="card prompt-card" aria-live="polite">
-          <div className="card-head"><span className="why-label">Asked for today</span><SyntheticTag /></div>
+          <div className="card-head"><AdvisoryPill>Advisory: asked for today</AdvisoryPill><SyntheticTag /></div>
           <h2 className="title">A thirty-second reaction-time check</h2>
           <p>{day.prompt!.why}</p>
           <p className="source">Rule {day.prompt!.ruleId}. Placeholder rule, awaiting clinician review.</p>
@@ -259,21 +293,31 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
               <SyntheticTag />
             </div>
             <BodyFigure onOpen={open} tiers={tiers} />
-            <ul className="rows">
-              {day.items.map(({ indicator: i, reading: r, assessment: a, prompted }) => {
-                const past = crew.mission[i.id]?.filter((v): v is number => v !== null).slice(-1)[0];
-                return (
-                  <li key={i.id}>
-                    <button className="row" onClick={() => open(i.id)}>
-                      <span className="row-name">{i.name}{prompted && !r ? ' · asked for today' : ''}</span>
-                      <span className="row-val">{r || past !== undefined ? <><span className="mono">{shown(i, r ? r.value : past!)}</span> {i.unit}</> : null}</span>
-                      {a ? <TierPill tier={a.tier} /> : <span className="caption">{i.cadence === 'weekly' ? 'Weekly' : i.cadence === 'prompted' && !prompted ? 'When asked' : 'Not logged today'}</span>}
-                      <span className="chev" aria-hidden="true">›</span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+            {groups.map((g) => (
+              <div key={g} className="group">
+                <span className="group-name">{g}</span>
+                <ul className="rows">
+                  {day.items.filter((x) => x.indicator.group === g).map(({ indicator: i, reading: r, assessment: a, prompted, due }) => {
+                    const series = crew.mission[i.id] ?? [];
+                    let lastDay = series.length;
+                    while (lastDay > 0 && series[lastDay - 1] === null) lastDay -= 1;
+                    const past = lastDay > 0 ? (series[lastDay - 1] as number) : undefined;
+                    return (
+                      <li key={i.id}>
+                        <button className="row" onClick={() => open(i.id)}>
+                          <span className="row-name">{i.name}{prompted && !r ? ' · asked for today' : ''}</span>
+                          <span className="row-val">{r || past !== undefined ? <><span className="mono">{shown(i, r ? r.value : past!)}</span> {i.unit}</> : null}{a ? <LimitArrow tier={a.tier} delta={a.delta} /> : null}</span>
+                          {a ? <TierPill tier={a.tier} /> : (
+                            <span className="stale">{past !== undefined ? `From day ${lastDay}. ` : 'No reading yet. '}{i.cadence === 'prompted' && !prompted ? 'Taken when asked' : due ? 'Due today' : i.cadence === 'weekly' ? 'Weekly' : 'Not logged today'}</span>
+                          )}
+                          <span className="chev" aria-hidden="true">›</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
             <div className="btn-row">
               {queued ? <button className="btn secondary" onClick={() => go('outbox')}>Outbox ({queued})</button> : null}
               {used ? <button className="link" onClick={reset}>Reset the demo</button> : null}
@@ -311,7 +355,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
             <span className="placeholder">{seed.symptoms.status}</span>
           </div>
 
-          {setting.id === 'earth' ? null : <SpaceWeather doseLogged={state.ui.doseLogged} onDose={() => ui({ doseLogged: !state.ui.doseLogged })} />}
+          {setting.id === 'earth' ? null : <SpaceWeather doseLogged={Boolean(latestReading(state, crewId, 'radiation'))} onDose={() => open('radiation')} />}
 
           <div className="card">
             <h2 className="title">The same problem, back on Earth</h2>
@@ -336,9 +380,9 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
 function missionPoints(state: State, crewId: string, ind: Indicator, lastDays: number, today?: { reading: SavedReading; a: Assessment }): ChartPoint[] {
   const crew = crewById(seed, crewId);
   const band = personalBand(crew.baseline[ind.id], K, ind.fixedSd);
-  const ref = ind.ref?.[crew.sex];
-  const lo = ind.limit?.low ?? ref?.min;
-  const hi = ind.limit?.high ?? ref?.max;
+  const lim = limitsFor(seed, crewId, ind.id);
+  const lo = lim.low;
+  const hi = lim.high;
   const h = history(state, seed, crewId, ind.id);
   const start = Math.max(0, h.mission.length - lastDays);
   const pts: ChartPoint[] = h.baseline.slice(-7).map((v, i) => ({ label: i === 0 ? 'Base' : '', value: v, kind: 'baseline' as const }));
@@ -359,21 +403,36 @@ function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: S
   useEffect(() => setText(''), [indicatorId, crewId]);
   const n = Number(text);
   const valid = text.trim() !== '' && plausible(ind, n);
-  const band = personalBand(crew.baseline[ind.id], rules.band.k, ind.fixedSd);
+  const cumulative = ind.mode === 'cumulative';
+  const band = cumulative ? null : personalBand(crew.baseline[ind.id], rules.band.k, ind.fixedSd);
+  const lim = limitsFor(seed, crewId, ind.id);
   const demo = demoValue(seed, crewId, ind.id);
+  const [problem, setProblem] = useState('');
+  useEffect(() => setProblem(''), [text, indicatorId, crewId]);
   const submit = () => {
     if (!valid) return;
-    const r = recordReading(state, seed, rules, { crewId, indicatorId, value: Number(n.toFixed(ind.dp)), at: Date.now() });
-    commit(r.state);
-    go('result', r.reading.id);
+    try {
+      const r = recordReading(state, seed, rules, { crewId, indicatorId, value: Number(n.toFixed(ind.dp)), at: Date.now() });
+      commit(r.state);
+      go('result', r.reading.id);
+    } catch (e) {
+      setProblem((e as Error).message);
+    }
   };
   return (
     <>
       <Context setting={setting} crewId={crewId} />
       <h1 className="display">{ind.region === ind.name ? ind.name : `${ind.region}: ${ind.name.toLowerCase()}`}</h1>
-      <div className="seg" role="group" aria-label="Which check-in">
-        {seed.indicators.map((i) => <button key={i.id} aria-pressed={i.id === ind.id} onClick={() => go('reading', i.id)}>{i.name}</button>)}
-      </div>
+      <label className="picker">
+        <span className="caption">Check-in</span>
+        <select value={ind.id} onChange={(e) => go('reading', e.target.value)} aria-label="Which check-in">
+          {[...new Set(seed.indicators.map((i) => i.group))].map((g) => (
+            <optgroup key={g} label={g}>
+              {seed.indicators.filter((i) => i.group === g).map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
+            </optgroup>
+          ))}
+        </select>
+      </label>
       <div className="grid">
         <div className="stack">
           <form className="card" onSubmit={(e) => { e.preventDefault(); submit(); }}>
@@ -382,8 +441,10 @@ function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: S
               <ScaleInput labels={ind.input.labels ?? []} value={valid ? n : undefined} onPick={(v) => setText(String(v))} />
             ) : ind.input.kind === 'test' ? (
               <ReactionTest onResult={(ms) => setText(String(ms))} />
+            ) : ind.input.kind === 'vision' ? (
+              <VisionTest onResult={(lines) => setText(String(lines))} />
             ) : null}
-            {ind.input.kind === 'sensor' ? <p className="muted">The cabin sensor reports <span className="mono">{demo.toFixed(ind.dp)}</span> {ind.unit} as the latest one-hour average. Log it, or type a reading from a handheld monitor.</p> : null}
+            {ind.input.kind === 'sensor' ? <p className="muted">{cumulative ? 'Your personal dosimeter reports' : 'The cabin sensor reports'} <span className="mono">{demo.toFixed(ind.dp)}</span> {ind.unit} {cumulative ? 'as your mission total so far. Log it, or type the reading from the device.' : 'as the latest one-hour average. Log it, or type a reading from a handheld monitor.'}</p> : null}
             {ind.input.kind !== 'scale' ? (
               <div className="field">
                 <input id="reading" inputMode="decimal" autoComplete="off" autoFocus={ind.input.kind === 'number'} value={text} onChange={(e) => setText(e.target.value)} placeholder={(0).toFixed(ind.dp)} aria-describedby="reading-unit" />
@@ -391,6 +452,7 @@ function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: S
               </div>
             ) : null}
             {text.trim() !== '' && !valid ? <p className="caption" role="alert">That cannot be right: {ind.name.toLowerCase()} must be between {ind.input.min} and {ind.input.max} {ind.unit}. Check and enter it again.</p> : null}
+            {problem ? <p className="caption" role="alert">{problem}</p> : null}
             <div className="chips">
               <SyntheticTag />
               <span className="caption">{ind.input.kind === 'sensor' ? 'Sensor value:' : 'Demo value for today:'}</span>
@@ -403,12 +465,16 @@ function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: S
           </form>
           <div className="card">
             <span className="why-label">Your baseline</span>
-            <p>{say(ind.baselineLabel ?? 'Before launch', setting)}, your average was {band.mean.toFixed(ind.dp)} {ind.unit}. Your own expected range is {band.low.toFixed(ind.dp)} to {band.high.toFixed(ind.dp)} {ind.unit}. Every reading is compared with your own numbers.</p>
-            {ind.limit ? <p className="caption">{ind.limit.label}: {(ind.limit.high ?? ind.limit.low)!.toFixed(ind.dp)} {ind.unit}. Source: {ind.limit.source}.</p> : null}
+            {band ? (
+              <p>{say(ind.baselineLabel ?? 'Before launch', setting)}, your average was {band.mean.toFixed(ind.dp)} {ind.unit}. Your own expected range is {Math.max(ind.input.min, band.low).toFixed(ind.dp)} to {Math.min(ind.input.max, band.high).toFixed(ind.dp)} {ind.unit}. Every reading is compared with your own numbers.</p>
+            ) : (
+              <p>This is a running total, so it is compared with a limit, not with a personal range.</p>
+            )}
+            {ind.limit ? <p className="caption">{ind.limit.label}: {(lim.high ?? lim.low)!.toFixed(ind.dp)} {ind.unit}. Source: {ind.limit.source}.</p> : null}
             {ind.variationSource ? <p className="caption">Range width from: {ind.variationSource}.</p> : null}
           </div>
         </div>
-        <ExplainCard how={ind.card.how} why={ind.card.why} what={say(ind.card.what, setting)} status={ind.card.status} hazards={ind.hazards.map((code) => ({ code, name: seed.hazards[code] }))} sources={ind.card.sources} />
+        <ExplainCard how={ind.card.how} why={ind.card.why} what={say(ind.card.what, setting)} status={`${ind.cardNote ? `${ind.cardNote} ` : ''}${ind.card.status}`} hazards={ind.hazards.map((code) => ({ code, name: seed.hazards[code] }))} sources={ind.card.sources} />
       </div>
     </>
   );
@@ -422,6 +488,8 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
   const ind = indicatorById(seed, reading.indicatorId);
   const crew = crewById(seed, reading.crewId);
   const ref = ind.ref?.[crew.sex];
+  const lim = limitsFor(seed, reading.crewId, ind.id);
+  const cumulative = ind.mode === 'cumulative';
   const raw = assessReading(state, seed, rules, reading);
   // The card leads with the strongest finding; any others are listed under it.
   const a = localise({ ...raw, why: raw.findings[0]?.why ?? raw.why }, setting);
@@ -431,21 +499,31 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
   const promptOpen = day.prompt && day.prompt.indicatorId !== ind.id && !day.items.find((x) => x.indicator.id === day.prompt!.indicatorId)?.reading;
   const others = day.flagged.filter((x) => x.indicator.id !== ind.id);
   const send = () => { commit(sendCase(state, { readingId: reading.id, settingId: setting.id, at: Date.now() }).state); go('gap', reading.id); };
-  const limit = ind.limit?.high ?? ind.limit?.low;
+  const limit = ind.limit ? (lim.high ?? lim.low) : undefined;
   return (
     <>
       <Context setting={setting} crewId={reading.crewId} />
       <div className="grid wide-left">
         <div className="stack">
-          <ReadingTile label={`${ind.name}, ${hhmm(reading.at)}`} value={shown(ind, reading.value)} unit={ind.unit} delta={a.deltaText} />
+          <ReadingTile label={`${ind.name}, ${hhmm(reading.at)}`} value={shown(ind, reading.value)} unit={ind.unit} delta={a.deltaText} arrow={cumulative ? null : <LimitArrow tier={raw.tier} delta={raw.delta} />} />
           <div className="card">
             <div className="card-head">
-              <h2 className="title">Against your own baseline</h2>
+              <h2 className="title">{cumulative ? 'Against the limit' : 'Against your own baseline'}</h2>
               <SyntheticTag />
             </div>
-            <BaselineChart points={missionPoints(state, reading.crewId, ind, 28, { reading, a: raw })} band={raw.band} refMin={ref?.min} refMax={ref?.max} limit={limit !== undefined && ind.limit ? { value: limit, label: ind.limit.label } : undefined} unit={ind.unit} dp={ind.dp} baselineLabel={say(ind.baselineLabel ?? 'Before launch', setting)} readingLabel="Past four weeks" title={`${ind.name} over the past four weeks against your own range. Today: ${shown(ind, reading.value)} ${ind.unit}.`} />
-            <ChartLegend bandLabel="Own expected range" reference={Boolean(ref)} limitLabel={ind.limit?.label} />
-            <p className="caption">{ind.refSource ? `${ind.refSource}. ` : ''}{ind.limit ? `${ind.limit.label}: ${ind.limit.source}.` : ''}</p>
+            {cumulative && limit !== undefined ? (
+              <>
+                <div className="x-bar" role="img" aria-label={`${shown(ind, reading.value)} of ${limit} ${ind.unit}`}><div className="x-bar-fill" style={{ width: `${Math.min(100, (reading.value / limit) * 100)}%` }} /></div>
+                <p><span className="mono">{shown(ind, reading.value)}</span> of {limit} {ind.unit}: {((reading.value / limit) * 100).toFixed(1)}% of the {ind.limit!.label}.</p>
+                <p className="caption">{ind.limit!.source}. Dose from earlier flights is not counted here.</p>
+              </>
+            ) : (
+              <>
+                <BaselineChart points={missionPoints(state, reading.crewId, ind, 28, { reading, a: raw })} band={raw.band} refMin={ref?.min} refMax={ref?.max} limit={limit !== undefined && ind.limit ? { value: limit, label: ind.limit.label.replace(/ \(.*\)/, '') } : undefined} unit={ind.unit} dp={ind.dp} baselineLabel={say(ind.baselineLabel ?? 'Before launch', setting)} readingLabel={ind.cadence === 'weekly' ? 'This mission' : 'Past four weeks'} title={`${ind.name} against your own range. Today: ${shown(ind, reading.value)} ${ind.unit}.`} />
+                <ChartLegend bandLabel="Own expected range" reference={Boolean(ref)} limitLabel={ind.limit?.label} />
+                <p className="caption">{ind.refSource ? `${ind.refSource}. ` : ''}{ind.limit ? `${ind.limit.label}: ${ind.limit.source}.` : ''}</p>
+              </>
+            )}
           </div>
         </div>
         <div className="stack">
@@ -628,13 +706,15 @@ function Outbox({ state, commit, rules }: Shared & { rules: RuleFile }) {
 function About() {
   const built = [
     'Runs with no network once loaded, on tablet, laptop and phone browsers.',
-    'Six check-ins tied to spaceflight risks, each compared with that person\'s own baseline and mission so far.',
+    'Fifteen check-ins across seven body systems, each compared with that person\'s own baseline and mission so far.',
+    'A near-vision self-check and a reaction-time test built into the app.',
+    'Screens laid out to NASA\'s published display standard: colour for meaning only, 7:1 text contrast, an always-visible time and alert bar.',
     'Trend, repeat and combined rules, so a slow slide is caught as well as one odd reading.',
     'Prompts fitted around the crew timeline, never during a critical operation.',
     'A streak and crew goal that reward checking in, never good numbers.',
     'Cases queue on the device and leave as one file when a link opens.',
     'One action layer serves the screens, a command-line tool and AI agents.',
-    'Real NASA data: crew blood counts (OSDR, OSD-569), space weather (DONKI), the cabin carbon dioxide limit.',
+    'Real NASA data: crew blood counts (OSDR, OSD-569), space weather (DONKI), and limits from NASA-STD-3001 for cabin carbon dioxide, strength and radiation dose.',
   ];
   const placeholder = [
     'Every rule, every number in it and every line of advice. Clinicians on our team must write and sign each one.',

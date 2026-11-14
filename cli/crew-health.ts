@@ -45,7 +45,7 @@ Options: --state FILE (where readings are kept; default ./.crew-health-state.jso
 try {
   switch (command) {
     case 'crew': print(seed.crew.map((c) => ({ id: c.id, name: c.name, synthetic: seed.synthetic }))); break;
-    case 'indicators': print(seed.indicators.map((i) => ({ id: i.id, name: i.name, region: i.region, unit: i.unit, watch: i.watch, cadence: i.cadence, limit: i.limit, referenceRange: i.ref, hazards: i.hazards.map((h) => seed.hazards[h]), card: i.card }))); break;
+    case 'indicators': print(seed.indicators.map((i) => ({ id: i.id, group: i.group, name: i.name, region: i.region, runningTotal: i.mode === 'cumulative', unit: i.unit, watch: i.watch, cadence: i.cadence, limit: i.limit, referenceRange: i.ref, hazards: i.hazards.map((h) => seed.hazards[h]), card: i.card }))); break;
     case 'assess': print(assessValue(seed, rules, need('crew'), need('indicator'), Number(need('value')))); break;
     case 'demo': print(demoValue(seed, need('crew'), need('indicator'))); break;
     case 'record': {

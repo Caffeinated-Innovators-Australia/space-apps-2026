@@ -26,6 +26,23 @@ export function TierPill({ tier }: { tier: Tier }) {
   );
 }
 
+/** Advisory: blue, a diamond and the word. Information that asks nothing urgent of the crew. */
+export function AdvisoryPill({ children = 'Advisory' }: { children?: ReactNode }) {
+  return (
+    <span className="pill pill-advisory">
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 1l7 7-7 7-7-7z" /></svg>
+      <span>{children}</span>
+    </span>
+  );
+}
+
+/** An arrow after a reading that has crossed a caution or warning limit, pointing the way it moved. */
+export function LimitArrow({ tier, delta }: { tier?: Tier; delta?: number }) {
+  if (!tier || tier === 'green' || !delta) return null;
+  const up = delta > 0;
+  return <span className={`arrow arrow-${tier}`} role="img" aria-label={up ? 'above your range' : 'below your range'}>{up ? '\u2191' : '\u2193'}</span>;
+}
+
 export function SyntheticTag() {
   return <span className="synthetic">SYNTHETIC</span>;
 }
@@ -41,13 +58,14 @@ export function ReviewBadge({ role }: { role: string }) {
   );
 }
 
-export function ReadingTile({ label, value, unit, delta, tier }: { label: string; value: string; unit: string; delta?: string; tier?: Tier }) {
+export function ReadingTile({ label, value, unit, delta, tier, arrow }: { label: string; value: string; unit: string; delta?: string; tier?: Tier; arrow?: ReactNode }) {
   return (
     <div className="reading">
       <div className="reading-label">{label}</div>
       <div className="reading-value">
         <span className="num">{value}</span>
         <span className="unit">{unit}</span>
+        {arrow}
       </div>
       {delta ? <div className="delta">{delta}</div> : null}
       {tier ? <div><TierPill tier={tier} /></div> : null}

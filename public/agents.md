@@ -1,6 +1,6 @@
 # Crew health check: page for AI agents and developers
 
-This is a hackathon prototype (NASA Space Apps Challenge 2026, Caffeinated Innovators Australia). It follows one story, Day 87 on a Mars base. It compares each of six indicators (sleep, resting heart rate, mood, reaction time, cabin carbon dioxide, haemoglobin) with a crew member's own baseline, and returns a tier, a plain-language reason with its source, and next steps. Its rules cover a single reading, a slow trend, a run of readings, a sourced limit, a combined picture and a prompt for a reaction-time check. Assessment and next steps only. Not a diagnosis. Every rule is a placeholder until a clinician signs it off, and every crew value is SYNTHETIC. NASA does not endorse this project.
+This is a hackathon prototype (NASA Space Apps Challenge 2026, Caffeinated Innovators Australia). It follows one story, Day 87 on a Mars base. It covers fifteen indicators in seven groups (Mind and sleep, Heart, Eyes, Muscle and bone, Food and fluid, Blood, Cabin and radiation). Most are compared with a crew member's own baseline; radiation dose is a running total judged against NASA's career limit of 600 mSv instead. Each assessment returns a tier, a plain-language reason with its source, and next steps. Its rules cover a single reading, a slow trend, a run of readings, a sourced limit, a combined picture and a prompt for a reaction-time check. Assessment and next steps only. Not a diagnosis. Every rule is a placeholder until a clinician signs it off, and every crew value is SYNTHETIC. NASA does not endorse this project.
 
 ## What you can do
 
@@ -16,7 +16,7 @@ cd space-apps-2026
 npm install
 ```
 
-Commands (all print JSON; errors print `{"error": "..."}` and exit 1). Crew ids: `crew-1` to `crew-4`. Indicator ids: `sleep`, `resting-hr`, `mood`, `reaction`, `cabin-co2`, `haemoglobin`. Place ids for `--setting`: `mars-base`, `transit`, `moon`, `station`, `earth` (Remote Australia).
+Commands (all print JSON; errors print `{"error": "..."}` and exit 1). Crew ids: `crew-1` to `crew-4`. Indicator ids, by group: Mind and sleep `sleep`, `mood`, `reaction`; Heart `resting-hr`, `bp-sys`, `bp-dia`; Eyes `vision` (lines read, worse eye); Muscle and bone `exercise`, `grip`, `body-mass`; Food and fluid `fluid`, `energy`; Blood `haemoglobin`; Cabin and radiation `cabin-co2`, `radiation` (mission total). `indicators` lists each one's group, unit, cadence, limit and whether it is a running total. Place ids for `--setting`: `mars-base`, `transit`, `moon`, `station`, `earth` (Remote Australia).
 
 | Command | What it does |
 |---|---|
@@ -48,9 +48,11 @@ npm run crew-health -- send    --reading READING_ID --setting mars-base
 npm run crew-health -- outbox
 npm run crew-health -- export  --out cases.json
 npm run crew-health -- demo    --crew crew-1 --indicator reaction
+npm run crew-health -- assess  --crew crew-1 --indicator grip --value 24.4
+npm run crew-health -- demo    --crew crew-1 --indicator radiation
 ```
 
-`READING_ID` is the `reading.id` that `record` prints. `assess`, `demo`, `day`, `plan`, `history`, `streak` and `outbox` save nothing. `record`, `send` and `export` change a local state file (`.crew-health-state.json`, or the path given with `--state FILE`). Nothing is sent over a network. `export` writes a file in the format `crew-health-case-export/2`; each case includes the other signals flagged that day.
+`READING_ID` is the `reading.id` that `record` prints. Grip strength 24.4 kg for `crew-1` is below 80% of their own baseline, the NASA strength standard (NASA-STD-3001 Volume 1), so it comes back `red`. A radiation total lower than the last reading is refused with an error, because a running total cannot go down. `assess`, `demo`, `day`, `plan`, `history`, `streak` and `outbox` save nothing. `record`, `send` and `export` change a local state file (`.crew-health-state.json`, or the path given with `--state FILE`). Nothing is sent over a network. `export` writes a file in the format `crew-health-case-export/2`; each case includes the other signals flagged that day.
 
 ## What an assessment contains
 
@@ -62,7 +64,7 @@ npm run crew-health -- demo    --crew crew-1 --indicator reaction
 - `findings`: one entry per rule that fired, each with `ruleId`, `tier`, `why`, `source`, `confidence`, `placeholder` and `reviewedBy`.
 - `steps`: the numbered next steps for the tier.
 - `source`, `confidence`, `placeholder` (true while the rule is unsigned) and `reviewedBy` (a clinician role, or null): for the top finding.
-- `band`: the person's own range: `low`, `high`, `mean` and `sd`.
+- `band`: the person's own range: `low`, `high`, `mean` and `sd`. For a running total (radiation dose) it is `low` 0, `high` the limit and `mean` the last total.
 - `delta` and `deltaText`: the change from the person's baseline, as a number and in words.
 - `ruleId`: the rules that fired, joined with " + " (for example "LM-01 + SU-01 + TR-01"), or "none".
 
@@ -71,8 +73,9 @@ npm run crew-health -- demo    --crew crew-1 --indicator reaction
 - Ask the person before you record a reading, send a case or export. Those change their record.
 - Never present a result as a diagnosis, and never hide the `placeholder` flag or the source.
 - Do not invent thresholds or advice. Rules live in `rules/rules.yaml` and are changed only by the team's clinicians.
-- Crew values are synthetic and come from `scripts/make_mission_data.py`. The real inputs are NASA OSDR OSD-569 (haemoglobin variation and laboratory ranges, and the pre-flight and post-flight blood counts), NASA DONKI (space weather and radiation prompt days) and NASA's cabin carbon dioxide limit (NASA-STD-3001 Volume 2), in `src/data/`.
-- Not built: voice input, sensor connections, a rover profile, the vision self-check, and rules that change by environment.
+- Crew values are synthetic and come from `scripts/make_mission_data.py`. The real inputs are NASA OSDR OSD-569 (haemoglobin variation and laboratory ranges, and the pre-flight and post-flight blood counts), NASA DONKI (space weather and radiation prompt days) NASA's cabin carbon dioxide limit (NASA-STD-3001 Volume 2), in `src/data/`, and two limits from NASA-STD-3001 Volume 1 held in the indicator definitions: strength at or above 80% of baseline, and the 600 mSv career radiation limit. These standards are programme requirements, not clinical alert thresholds.
+- The near-vision check (`vision`) is not a calibrated eye chart and not a test for any eye condition. Say so whenever you report it.
+- Not built: voice input, sensor connections, a rover profile, rules that change by environment, any calibrated or clinical eye test (for example retinal imaging), and any direct bone measurement.
 
 ## Where things are
 
