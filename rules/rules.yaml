@@ -185,7 +185,7 @@ monitor_alerts:
   - id: SEP-01
     name: "Possible sepsis"
     title: "Possible sepsis: start now"
-    checks_for: "Checks for sepsis, an infection spreading through the body: a fever or a low temperature, with low blood pressure or fast breathing."
+    checks_for: "Checks for sepsis, an infection spreading through the body: a fever or a low temperature, with low blood pressure or fast breathing at rest."
     construct: 12
     when:
       - { temp: ">= 38", sbp: "<= 100" }
@@ -201,7 +201,7 @@ monitor_alerts:
   - id: SHK-01
     name: "Possible shock"
     title: "Possible shock: start now"
-    checks_for: "Checks for shock, when blood is not reaching the body well enough: low blood pressure with a fast pulse."
+    checks_for: "Checks for shock, when blood is not reaching the body well enough: low blood pressure with a fast pulse, at rest."
     construct: 4
     when:
       - { sbp: "< 90", hr: "> 110" }
