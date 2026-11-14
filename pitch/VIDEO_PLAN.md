@@ -1,5 +1,7 @@
 # Demo video plan
 
+**Chosen cut (team lead, 14 November 2026): the trailer, `trailer-draft.mp4`.** Its shot list is under "The trailer" below. The earlier screen-recording cut, `demo-draft.mp4`, is kept as a backup.
+
 `demo-draft.mp4` is a draft cut of this plan: 28.9 seconds, 1920 by 1080, recorded on the leaner interface of 14 November, no sound, with English captions burned in. The official limit is 30 seconds. It is a screen recording of the live app with text cards. Every frame carries "Draft cut · assembled with AI assistance". It uses no outside footage, images or music.
 
 The story, set by the team lead on 14 November 2026: **the first 20 seconds are a kidney stone on Mars; the last 9 seconds are the turn to Earth**, where the same gap exists for people in the remote outback.
@@ -20,7 +22,7 @@ The story, set by the team lead on 14 November 2026: **the first 20 seconds are 
 | 0:24.2 to 0:26.6 | Earth | Card: 252 against 88 avoidable deaths per 100,000; 7 million Australians in rural and remote areas | none |
 | 0:26.6 to 0:29 | Earth | End card: "One tool for when help is far away.", the link, the sources and the limits | none |
 
-## The trailer option
+## The trailer (chosen cut)
 
 `trailer-draft.mp4` is a second draft, built from the team's own trailer script: 27.9 seconds, 1920 by 1080, no sound, captions burned in. The captions are the voice-over lines, ready for a team member to record. It uses one real photograph of the Simpson Desert by Ian Cochrane (CC BY 2.0, cropped and colour graded, credited on the end card) and screen capture of the live app. No image is AI-generated.
 
