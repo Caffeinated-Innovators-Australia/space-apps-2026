@@ -50,6 +50,7 @@ npm run crew-health -- export  --out cases.json
 npm run crew-health -- demo    --crew crew-1 --indicator reaction
 npm run crew-health -- assess  --crew crew-1 --indicator grip --value 24.4
 npm run crew-health -- demo    --crew crew-1 --indicator radiation
+npm run crew-health -- replay
 npm run crew-health -- symptoms
 npm run crew-health -- symptom --crew crew-4 --label "Pain in side or lower back"
 npm run crew-health -- symptom --crew crew-4 --label "Blood in urine"

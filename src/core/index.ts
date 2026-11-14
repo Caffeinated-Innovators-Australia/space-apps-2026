@@ -8,3 +8,4 @@ export * from './medic.ts';
 export * from './emergency.ts';
 export * from './radiation.ts';
 export * from './wounds.ts';
+export * from './replay.ts';

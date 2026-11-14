@@ -5,7 +5,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assessValue, caseContent, casePackContent, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, initialState, logPain, parseRules, pathwayCaseContent, pathwayStatuses, recordReading, sendCase, sendPathwayCase, streak, toggleSymptom, type Seed, type State } from '../src/core/index.ts';
+import { assessValue, caseContent, casePackContent, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, initialState, logPain, replay, parseRules, pathwayCaseContent, pathwayStatuses, recordReading, sendCase, sendPathwayCase, streak, toggleSymptom, type Seed, type State } from '../src/core/index.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const rules = parseRules(readFileSync(join(root, 'rules/rules.yaml'), 'utf8'));
@@ -43,6 +43,7 @@ Commands (all print JSON):
   symptom --crew ID --label "TEXT"                  log a symptom, or clear it if already logged
   pathways --crew ID                                symptom patterns open for this person now, with next steps
   pain    --crew ID --pathway ID --score N          log a pain score from 0 to 10; no threshold is applied
+  replay                                            run the rules over every past mission day and count what they raise
   send-pathway --crew ID --pathway ID [--setting ID]  queue a symptom-pattern case for the next link to Earth
   outbox                                            list queued and exported cases
   export  [--out FILE]                              write queued cases to a file and mark them exported
@@ -101,6 +102,7 @@ try {
       print(pathwayCaseContent(r.state, seed, rules, r.pack.id));
       break;
     }
+    case 'replay': print(replay(seed, rules)); break;
     case 'outbox': { const s = load(); print(s.outbox.map((p) => caseContent(s, seed, rules, p.id))); break; }
     case 'export': {
       const r = exportOutbox(load(), seed, rules, Date.now());

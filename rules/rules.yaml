@@ -132,6 +132,9 @@ pathways:
       - text: "NASA's guidance on prevention is fluid and exercise: crew should be “encouraged to drink an adequate amount”, and exercise lowers “the amount of stone forming calcium in urine”. For the crew medic, NASA notes that “ultrasound and limited lab work can detect and help enable stone risk management”."
         source: "NASA OCHMO Medical Technical Brief MTB-003, Urinary Health, Rev A"
         link: "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf"
+      - text: "NASA reports: “A total of 43 stone events in 29 crewmembers have been recorded by NASA since 2016.” One episode has been reported during spaceflight itself."
+        source: "NASA OCHMO Medical Technical Brief MTB-003, Urinary Health, Rev A, page 6"
+        link: "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf#page=6"
     source: "Placeholder rule, awaiting clinician review. The symptom pattern follows public guidance (healthdirect Australia, Kidney stones; NIDDK, Kidney stones: symptoms and causes). The risk is NASA's: Risk of Renal Stone Formation."
     confidence: Low
     signed_off_by: placeholder

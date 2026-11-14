@@ -306,6 +306,10 @@ seed = {
         "space": {"text": "NASA names distance from Earth as one of the five hazards of human spaceflight: medical care becomes “increasingly challenging to receive from Earth”.", "source": "NASA Human Research Program, 5 Hazards of Human Spaceflight", "link": "https://www.nasa.gov/hrp/hazards/"},
         "earth": {"text": "In very remote Australia, potentially avoidable deaths run at 252 per 100,000 people, against 88 in major cities (2022 to 2024, age-standardised).", "source": "Australian Institute of Health and Welfare, Deaths in Australia", "link": "https://www.aihw.gov.au/reports/life-expectancy-deaths/deaths-in-australia/contents/variations-between-population-groups/remoteness-area"},
     },
+    "reach": {
+        "earth": {"text": "Around 7 million people, 27% of Australians, live in rural and remote areas. 1.1% live in remote areas and 0.7% in very remote areas (30 June 2023).", "source": "Australian Institute of Health and Welfare, Rural and remote health (updated 20 November 2025)", "link": "https://www.aihw.gov.au/reports/rural-remote-australians/rural-and-remote-health"},
+        "space": {"text": "NASA reports: “A total of 43 stone events in 29 crewmembers have been recorded by NASA since 2016.” One episode has been reported during spaceflight itself.", "source": "NASA OCHMO Medical Technical Brief MTB-003, Urinary Health, Rev A, page 6", "link": "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf"},
+    },
     "earthBenefit": {"figure": "252 vs 88", "text": "potentially avoidable deaths per 100,000 people in very remote Australia compared with major cities (2022 to 2024, age-standardised).", "source": "Australian Institute of Health and Welfare, Deaths in Australia", "link": "https://www.aihw.gov.au/reports/life-expectancy-deaths/deaths-in-australia/contents/variations-between-population-groups/remoteness-area"},
 }
 for st in seed["settings"]:

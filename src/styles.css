@@ -216,3 +216,11 @@ button:active:not(:disabled), .figure .spot:active { filter: brightness(1.3); }
 .confirm.ok { border-left-color: var(--ink); color: var(--ink); }
 /* An advisory: blue, with the word and a diamond (Table F.5-1). */
 .prompt-card { border: 2px solid var(--advisory); }
+
+/* Real crew data behind a range: a strip of real draws against the band the rules use. */
+.x-realband { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+.x-realband-strip { position: relative; height: 44px; background: var(--surface-200); border: 1px solid var(--line); border-radius: 8px; }
+.x-realband-band { position: absolute; top: 0; bottom: 0; background: var(--baseline-band); border-left: 1px solid var(--ink-muted); border-right: 1px solid var(--ink-muted); }
+.x-realband-mid { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--line-strong); }
+.x-realband-dot { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--ink); opacity: 0.85; }
+.x-realband-axis { display: flex; justify-content: space-between; font-size: 16px; color: var(--ink-muted); padding: 0 16.6%; }

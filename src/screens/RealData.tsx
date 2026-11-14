@@ -69,6 +69,38 @@ export function CrewData({ k }: { k: number }) {
   );
 }
 
+/**
+ * Where the width of the haemoglobin range comes from: real crew blood counts, shown as each draw's
+ * distance from that person's own pre-flight average. The band drawn is the one the rules use.
+ */
+export function RealBand({ mean, k, unit, dp, onOpen }: { mean: number; k: number; unit: string; dp: number; onOpen: () => void }) {
+  const v = (osd.variation as Record<string, { pooledSd: number; crew: number; draws: number }>).Haemoglobin;
+  const devs: number[] = [];
+  for (const s of osd.series.filter((x) => x.analyte === 'Haemoglobin')) {
+    const pre = s.points.filter((p) => p.phase === 'pre-flight').map((p) => p.value);
+    const m = pre.reduce((a, b) => a + b, 0) / pre.length;
+    for (const x of pre) devs.push(x - m);
+  }
+  const half = k * v.pooledSd;
+  const span = half * 1.5;
+  const pos = (d: number) => `${Math.max(0, Math.min(100, 50 + (d / span) * 50))}%`;
+  const inside = devs.filter((d) => Math.abs(d) <= half).length;
+  return (
+    <div className="x-realband">
+      <span className="why-label">Real NASA crew data set the width of this range</span>
+      <div className="x-realband-strip" role="img" aria-label={`${devs.length} real pre-flight blood counts from ${v.crew} crew, each shown as its distance from that person's own average. ${inside} of ${devs.length} fall inside the range the rules use.`}>
+        <div className="x-realband-band" style={{ left: pos(-half), right: `calc(100% - ${pos(half)})` }} />
+        <div className="x-realband-mid" />
+        {devs.map((d, i) => <span key={i} className="x-realband-dot" style={{ left: pos(d) }} />)}
+      </div>
+      <div className="x-realband-axis"><span className="mono">−{half.toFixed(dp)} {unit}</span><span>own average</span><span className="mono">+{half.toFixed(dp)} {unit}</span></div>
+      <p>{v.crew} real crew members had blood taken {v.draws / v.crew} times before launch. Each dot is one real draw, placed by how far it sat from that person's own average. They varied by <span className="mono">{v.pooledSd.toFixed(2)}</span> {unit} (one standard deviation), so your range is your own average of <span className="mono">{mean.toFixed(dp)}</span> plus or minus <span className="mono">{half.toFixed(dp)}</span> {unit}. {inside} of the {devs.length} real draws fall inside a range of that width.</p>
+      <p className="caption">{osd.credit}. Inspiration4, pre-flight draws only. Four people and twelve draws is a small sample: it shows the idea, it does not prove it. Your own values here are SYNTHETIC.</p>
+      <div><button className="btn secondary" onClick={onOpen}>See the same rule run on the real crew</button></div>
+    </div>
+  );
+}
+
 export function SpaceWeather({ doseLogged, onDose }: { doseLogged: boolean; onDose: () => void }) {
   const latest = donki.events[0];
   const same = donki.events.filter((e) => e.time === latest.time);

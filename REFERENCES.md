@@ -30,6 +30,8 @@ The NASA Human Research Program hazard pages are linked as hazard chips on every
 - Australian and New Zealand Committee on Resuscitation (ANZCOR), Guideline 8, Cardiopulmonary Resuscitation (approved April 2021), and the Basic Life Support flowchart (reviewed August 2023). The source for the seven steps, the 30 to 2 ratio and the 100 to 120 a minute rate on the Emergency screen. Cited, not copied: the wording is ours. https://www.anzcor.org/
 - NASA Human Research Program, Evidence Report: Risk of Renal Stone Formation (2017). The source for dehydration and low urine output as reasons for the risk, used by the early warning (rule KS-00). https://humanresearchroadmap.nasa.gov/evidence/reports/Renal.pdf
 
+- Australian Institute of Health and Welfare, Rural and remote health (updated 20 November 2025). The source for the share of Australians living in rural, remote and very remote areas, shown on the Earth card. https://www.aihw.gov.au/reports/rural-remote-australians/rural-and-remote-health
+
 ## Design criteria
 - NASA-STD-3001 Volume 2, Revision F, section 10 and Appendix F (Display Standard). https://standards.nasa.gov/
 - Human Integration Design Handbook, NASA/SP-2010-3407, Revision 1, chapter 10.

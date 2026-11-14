@@ -31,13 +31,14 @@ import { Menu } from './screens/Menu';
 import { FeelingOff } from './screens/FeelingOff';
 import { Immune } from './screens/Immune';
 import { Radiation } from './screens/Radiation';
-import { CrewData, SpaceWeather } from './screens/RealData';
+import { CrewData, RealBand, SpaceWeather } from './screens/RealData';
 import { deviceStore } from './store/indexeddb.ts';
 
 interface Extras {
   problem: Record<'space' | 'earth', { text: string; source: string; link: string }>;
   settingStatus: string;
   earthBenefit: { figure: string; text: string; source: string; link: string };
+  reach: Record<'space' | 'earth', { text: string; source: string; link: string }>;
   privacy: { status: string; rows: { what: string; you: string; medic: string; surgeon: string; crew: string }[] };
 }
 const seed = seedJson as unknown as Seed & Extras;
@@ -317,7 +318,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
           <ul className="rows">
             <li><button className="row" onClick={() => open('cabin-co2')}><span className="row-name">Cabin air limit of {co2.limit?.high?.toFixed(0)} {co2.unit}, one-hour average<br /><span className="caption">Limits: NASA-STD-3001 Volume 2. It decides when cabin air is Urgent.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
             <li><button className="row" onClick={() => go('radiation')}><span className="row-name">Radiation checks on mission days {seed.radiationDays.join(', ')}<br /><span className="caption">Data: NASA DONKI. Real solar particle events set the days the crew logs a dose.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
-            <li><button className="row" onClick={() => go('crew')}><span className="row-name">How far a blood count may move<br /><span className="caption">{osd.credit}. Real crew blood counts set the width of the haemoglobin range.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
+            <li><button className="row" onClick={() => open('haemoglobin')}><span className="row-name">How far a blood count may move<br /><span className="caption">{osd.credit}. Real crew blood counts set the width of the haemoglobin range. Open the check to see them.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
           </ul>
           <p className="caption">Every crew value in this demo is SYNTHETIC. These three inputs are real.</p>
         </section>
@@ -445,6 +446,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
             <p><span className="num stat">{seed.earthBenefit.figure}</span> {seed.earthBenefit.text}</p>
             <p className="muted">A crew far from Earth and a family hours from a hospital need the same thing: care that starts before the expert arrives.</p>
             <p className="caption">Source: <a href={seed.earthBenefit.link}>{seed.earthBenefit.source}</a>.</p>
+            <p>{seed.reach.earth.text} <span className="caption">Source: <a href={seed.reach.earth.link}>{seed.reach.earth.source}</a>.</span></p>
             <div><button className="btn secondary" onClick={() => ui({ settingId: setting.id === 'earth' ? seed.settings[0].id : 'earth' })}>{setting.id === 'earth' ? 'Back to the Mars base' : 'See it in remote Australia'}</button></div>
           </div>
           <div className="card">
@@ -556,7 +558,7 @@ function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: S
               <p>This is a running total, so it is compared with a limit, not with a personal range.</p>
             )}
             {ind.limit ? <p className="caption">{ind.limit.label}: {(lim.high ?? lim.low)!.toFixed(ind.dp)} {ind.unit}. Source: {ind.limit.source}.</p> : null}
-            {ind.variationSource ? <p className="caption">Range width from: {ind.variationSource}.</p> : null}
+            {ind.variationSource && band ? <RealBand mean={band.mean} k={rules.band.k} unit={ind.unit} dp={ind.dp} onOpen={() => go('crew')} /> : null}
           </div>
         </div>
         <ExplainCard how={ind.card.how} why={ind.card.why} what={say(ind.card.what, setting)} status={`${ind.cardNote ? `${ind.cardNote} ` : ''}${ind.card.status}`} hazards={ind.hazards.map((code) => ({ code, name: seed.hazards[code] }))} sources={ind.card.sources} />
@@ -607,6 +609,7 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
                 <BaselineChart points={missionPoints(state, reading.crewId, ind, 28, { reading, a: raw })} band={raw.band} refMin={ref?.min} refMax={ref?.max} limit={limit !== undefined && ind.limit ? { value: limit, label: ind.limit.label.replace(/ \(.*\)/, '') } : undefined} unit={ind.unit} dp={ind.dp} baselineLabel={say(ind.baselineLabel ?? 'Before launch', setting)} readingLabel={ind.cadence === 'weekly' ? 'This mission' : 'Past four weeks'} title={`${ind.name} against your own range. Today: ${shown(ind, reading.value)} ${ind.unit}.`} />
                 <ChartLegend bandLabel={ind.environment ? say("Cabin's usual range", setting) : 'Own expected range'} reference={Boolean(ref)} limitLabel={ind.limit?.label} />
                 <p className="caption">{ind.refSource ? `${ind.refSource}. ` : ''}{ind.limit ? `${ind.limit.label}: ${ind.limit.source}.` : ''}</p>
+                {ind.variationSource ? <RealBand mean={raw.band.mean} k={rules.band.k} unit={ind.unit} dp={ind.dp} onOpen={() => go('crew')} /> : null}
               </>
             )}
           </div>
