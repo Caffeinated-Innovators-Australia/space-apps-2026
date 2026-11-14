@@ -15,7 +15,7 @@ import { AdvisoryPill, AlertCard, LimitArrow, ReadingTile, SyntheticTag, TierPil
 import {
   acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
   fromMin, initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
-  logPain, pathwayAlerts, pathwayCaseContent, pathwayStatuses, sendPathwayCase, togglePathwayStep, toggleStep, toggleSymptom, toMin,
+  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, togglePathwayStep, toggleStep, toggleSymptom, toMin,
   type Assessment, type DaySummary, type Indicator, type PathwayStatus, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
 import osd from './data/osd569_cbc.json';
@@ -248,7 +248,12 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
   const crew = crewById(seed, crewId);
   const sleep = indicatorById(seed, 'sleep');
   const co2 = indicatorById(seed, 'cabin-co2');
-  const open = (id: string) => { const r = day.items.find((x) => x.indicator.id === id)?.reading; go(r ? 'result' : 'reading', r ? r.id : id); };
+  const open = (id: string) => {
+    if (id.startsWith('pathway:')) { go('pathway', id.slice(8)); return; }
+    const r = day.items.find((x) => x.indicator.id === id)?.reading; go(r ? 'result' : 'reading', r ? r.id : id);
+  };
+  const pathways = pathwayStatuses(state, seed, rules, crewId);
+  for (const p of pathways) { const t = pathwayTier(p); if (t) tiers[p.pathway.region] = t; }
   const reset = () => commit({ ...initialState(seed), ui: { ...state.ui, doseLogged: false } });
   return (
     <>
@@ -266,7 +271,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
 
       <CombinedCard day={day} setting={setting} onOpen={(r) => go('result', r.id)} />
 
-      {pathwayStatuses(state, seed, rules, crewId).map((p) => <PathwayCard key={p.key} p={p} setting={setting} />)}
+      {pathways.map((p) => <PathwayCard key={p.key} p={p} setting={setting} />)}
 
       {setting.id === 'earth' ? null : (
         <section className="card" aria-label="Real NASA data in today's results">
@@ -309,6 +314,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
           </div>
           <div className="card">
             <h2 className="title">Where you are: {setting.label}</h2>
+            {setting.away ? <p><span className="num">{setting.away}</span> {setting.id === 'earth' ? 'to the nearest doctor.' : 'is how far away Earth is, one way.'}{setting.scenarioSynthetic ? <> <SyntheticTag /></> : null}</p> : null}
             <dl className="pack">
               <dt>Main risks here</dt><dd>{setting.risks}</dd>
               <dt>What changes</dt><dd>{setting.twist}</dd>
@@ -691,13 +697,13 @@ function PathwayCard({ p, setting }: { p: PathwayStatus; setting: Setting }) {
       <div className="btn-row"><button className="btn" onClick={() => go('pathway', p.pathway.id)}>Answer the questions</button></div>
     </section>
   ) : (
-    <section className={`alert alert-${p.level}`} aria-live="polite">
-      <div className="card-head"><TierPill tier={p.level as Tier} /><SyntheticTag /></div>
+    <section className={`alert alert-${pathwayTier(p)}`} aria-live="polite">
+      <div className="card-head"><TierPill tier={pathwayTier(p)!} /><SyntheticTag /></div>
       <h2 className="title">{p.title}</h2>
       <p>{say(p.why, setting)}</p>
-      <p className="source">Rule {p.pathway.id}. Source: {p.pathway.source} Confidence: {p.pathway.confidence}</p>
+      <p className="source">Rule {p.ruleId}. Source: {p.source} Confidence: {p.confidence}</p>
       {p.placeholder ? <span className="placeholder">Placeholder rule, awaiting clinician review</span> : null}
-      <div className="btn-row"><button className="btn" onClick={() => go('pathway', p.pathway.id)}>{say('See what to do, and send the case to Earth', setting)}</button></div>
+      <div className="btn-row"><button className="btn" onClick={() => go('pathway', p.pathway.id)}>{p.level === 'early' ? 'See what to do' : say('See what to do, and send the case to Earth', setting)}</button></div>
     </section>
   );
 }
@@ -718,6 +724,8 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
   const has = (label: string) => mine.some((x) => x.label === label);
   const pain = (state.painLog ?? []).filter((x) => x.crewId === crewId && x.pathwayId === pathwayId);
   const active = p && p.level !== 'check' ? p : undefined;
+  const canSend = Boolean(active && active.level !== 'early');
+  const tests = state.pathwayTests?.[key] ?? {};
   const send = () => { const r = sendPathwayCase(state, seed, rules, { crewId, pathwayId, settingId: setting.id, at: Date.now() }); commit(r.state); setStartAt(r.pack.createdAt); };
   const content = pack ? pathwayCaseContent(state, seed, rules, pack.id) : undefined;
   const left = setting.replySeconds - (now - startAt) / 1000;
@@ -735,13 +743,13 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
       <div className="grid wide-left">
         <div className="stack">
           {active ? (
-            <section className={`alert alert-${active.level}`} aria-live="polite">
-              <div className="card-head"><TierPill tier={active.level as Tier} /><SyntheticTag /></div>
+            <section className={`alert alert-${pathwayTier(active)}`} aria-live="polite">
+              <div className="card-head"><TierPill tier={pathwayTier(active)!} /><SyntheticTag /></div>
               <h1 className="title">{active.title}</h1>
               <div className="why">
                 <span className="why-label">Why this alert?</span>
                 <p>{say(active.why, setting)}</p>
-                <p className="source">Rule {pathway.id}. Source: {pathway.source} Confidence: {pathway.confidence}</p>
+                <p className="source">Rule {active.ruleId}. Source: {active.source} Confidence: {active.confidence}</p>
               </div>
               {active.placeholder ? <span className="placeholder">Placeholder rule, awaiting clinician review</span> : null}
             </section>
@@ -762,6 +770,15 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
             <p className="caption">Tap any that apply. The rules update as you tap, and what you log goes in the case.</p>
             <span className="placeholder">{seed.symptoms.status}</span>
           </div>
+          {pathway.tests.map((t) => (
+            <div className="card" key={t.id}>
+              <h2 className="title">{t.label}</h2>
+              <div className="chips" role="group" aria-label={t.label}>
+                {t.options.map((o) => <button key={o} className="chip chip-toggle" aria-pressed={tests[t.id] === o} onClick={() => commit(logPathwayTest(state, rules, { crewId, pathwayId, testId: t.id, result: o }))}>{o}</button>)}
+              </div>
+              <p className="caption">{say('The result is logged and goes in the case. It does not change the result on this screen: what it means is for your crew medic and Earth.', setting)}</p>
+            </div>
+          ))}
           <div className="card">
             <h2 className="title">Pain now, from 0 to 10</h2>
             <div className="chips" role="group" aria-label="Pain score from 0, no pain, to 10, the worst you can imagine">
@@ -792,7 +809,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
           ) : null}
           {active ? (
             <div className="card">
-              <div className="card-head"><span className="why-label">{pack ? 'Meanwhile' : 'What to do now'}</span><TierPill tier={active.level as Tier} /></div>
+              <div className="card-head"><span className="why-label">{pack ? 'Meanwhile' : 'What to do now'}</span><TierPill tier={pathwayTier(active)!} /></div>
               <ul className="checks">
                 {meanwhile.map((st) => (
                   <li key={st}>
@@ -805,7 +822,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
               </ul>
               <p className="caption">{say('Tick each step as you do it. Earth sees what you have done.', setting).replace('. the', '. The')}</p>
               <span className="placeholder">Placeholder steps, awaiting clinician review</span>
-              {pack ? null : (
+              {pack || !canSend ? null : (
                 <>
                   <p className="gap-advice">{setting.advice}</p>
                   <div className="btn-row"><button className="btn" onClick={send}>{say('Send case to Earth', setting)}</button></div>
@@ -825,6 +842,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
                 <dt>Checked for</dt><dd>{content.pattern.checkedFor} (rule {content.pattern.rule}). Not a diagnosis.</dd>
                 <dt>Assessment</dt><dd>{content.assessment.tier ? TIER_WORD[content.assessment.tier] : 'Symptoms since cleared'}</dd>
                 <dt>Symptoms</dt><dd>{content.symptoms.length > 0 ? content.symptoms.map((x) => `${x.label} (${hhmm(Date.parse(x.at))})`).join(', ') : 'None logged now.'}</dd>
+                <dt>Tests</dt><dd>{content.tests.map((x) => `${x.test}: ${x.result}`).join('; ') || 'None asked for.'}</dd>
                 <dt>Pain scores</dt><dd>{content.painScores.length > 0 ? content.painScores.map((x) => `${x.score}/10 at ${hhmm(Date.parse(x.at))}`).join(', ') : 'None logged yet.'}</dd>
                 <dt>Recent trends</dt><dd>{content.recentTrends.map((x) => x.summary).join(' ')}</dd>
                 <dt>Other signals</dt><dd>{content.otherSignalsToday.length > 0 ? content.otherSignalsToday.map((x) => `${x.indicator} ${x.value} ${x.unit}`).join('; ') : 'None today.'}</dd>

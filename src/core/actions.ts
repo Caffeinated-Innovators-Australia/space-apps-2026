@@ -119,6 +119,13 @@ export function assessValue(seed: Seed, rules: RuleFile, crewId: string, indicat
     limitLabel: lim.label,
     environment: ind.environment,
   });
+  // An experimental signal can raise amber but never red by itself.
+  if (ind.evidence === 'experimental' && a.tier === 'red') {
+    a.tier = 'amber';
+    a.title = rules.titles.amber.replace('{region}', ind.region);
+    a.steps = rules.steps.amber;
+    a.why = `${a.why} This check is experimental, so by itself it is never rated Urgent.`;
+  }
   const own = ind.steps?.[a.tier];
   return own ? { ...a, steps: own } : a;
 }

@@ -86,6 +86,27 @@ pathways:
     min_supporting: 1
     urgent: ["Fever or chills", "Cannot pass urine"]
     context: [fluid, exercise]
+    # Early warning, before any symptom: the indicator has sat more than shift_sd standard deviations below the
+    # person's own baseline for count logged days in a row. It names a risk to act on early, not a finding.
+    early:
+      id: KS-00
+      indicator: fluid
+      count: 3
+      shift_sd: 1
+      title: "Kidneys and urine: low fluid for {count} days"
+      why: "Your fluid intake has been below your usual level for {count} logged days in a row: {values} {unit}, against your baseline of {baselineMean} {unit}. NASA names dehydration and low urine output among the reasons kidney stones are a risk in spaceflight. This is a risk to act on early, not a finding."
+      steps:
+        - "Drink to your usual daily amount today."
+        - "Log your fluid again this evening."
+        - "Tell your crew medic if it is still low tomorrow."
+      source: "Placeholder rule, awaiting clinician review. Three days and one standard deviation are statistical conventions. The risk is NASA's: Evidence Report, Risk of Renal Stone Formation (2017), page 5."
+      confidence: Low
+      signed_off_by: placeholder
+    # Simple tests the pathway asks for. The result is logged and sent with the case. It never changes a tier.
+    tests:
+      - id: urine-strip
+        label: "Urine test strip: blood"
+        options: ["Blood seen", "No blood seen", "Not done"]
     check:
       title: "Pain in your side or lower back: three quick questions"
       why: "You logged {core}. Pain here has many causes. Three quick questions tell the rules whether your crew medic should check for a kidney stone."

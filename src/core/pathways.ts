@@ -12,7 +12,8 @@ export interface PathwayStatus {
   /** Identifies this person's pathway in the outbox and the acknowledged list. */
   key: string;
   /** 'check' means a core symptom is logged and the app is asking the follow-up questions. */
-  level: 'check' | 'amber' | 'red';
+  /** 'early' means no symptom is logged, but a trend the pathway watches has raised an early warning. */
+  level: 'check' | 'early' | 'amber' | 'red';
   title: string;
   why: string;
   matched: { core: string[]; supporting: string[]; urgent: string[] };
@@ -21,6 +22,11 @@ export interface PathwayStatus {
   context: ContextLine[];
   pain: PainEntry[];
   placeholder: boolean;
+  /** The rule that produced this status: the pathway's own, or its early-warning rule. */
+  ruleId: string;
+  source: string;
+  confidence: string;
+  tests: Record<string, string>;
 }
 
 export const pathwayKey = (crewId: string, pathwayId: string) => `pathway:${crewId}:${pathwayId}`;
@@ -64,7 +70,20 @@ export function pathwayStatuses(state: State, seed: Seed, rules: RuleFile, crewI
       supporting: pathway.supporting.filter((x) => mine.has(x)),
       urgent: pathway.urgent.filter((x) => mine.has(x)),
     };
-    if (matched.core.length === 0) continue;
+    const key0 = pathwayKey(crewId, pathway.id);
+    const tests = state.pathwayTests?.[key0] ?? {};
+    if (matched.core.length === 0) {
+      const e = pathway.early && earlyWarning(state, seed, rules, crewId, pathway);
+      if (e) {
+        out.push({
+          pathway, key: key0, level: 'early', title: e.title, why: e.why, matched, steps: pathway.early!.steps,
+          stepsDone: state.pathwaySteps?.[key0] ?? [], context: pathwayContext(state, seed, rules, crewId, pathway),
+          pain: [], placeholder: pathway.early!.signed_off_by.trim().toLowerCase() === 'placeholder',
+          ruleId: pathway.early!.id, source: pathway.early!.source, confidence: pathway.early!.confidence, tests,
+        });
+      }
+      continue;
+    }
     const pattern = matched.supporting.length >= pathway.min_supporting;
     const level: PathwayStatus['level'] = matched.urgent.length > 0 ? 'red' : pattern ? 'amber' : 'check';
     const key = pathwayKey(crewId, pathway.id);
@@ -80,13 +99,41 @@ export function pathwayStatuses(state: State, seed: Seed, rules: RuleFile, crewI
       context: pathwayContext(state, seed, rules, crewId, pathway),
       pain: (state.painLog ?? []).filter((p) => p.crewId === crewId && p.pathwayId === pathway.id),
       placeholder: pathway.signed_off_by.trim().toLowerCase() === 'placeholder',
+      ruleId: pathway.id, source: pathway.source, confidence: pathway.confidence, tests,
     });
   }
-  const rank = { check: 0, amber: 1, red: 2 };
+  const rank = { check: 0, early: 1, amber: 2, red: 3 };
   return out.sort((a, b) => rank[b.level] - rank[a.level]);
 }
 
-export const pathwayTier = (s: PathwayStatus): Tier | undefined => (s.level === 'check' ? undefined : s.level);
+export const pathwayTier = (s: PathwayStatus): Tier | undefined => (s.level === 'check' ? undefined : s.level === 'early' ? 'amber' : s.level);
+
+/** Whether the pathway's early-warning rule fires: the watched indicator has been low for enough logged days in a row. */
+export function earlyWarning(state: State, seed: Seed, rules: RuleFile, crewId: string, pathway: PathwayRule): { title: string; why: string } | null {
+  const e = pathway.early;
+  if (!e) return null;
+  const crew = crewById(seed, crewId);
+  const ind = indicatorById(seed, e.indicator);
+  const baseline = crew.baseline[e.indicator] ?? [];
+  if (baseline.length < 2) return null;
+  const band = personalBand(baseline, rules.band.k, ind.fixedSd);
+  const today = latestReading(state, crewId, e.indicator);
+  const logged = [...(crew.mission[e.indicator] ?? []).filter((v): v is number => v !== null), ...(today ? [today.value] : [])];
+  const last = logged.slice(-e.count);
+  const floor = band.mean - e.shift_sd * band.sd;
+  if (last.length < e.count || !last.every((v) => v < floor)) return null;
+  const fill = (t: string) => t.replace(/\{count\}/g, String(e.count)).replace('{values}', last.map((v) => v.toFixed(ind.dp)).join(', ')).replace(/\{unit\}/g, ind.unit).replace('{baselineMean}', round(band.mean, ind.dp + 1).toString());
+  return { title: fill(e.title), why: fill(e.why) };
+}
+
+/** Log the result of a simple test a pathway asks for. It is recorded and sent with the case; it never changes a tier. */
+export function logPathwayTest(state: State, rules: RuleFile, args: { crewId: string; pathwayId: string; testId: string; result: string }): State {
+  const test = rules.pathways.find((w) => w.id === args.pathwayId)?.tests.find((t) => t.id === args.testId);
+  if (!test) throw new Error(`Unknown test "${args.testId}" for pathway "${args.pathwayId}".`);
+  if (!test.options.includes(args.result)) throw new Error(`"${args.result}" is not a result for ${test.label}. Choose one of: ${test.options.join('; ')}.`);
+  const key = pathwayKey(args.crewId, args.pathwayId);
+  return { ...state, pathwayTests: { ...(state.pathwayTests ?? {}), [key]: { ...(state.pathwayTests?.[key] ?? {}), [args.testId]: args.result } } };
+}
 
 /** Log a pain score from 0 to 10. No threshold is applied to it. */
 export function logPain(state: State, args: { crewId: string; pathwayId: string; score: number; at: number }): State {
@@ -102,7 +149,7 @@ export function togglePathwayStep(state: State, key: string, step: string): Stat
 /** Queue a pathway case for the next link. One case per person and pathway; sending again returns the same case. */
 export function sendPathwayCase(state: State, seed: Seed, rules: RuleFile, args: { crewId: string; pathwayId: string; settingId: string; at: number }): { state: State; pack: CasePack } {
   const status = pathwayStatuses(state, seed, rules, args.crewId).find((s) => s.pathway.id === args.pathwayId);
-  if (!status || status.level === 'check') throw new Error(`No "${args.pathwayId}" pattern is open for ${args.crewId}. A case is sent once the pattern needs the crew medic or is urgent.`);
+  if (!status || status.level === 'check' || status.level === 'early') throw new Error(`No "${args.pathwayId}" pattern is open for ${args.crewId}. A case is sent once the pattern needs the crew medic or is urgent.`);
   const existing = state.outbox.find((p) => p.readingId === status.key);
   if (existing) return { state, pack: existing };
   const pack: CasePack = { id: `case-${args.at}`, crewId: args.crewId, readingId: status.key, createdAt: args.at, settingId: args.settingId, status: 'queued', pathwayId: args.pathwayId };
@@ -130,12 +177,13 @@ export function pathwayCaseContent(state: State, seed: Seed, rules: RuleFile, pa
     synthetic: seed.synthetic,
     pattern: { rule: pathway.id, checkedFor: pathway.name, region: pathway.region },
     assessment: {
-      tier: status && status.level !== 'check' ? status.level : null,
+      tier: status ? pathwayTier(status) ?? null : null,
       why: status?.why ?? 'The symptoms that opened this case have since been cleared by the crew member.',
       source: pathway.source, confidence: pathway.confidence,
       placeholder: pathway.signed_off_by.trim().toLowerCase() === 'placeholder',
     },
     symptoms: state.symptoms.filter((s) => s.crewId === pack.crewId).map((s) => ({ label: s.label, at: iso(s.at) })),
+    tests: pathway.tests.map((t) => ({ test: t.label, result: state.pathwayTests?.[key]?.[t.id] ?? 'Not recorded' })),
     painScores: (state.painLog ?? []).filter((p) => p.crewId === pack.crewId && p.pathwayId === pathway.id).map((p) => ({ score: p.score, outOf: 10, at: iso(p.at) })),
     recentTrends: pathwayContext(state, seed, rules, pack.crewId, pathway).map((c) => ({ indicator: c.name, summary: c.text, drifted: c.flagged })),
     otherSignalsToday: day.flagged.map((x) => ({ indicator: x.indicator.name, value: x.reading!.value, unit: x.indicator.unit, tier: x.assessment!.tier, why: x.assessment!.why })),
@@ -149,6 +197,6 @@ export function pathwayCaseContent(state: State, seed: Seed, rules: RuleFile, pa
 export function pathwayAlerts(state: State, seed: Seed, rules: RuleFile, crewId: string): { key: string; tier: Tier; name: string; pathwayId: string }[] {
   return pathwayStatuses(state, seed, rules, crewId)
     .filter((s) => s.level !== 'check')
-    .map((s) => ({ key: s.key, tier: s.level as Tier, name: s.pathway.region, pathwayId: s.pathway.id }))
+    .map((s) => ({ key: s.key, tier: pathwayTier(s) as Tier, name: s.pathway.region, pathwayId: s.pathway.id }))
     .sort((a, b) => RANK[b.tier] - RANK[a.tier]);
 }

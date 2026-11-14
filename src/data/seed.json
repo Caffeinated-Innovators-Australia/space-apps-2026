@@ -46,7 +46,8 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "emerging"
   },
   {
    "id": "mood",
@@ -90,7 +91,8 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "emerging"
   },
   {
    "id": "reaction",
@@ -127,7 +129,8 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "experimental"
   },
   {
    "id": "resting-hr",
@@ -163,7 +166,8 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "established"
   },
   {
    "id": "bp-sys",
@@ -200,7 +204,8 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "established"
   },
   {
    "id": "bp-dia",
@@ -237,7 +242,8 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "established"
   },
   {
    "id": "vision",
@@ -275,7 +281,8 @@
      }
     ]
    },
-   "cardNote": "This is not a calibrated eye chart and is not a test for any eye condition. It only compares you with your own earlier results on this device."
+   "cardNote": "This is not a calibrated eye chart and is not a test for any eye condition. It only compares you with your own earlier results on this device.",
+   "evidence": "experimental"
   },
   {
    "id": "exercise",
@@ -311,7 +318,8 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "emerging"
   },
   {
    "id": "grip",
@@ -354,7 +362,8 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "established"
   },
   {
    "id": "body-mass",
@@ -392,7 +401,8 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "established"
   },
   {
    "id": "fluid",
@@ -429,7 +439,8 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "emerging"
   },
   {
    "id": "energy",
@@ -466,7 +477,8 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "emerging"
   },
   {
    "id": "haemoglobin",
@@ -517,7 +529,8 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "established"
   },
   {
    "id": "cabin-co2",
@@ -574,7 +587,8 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "established"
   },
   {
    "id": "radiation",
@@ -617,13 +631,14 @@
       "url": "https://www.nasa.gov/hrp/risks/"
      }
     ]
-   }
+   },
+   "evidence": "established"
   }
  ],
  "crew": [
   {
    "id": "crew-1",
-   "name": "Crew member 1",
+   "name": "Jo",
    "sex": "F",
    "baseline": {
     "sleep": [
@@ -1840,13 +1855,13 @@
      2.2,
      2.6,
      2.4,
-     2.4,
-     2.4,
-     3.0,
-     2.5,
-     2.5,
-     2.6,
-     2.7
+     2.3,
+     2.3,
+     2.2,
+     2.2,
+     2.2,
+     2.2,
+     2.2
     ],
     "energy": [
      2300.0,
@@ -3334,12 +3349,12 @@
      null,
      3.0,
      2.6,
-     2.5,
-     2.5,
+     2.8,
+     2.9,
+     2.9,
      2.4,
-     2.4,
-     2.3,
-     2.3
+     2.5,
+     2.7
     ],
     "energy": [
      3034.0,
@@ -6604,7 +6619,7 @@
    "haemoglobin": 13.1,
    "vision": 7,
    "exercise": 90,
-   "fluid": 2.3,
+   "fluid": 2.2,
    "energy": 2300,
    "bp-sys": 113,
    "bp-dia": 71,
@@ -6625,7 +6640,23 @@
    "advice": "No one on Earth can answer for about 45 minutes. Start the steps now. Do not wait.",
    "scenarioSynthetic": false,
    "risks": "Partial gravity, dust, long-term radiation, behavioural health",
-   "twist": "Months of trend data; a reply takes 6 to 45 minutes"
+   "twist": "Months of trend data; a reply takes 6 to 45 minutes",
+   "away": "22 min 18 s"
+  },
+  {
+   "id": "mars-18",
+   "label": "Mars, 18 min",
+   "kicker": "Mars surface base · Mission day 87",
+   "replySeconds": 2160,
+   "gapLabel": "Earth reply possible in",
+   "nowLabel": "Earth reply possible now",
+   "detail": "One-way delay 18 min, with Mars about 324 million km away",
+   "basis": "Light-time arithmetic: about 324 million km at the speed of light, there and back. Relay and processing time would add to this.",
+   "advice": "No one on Earth can answer for about 36 minutes. Start the steps now. Do not wait.",
+   "scenarioSynthetic": false,
+   "risks": "Partial gravity, dust, long-term radiation, behavioural health",
+   "twist": "Months of trend data; a reply takes 6 to 45 minutes",
+   "away": "18 min"
   },
   {
    "id": "transit",
@@ -6639,7 +6670,8 @@
    "advice": "No one on Earth can answer for about 6 minutes. Start the steps now.",
    "scenarioSynthetic": false,
    "risks": "Radiation, isolation, confinement",
-   "twist": "The delay grows every day, so the crew must act on its own"
+   "twist": "The delay grows every day, so the crew must act on its own",
+   "away": "3 min 2 s"
   },
   {
    "id": "moon",
@@ -6653,7 +6685,8 @@
    "advice": "Earth can answer within seconds. Call the flight surgeon and do the steps together.",
    "scenarioSynthetic": false,
    "risks": "Partial gravity, dust, radiation",
-   "twist": "Ground support within seconds"
+   "twist": "Ground support within seconds",
+   "away": "1.3 s"
   },
   {
    "id": "station",
@@ -6667,17 +6700,18 @@
    "advice": "Ground support is in real time. Call the flight surgeon now.",
    "scenarioSynthetic": false,
    "risks": "Bone and muscle loss, eye changes, carbon dioxide, sleep",
-   "twist": "Ground support is in real time"
+   "twist": "Ground support is in real time",
+   "away": "under a second"
   },
   {
    "id": "earth",
    "label": "Remote Australia",
-   "kicker": "Very remote Australia · 7 hours by road from hospital",
+   "kicker": "Sam, station hand · Remote desert station, Australia · 640 km from the nearest doctor",
    "replySeconds": 3600,
    "gapLabel": "Retrieval team can reach you in",
    "nowLabel": "Retrieval team can reach you now",
-   "detail": "Nearest hospital: 7 hours by road",
-   "basis": "SYNTHETIC scenario for a very remote property: an aeromedical retrieval one hour away.",
+   "detail": "Nearest doctor: 640 km, about 7 hours by road",
+   "basis": "SYNTHETIC scenario for a remote desert station: 640 km from the nearest doctor, with an aeromedical retrieval one hour away.",
    "advice": "A doctor can talk you through this by phone now. Hands-on help is an hour away. Start the steps.",
    "scenarioSynthetic": true,
    "risks": "Distance from care, heat, isolation",
@@ -6693,7 +6727,8 @@
    },
    "tierWords": {
     "amber": "Remote nurse"
-   }
+   },
+   "away": "640 km"
   }
  ],
  "settingStatus": "Draft guidance lines, environment profiles and Earth-mode wording, awaiting clinician review (CR-11). The rules do not yet change by environment; that is a clinician decision.",
@@ -6778,11 +6813,75 @@
    "Fever or chills",
    "Sore throat",
    "Cut slow to heal",
+   "Cold sore",
    "Low mood",
    "Pain in side or lower back",
    "Blood in urine",
    "Pain passing urine",
    "Cannot pass urine"
+  ]
+ },
+ "symptomZones": {
+  "status": "Placeholder grouping, awaiting clinician review (CR-10)",
+  "zones": [
+   {
+    "id": "head",
+    "label": "Head and mind",
+    "symptoms": [
+     "Headache",
+     "Dizzy on standing",
+     "Low mood",
+     "Tired"
+    ]
+   },
+   {
+    "id": "eyes",
+    "label": "Eyes",
+    "symptoms": [
+     "Blurred vision"
+    ]
+   },
+   {
+    "id": "throat",
+    "label": "Mouth and throat",
+    "symptoms": [
+     "Sore throat",
+     "Cold sore"
+    ]
+   },
+   {
+    "id": "stomach",
+    "label": "Stomach",
+    "symptoms": [
+     "Nauseous"
+    ]
+   },
+   {
+    "id": "kidneys",
+    "label": "Kidneys and urine",
+    "symptoms": [
+     "Pain in side or lower back",
+     "Blood in urine",
+     "Pain passing urine",
+     "Cannot pass urine"
+    ]
+   },
+   {
+    "id": "skin",
+    "label": "Skin",
+    "symptoms": [
+     "Rash",
+     "Cut slow to heal"
+    ]
+   },
+   {
+    "id": "whole",
+    "label": "Whole body",
+    "symptoms": [
+     "Fever or chills",
+     "Tired"
+    ]
+   }
   ]
  },
  "radiationPrompt": {
@@ -6839,5 +6938,6 @@
   "text": "potentially avoidable deaths per 100,000 people in very remote Australia compared with major cities (2022 to 2024, age-standardised).",
   "source": "Australian Institute of Health and Welfare, Deaths in Australia",
   "link": "https://www.aihw.gov.au/reports/life-expectancy-deaths/deaths-in-australia/contents/variations-between-population-groups/remoteness-area"
- }
+ },
+ "evidenceStatus": "Placeholder labels, awaiting clinician review (CR-30)"
 }

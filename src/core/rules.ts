@@ -32,6 +32,8 @@ export interface PathwayRule extends Signed {
   why: Record<'amber' | 'red', string>;
   steps: Record<'amber' | 'red', string[]>;
   background: { text: string; source: string; link: string }[];
+  early?: Signed & { id: string; indicator: string; count: number; shift_sd: number; title: string; why: string; steps: string[] };
+  tests: { id: string; label: string; options: string[] }[];
 }
 
 /** The whole rules file, checked. */
@@ -125,6 +127,11 @@ export function parseRules(text: string): RuleFile {
     w.urgent = w.urgent ?? [];
     w.context = w.context ?? [];
     w.background = w.background ?? [];
+    w.tests = w.tests ?? [];
+    if (w.early) {
+      signed(w.early, w.early.id ?? `${id} early warning`);
+      if (!w.early.indicator || !(Number(w.early.count) >= 2) || !(Number(w.early.shift_sd) > 0) || !w.early.title || !w.early.why || !Array.isArray(w.early.steps) || w.early.steps.length === 0) throw new Error(`Pathway ${id}: the early warning needs an indicator, a count of 2 or more, a shift, a title, an explanation and at least one step.`);
+    }
     w.min_supporting = Number(w.min_supporting ?? 1);
     if (!w.check?.title || !w.check.why) throw new Error(`Pathway ${id}: missing the check wording.`);
     for (const t of ['amber', 'red'] as const) {

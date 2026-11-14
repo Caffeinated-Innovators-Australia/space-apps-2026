@@ -15,6 +15,8 @@ export interface Indicator {
   cadence: 'daily' | 'weekly' | 'prompted' | 'sensor';
   /** For weekly check-ins: the day of the mission week it falls due (mission day modulo 7). */
   weekDay?: number;
+  /** How well-established this signal is, as measured in this app. An experimental signal can raise amber but never red alone. */
+  evidence?: 'established' | 'emerging' | 'experimental';
   /** True for a reading of the shared habitat, such as cabin air. It is worded as the cabin's, never as the person's own. */
   environment?: boolean;
   /** 'cumulative' marks a running total, such as radiation dose, which is judged against a limit and not a personal band. */
@@ -64,6 +66,8 @@ export interface Setting {
   twist: string;
   words?: Record<string, string>;
   tierWords?: Partial<Record<Tier, string>>;
+  /** How far away help is, in words: the one-way delay to Earth, or the distance to the nearest doctor. */
+  away?: string;
 }
 
 export interface TimelineBlock { start: string; end: string; label: string; critical: boolean }
@@ -84,6 +88,9 @@ export interface Seed {
   slipMinutes: number;
   radiationDays: number[];
   symptoms: { status: string; options: string[] };
+  /** Symptoms grouped by where on the body they are felt, for the "Feeling off?" flow. */
+  symptomZones?: { status: string; zones: { id: string; label: string; symptoms: string[] }[] };
+  evidenceStatus?: string;
 }
 
 export interface Reading {
@@ -115,6 +122,15 @@ export interface CasePack {
 /** One pain score, logged while a symptom pathway is open. No threshold is applied: the trend is for the medic and the flight surgeon. */
 export interface PainEntry { crewId: string; pathwayId: string; score: number; at: number }
 
+/** A reply from the remote doctor to one case. The words are the doctor's own; the app adds nothing to them. */
+export interface EarthReply { id: string; caseId: string; at: number; decision: 'agree' | 'add' | 'change' | 'escalate'; note: string; steps: string[]; acceptedAt?: number }
+
+/** One run of the emergency screen: which steps were reached, and when. */
+export interface EmergencyRun { id: string; crewId: string; startedAt: number; endedAt?: number; steps: { id: string; at: number }[] }
+
+/** A wound or skin problem being watched as it heals. No photo is kept. */
+export interface Wound { id: string; crewId: string; label: string; startedAt: number; checks: { at: number; status: 'better' | 'same' | 'worse' }[] }
+
 /** Everything the device remembers. One small document, saved after every action. */
 export interface State {
   version: 2;
@@ -128,7 +144,12 @@ export interface State {
   painLog?: PainEntry[];
   /** Pathway steps ticked as done, keyed by crew member and pathway. */
   pathwaySteps?: Record<string, string[]>;
-  ui: { crewId: string; settingId: string; theme: string; doseLogged: boolean; clock: string; slipped: boolean; /** Real time at which the mission clock was last set, so logged times read as mission time. */ clockSetAt?: number };
+  /** Results of simple tests asked for by a pathway, such as a urine strip, keyed by crew member and pathway, then by test. Logged and sent; never scored. */
+  pathwayTests?: Record<string, Record<string, string>>;
+  replies?: EarthReply[];
+  emergencies?: EmergencyRun[];
+  wounds?: Wound[];
+  ui: { crewId: string; settingId: string; theme: string; doseLogged: boolean; clock: string; slipped: boolean; /** Real time at which the mission clock was last set, so logged times read as mission time. */ clockSetAt?: number; /** True while there is no link to Earth, for example at solar conjunction. Cases queue until it returns. */ linkDown?: boolean };
 }
 
 export interface Store {

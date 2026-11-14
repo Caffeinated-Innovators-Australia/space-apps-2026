@@ -10,11 +10,12 @@ const SPOTS: Spot[] = [
   { group: 'Mind and sleep', label: 'Mind and sleep', x: 160, y: 30, target: 'mood' },
   { group: 'Eyes', label: 'Eyes', x: 160, y: 60, target: 'vision' },
   { group: 'Heart', label: 'Heart', x: 172, y: 124, target: 'resting-hr' },
+  { group: 'Kidneys and urine', label: 'Kidneys and urine', x: 136, y: 166, target: 'pathway:KS-01' },
   { group: 'Blood', label: 'Blood', x: 221, y: 196, target: 'haemoglobin' },
   { group: 'Muscle and bone', label: 'Muscle and bone', x: 180, y: 300, target: 'grip' },
 ];
 
-/** Tap a body area to open its check-in. `tiers` is keyed by group name and holds the most serious result in that group today. */
+/** Tap a body area to open its check-in, or its symptom pathway where the target starts with "pathway:". `tiers` is keyed by group name and holds the most serious result in that group today. */
 export function BodyFigure({ onOpen, tiers }: { onOpen: (indicatorId: string) => void; tiers: Record<string, Tier | undefined> }) {
   const words = useContext(TierWords);
   return (
