@@ -56,8 +56,14 @@ export interface MonitorAlertRule extends Signed {
   construct: number;
   when: Record<string, string>[];
   groups: MonitorComparison[][];
-  steps: string[];
+  /** A step is plain text, or { text, gravity } to show it only in the listed gravity bands (for example zero). */
+  steps: MonitorStep[];
 }
+
+export const GRAVITY_BANDS = ['zero', 'lunar', 'martian', 'earth'] as const;
+export type GravityBand = (typeof GRAVITY_BANDS)[number];
+/** A first step on a monitor alert. Without gravity it shows everywhere. */
+export interface MonitorStep { text: string; gravity?: GravityBand[] }
 
 /** Symptoms that call for the Emergency button the moment one is logged. */
 export interface EmergencySymptomRule extends Signed {
@@ -197,6 +203,14 @@ export function parseRules(text: string): RuleFile {
     if (!m.name || !m.title || !m.checks_for) throw new Error(`Monitor alert ${id}: needs a name, a title and the checks_for wording.`);
     if (!Number.isInteger(m.construct)) throw new Error(`Monitor alert ${id}: needs the emergency module's pathway number as construct.`);
     if (!Array.isArray(m.steps) || m.steps.length === 0) throw new Error(`Monitor alert ${id}: needs at least one first step.`);
+    m.steps = (m.steps as unknown[]).map((st): MonitorStep => {
+      if (typeof st === 'string' && st.trim()) return { text: st };
+      const o = st as { text?: unknown; gravity?: unknown };
+      if (!o || typeof o.text !== 'string' || !o.text.trim()) throw new Error(`Monitor alert ${id}: every step needs its wording.`);
+      if (!Array.isArray(o.gravity) || o.gravity.length === 0 || !o.gravity.every((g) => (GRAVITY_BANDS as readonly string[]).includes(String(g)))) throw new Error(`Monitor alert ${id}: a step's gravity must list one or more of ${GRAVITY_BANDS.join(', ')}.`);
+      return { text: o.text, gravity: o.gravity as GravityBand[] };
+    });
+    if (!m.steps.some((st) => !st.gravity)) throw new Error(`Monitor alert ${id}: needs at least one first step that shows in every gravity.`);
     if (!Array.isArray(m.when) || m.when.length === 0) throw new Error(`Monitor alert ${id}: needs at least one group of conditions under when.`);
     m.groups = m.when.map((g) => {
       const entries = Object.entries(g ?? {});

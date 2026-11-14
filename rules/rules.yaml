@@ -2,7 +2,8 @@
 # Every rule needs a source, a confidence label and a signed_off_by field, or the app refuses to load.
 # signed_off_by is a clinician ROLE (never a name), or the word "placeholder".
 #
-# STATUS: every rule, number and line of wording below is a PLACEHOLDER awaiting clinician review.
+# STATUS: every rule, number and line of wording below is a PLACEHOLDER awaiting clinician review, unless its
+# signed_off_by names a clinician role.
 # The numbers are common statistical conventions, not clinical thresholds. Nothing here is clinical advice.
 # See CLINICIAN_REVIEW.md (CR-02, CR-04, CR-12, CR-14, CR-16) and docs/EVIDENCE.md.
 version: "0.2"
@@ -178,9 +179,11 @@ steps:
 # with one of >=, <=, > or < and a number. A missing value never matches.
 # Oxygen saturation (spo2) never raises an alert on its own: readings run lower and are less reliable at low
 # cabin pressure. The parser refuses a group that compares spo2 alone. Neither rule below uses it.
+# A step is plain text, or { text, gravity: [bands] } to show it only in those gravity bands (zero, lunar, martian, earth),
+# taken from the place's location profile. A step limited to some bands is hidden when the band is not known.
 # construct is the emergency module's pathway number: 12 Infection and sepsis, 4 Shock.
 # No cardiac arrest rule here: a set of vital signs carries no heart rhythm.
-# STATUS: every threshold and step below is the clinical lead's placeholder (build pack v3.3), awaiting sign-off.
+# STATUS: SEP-01 signed off by the clinical lead (15 Nov 2026, CR-36 and CR-38). SHK-01 stays a placeholder (CR-37).
 monitor_alerts:
   - id: SEP-01
     name: "Possible sepsis"
@@ -193,11 +196,12 @@ monitor_alerts:
       - { temp: "<= 36", sbp: "<= 100", rr: ">= 22" }
     steps:
       - "Lie the person flat and keep them warm."
+      - { text: "Strap the person down so you can start CPR if needed.", gravity: [zero] }
       - "Record vitals from the monitor."
       - "Crew medic: follow your sepsis protocol."
-    source: "Placeholder thresholds from the team's clinical lead (build pack v3.3), awaiting sign-off."
+    source: "Thresholds from the team's clinical lead (build pack v3.3), signed off by the clinical lead on 15 Nov 2026 (CR-36, CR-38)."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
   - id: SHK-01
     name: "Possible shock"
     title: "Possible shock: start now"
@@ -207,7 +211,10 @@ monitor_alerts:
       - { sbp: "< 90", hr: "> 110" }
     steps:
       - "Lie the person flat and keep them warm."
+      - { text: "Strap the person down so you can start CPR if needed.", gravity: [zero] }
       - "Record vitals from the monitor."
+      - "Crew medic: work through a systems screen to look for the cause."
+      - "Crew medic: if trained, do a RUSH scan (Rapid Ultrasound in Shock and Hypotension)."
     source: "Placeholder thresholds from the team's clinical lead (build pack v3.3), awaiting sign-off."
     confidence: Low
     signed_off_by: placeholder

@@ -108,7 +108,7 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
   const [saved, setSaved] = useState(false);
   const person = seed.crew.find((c) => c.id === crewId);
   const latest = latestVitals(state, crewId);
-  const alerts = vitalsAlerts(state, rules, crewId);
+  const alerts = vitalsAlerts(state, rules, crewId, setting.gravityBand);
   const demos = seed.demoVitals ?? [];
   const latestIsDemo = latest ? demos.some((d) => sameSet(d.values, latest.values)) : false;
   const errors = Object.fromEntries(VITAL_FIELDS.map((f) => [f.id, fieldError(f, texts[f.id])])) as Record<VitalField, string | undefined>;

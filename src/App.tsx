@@ -257,7 +257,7 @@ function StatusBar({ state, commit, rules, crewId, setting }: { state: State; co
   const day = daySummary(state, seed, rules, crewId);
   const noCabin = setting.habitat === false;
   const flagged = [
-    ...vitalsAlerts(state, rules, crewId).map((v) => ({ id: v.key, tier: v.tier as Tier, name: 'Vital signs', open: () => go('vitals') })),
+    ...vitalsAlerts(state, rules, crewId, setting.gravityBand).map((v) => ({ id: v.key, tier: v.tier as Tier, name: 'Vital signs', open: () => go('vitals') })),
     ...pathwayAlerts(state, seed, rules, crewId).map((p) => ({ id: p.key, tier: p.tier, name: p.name, open: () => go('pathway', p.pathwayId) })),
     ...day.flagged.filter((x) => !(noCabin && x.indicator.environment)).map((x) => ({ id: x.reading!.id, tier: x.assessment!.tier, name: x.indicator.name, open: () => go('result', x.reading!.id) })),
   ].sort((x, y) => RANK[y.tier] - RANK[x.tier]);
@@ -539,7 +539,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
   const issues = [
     ...day.flagged.filter((x) => !(setting.habitat === false && x.indicator.environment)).map((x) => ({ key: x.reading!.id, tier: x.assessment!.tier as Tier | 'advisory', name: x.indicator.name, sub: x.indicator.environment ? 'Cabin reading' : x.assessment!.deltaText, val: `${shown(x.indicator, x.reading!.value)} ${x.indicator.unit}`, arrow: <LimitArrow tier={x.assessment!.tier} delta={x.assessment!.delta} />, go: () => go('result', x.reading!.id) })),
     ...pathways.map((p) => ({ key: p.key, tier: (pathwayTier(p) ?? 'advisory') as Tier | 'advisory', name: p.pathway.region, sub: p.level === 'check' ? '3 quick questions' : p.title.includes(': ') ? cap(p.title.split(': ')[1]) : p.title, val: '', arrow: null, go: () => go('pathway', p.pathway.id) })),
-    ...vitalsAlerts(state, rules, crewId).map((v) => ({ key: v.key, tier: 'red' as Tier | 'advisory', name: 'Vital signs', sub: v.title, val: '', arrow: null, go: () => go('vitals') })),
+    ...vitalsAlerts(state, rules, crewId, setting.gravityBand).map((v) => ({ key: v.key, tier: 'red' as Tier | 'advisory', name: 'Vital signs', sub: v.title, val: '', arrow: null, go: () => go('vitals') })),
     ...(promptOpen ? [{ key: 'prompt', tier: 'advisory' as const, name: indicatorById(seed, day.prompt!.indicatorId).name, sub: 'Asked for today', val: '', arrow: null, go: () => go('reading', day.prompt!.indicatorId) }] : []),
   ].sort((a, b) => (b.tier === 'advisory' ? -1 : RANK[b.tier]) - (a.tier === 'advisory' ? -1 : RANK[a.tier]));
   const raised = issues.filter((x) => x.tier !== 'advisory');
@@ -556,7 +556,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
         {setting.away ? <button className="fact" onClick={() => go('location')}><span className="fact-k">{setting.id === 'earth' ? 'Nearest doctor' : 'Earth, one way'}</span><span className="mono">{setting.away}</span></button> : null}
       </div>
       <ReplyNotice state={state} crewId={crewId} setting={setting} />
-      {vitalsAlerts(state, rules, crewId).map((v) => <MonitorAlertCard key={v.key} alert={v} setting={setting} say={say} hhmm={hhmm} synthetic onEmergency={() => emergencyFor(v.construct)} />)}
+      {vitalsAlerts(state, rules, crewId, setting.gravityBand).map((v) => <MonitorAlertCard key={v.key} alert={v} setting={setting} say={say} hhmm={hhmm} synthetic onEmergency={() => emergencyFor(v.construct)} />)}
       <div className="today">
         <div className="stack">
           <div className={`status-big ${worst}`} role="status">
@@ -1010,7 +1010,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
   return (
     <>
       <Context setting={setting} crewId={crewId} />
-      {vitalsAlerts(state, rules, crewId).map((v) => (
+      {vitalsAlerts(state, rules, crewId, setting.gravityBand).map((v) => (
         <p key={v.key} className="confirm" role="note">
           <TierPill tier="red" /> A vital signs alert is also active: {v.title}. It is a separate alert and is not part of this pattern.{' '}
           <button className="btn secondary" onClick={() => go('vitals')}>Open vital signs</button>

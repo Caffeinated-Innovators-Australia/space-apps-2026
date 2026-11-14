@@ -1,7 +1,7 @@
 // Vital signs: record a set, read the latest, and run the monitor alert rules (SEP-01, SHK-01) on it.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 // Pure functions, like the rest of the action layer. Rules decide; the thresholds live in rules/rules.yaml, never here.
-import type { MonitorAlertRule, MonitorComparison, MonitorField, RuleFile } from './rules.ts';
+import type { GravityBand, MonitorAlertRule, MonitorComparison, MonitorField, MonitorStep, RuleFile } from './rules.ts';
 import type { State, VitalSigns, VitalsEntry } from './types.ts';
 
 export type VitalField = keyof VitalSigns;
@@ -111,8 +111,13 @@ export function matchMonitorRule(rule: MonitorAlertRule, values: VitalSigns): Se
   return new Set(hit.flat().map((c) => c.field));
 }
 
-/** The alerts the LATEST set of vital signs raises for one person. A newer set that no longer matches clears them. */
-export function vitalsAlerts(state: State, rules: RuleFile, crewId: string): VitalsAlert[] {
+/** The steps that apply in this gravity band. A step limited to some bands is left out when the band is not known. */
+export function stepsFor(steps: MonitorStep[], gravityBand?: GravityBand): string[] {
+  return steps.filter((st) => !st.gravity || (gravityBand !== undefined && st.gravity.includes(gravityBand))).map((st) => st.text);
+}
+
+/** The alerts the LATEST set of vital signs raises for one person, with the steps for the place's gravity band. A newer set that no longer matches clears them. */
+export function vitalsAlerts(state: State, rules: RuleFile, crewId: string, gravityBand?: GravityBand): VitalsAlert[] {
   const entry = latestVitals(state, crewId);
   if (!entry) return [];
   const out: VitalsAlert[] = [];
@@ -128,7 +133,7 @@ export function vitalsAlerts(state: State, rules: RuleFile, crewId: string): Vit
       checksFor: rule.checks_for,
       construct: rule.construct,
       reasons: reasonsFor(fields, entry.values),
-      steps: rule.steps,
+      steps: stepsFor(rule.steps, gravityBand),
       source: rule.source,
       confidence: rule.confidence,
       placeholder: rule.signed_off_by.trim().toLowerCase() === 'placeholder',
