@@ -73,7 +73,35 @@ export function ReadingTile({ label, value, unit, delta, tier, arrow }: { label:
   );
 }
 
-export function AlertCard({ a, synthetic, children }: { a: Assessment; synthetic?: boolean; children?: ReactNode }) {
+/** Detail on demand. The screen stays short; the reason, the source and the fine print are one tap away. */
+export function More({ label, children, open }: { label: string; children: ReactNode; open?: boolean }) {
+  return (
+    <details className="more" open={open}>
+      <summary>{label}</summary>
+      <div className="more-body">{children}</div>
+    </details>
+  );
+}
+
+/** A ring that fills as a count is completed, with the count inside. A picture of progress in place of a sentence. */
+export function Ring({ done, total, size = 44 }: { done: number; total: number; size?: number }) {
+  const r = 16;
+  const c = 2 * Math.PI * r;
+  const frac = total > 0 ? Math.min(1, done / total) : 1;
+  return (
+    <svg className="ring" viewBox="0 0 40 40" width={size} height={size} role="img" aria-label={`${done} of ${total} done`}>
+      <circle className="ring-track" cx="20" cy="20" r={r} />
+      <circle className="ring-fill" cx="20" cy="20" r={r} strokeDasharray={`${c * frac} ${c}`} transform="rotate(-90 20 20)" />
+      <text x="20" y="25" textAnchor="middle">{done}/{total}</text>
+    </svg>
+  );
+}
+
+/**
+ * A result: the tier, a title and the steps. The reason and its source sit behind "Why", one tap away.
+ * `actions` stay visible under the steps; `children` are extra detail and go inside "Why".
+ */
+export function AlertCard({ a, synthetic, actions, children }: { a: Assessment; synthetic?: boolean; actions?: ReactNode; children?: ReactNode }) {
   return (
     <section className={`alert alert-${a.tier}`} aria-live="polite">
       <div className="card-head">
@@ -86,15 +114,15 @@ export function AlertCard({ a, synthetic, children }: { a: Assessment; synthetic
           <li key={s}>{s}</li>
         ))}
       </ol>
-      <div className="why">
-        <span className="why-label">{a.tier === 'green' ? 'Why this result?' : 'Why this alert?'}</span>
+      {actions}
+      <More label={a.tier === 'green' ? 'Why this result?' : 'Why this alert?'}>
         <p>{a.why}</p>
         <p className="source">
-          Source: {a.source.replace(/\.$/, '')} · Confidence: {a.confidence}
+          Source: {a.source.replace(/\.$/, '')} · Rule confidence: {a.confidence}
         </p>
-      </div>
-      {a.reviewedBy ? <ReviewBadge role={a.reviewedBy} /> : <span className="placeholder">Placeholder rule, awaiting clinician review</span>}
-      {children}
+        {a.reviewedBy ? <ReviewBadge role={a.reviewedBy} /> : <span className="placeholder">Placeholder rule, awaiting clinician review</span>}
+        {children}
+      </More>
     </section>
   );
 }

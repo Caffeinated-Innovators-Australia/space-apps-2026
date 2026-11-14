@@ -11,7 +11,7 @@ import { ScaleInput } from './components/ScaleInput';
 import { StreakCard } from './components/StreakCard';
 import { Timeline } from './components/Timeline';
 import { VisionTest } from './components/VisionTest';
-import { AdvisoryPill, AlertCard, LimitArrow, ReadingTile, SyntheticTag, TierPill, TIER_WORD, TierWords } from './components/ui';
+import { AdvisoryPill, AlertCard, LimitArrow, More, ReadingTile, Ring, SyntheticTag, TierPill, TierShape, TIER_WORD, TierWords } from './components/ui';
 import {
   acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
   fromMin, initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
@@ -69,7 +69,7 @@ function clock(totalSeconds: number): string {
 }
 const shown = (i: Indicator, v: number) => (i.input.kind === 'scale' ? `${v.toFixed(0)}` : v.toFixed(i.dp));
 
-const ROUTES = ['reading', 'result', 'gap', 'pathway', 'crew', 'outbox', 'about', 'checkin', 'feeling', 'inbox', 'medic', 'menu', 'emergency', 'radiation', 'immune'] as const;
+const ROUTES = ['reading', 'result', 'gap', 'pathway', 'crew', 'outbox', 'about', 'checkin', 'feeling', 'inbox', 'medic', 'menu', 'emergency', 'radiation', 'immune', 'schedule', 'signals', 'sources'] as const;
 interface Route { name: 'home' | (typeof ROUTES)[number]; arg?: string }
 function readRoute(): Route {
   const [name, arg] = window.location.hash.replace(/^#\/?/, '').split('/');
@@ -115,7 +115,7 @@ export function App() {
         <header className="top">
           <button className="brand" onClick={() => go('home')}>Crew health check</button>
           <nav className="nav" aria-label="Main">
-            <button aria-current={['home', 'reading', 'result', 'gap', 'pathway', 'checkin', 'feeling', 'radiation', 'immune'].includes(route.name) ? 'page' : undefined} onClick={() => go('home')}>Today</button>
+            <button aria-current={['home', 'reading', 'result', 'gap', 'pathway', 'checkin', 'feeling', 'radiation', 'immune', 'schedule', 'signals', 'sources'].includes(route.name) ? 'page' : undefined} onClick={() => go('home')}>Today</button>
             <button aria-current={route.name === 'outbox' ? 'page' : undefined} onClick={() => go('outbox')}>Outbox{queued ? ` (${queued})` : ''}</button>
             <button aria-current={route.name === 'inbox' ? 'page' : undefined} onClick={() => go('inbox')}>{setting.id === 'earth' ? 'Doctor inbox' : 'Earth inbox'}</button>
             <button aria-current={['menu', 'medic', 'about', 'crew'].includes(route.name) ? 'page' : undefined} onClick={() => go('menu')}>Menu</button>
@@ -163,14 +163,13 @@ export function App() {
           ) : route.name === 'gap' && reading ? (
             <Gap {...shared} rules={rules} reading={reading} />
           ) : (
-            <Home {...shared} rules={rules} />
+            <Home {...shared} rules={rules} view={route.name === 'schedule' || route.name === 'signals' || route.name === 'sources' ? route.name : 'today'} />
           )}
         </main>
 
         <footer className="foot">
-          <span>Assessment and next steps only. Not a diagnosis. Hackathon prototype; rules are placeholders until our clinicians sign them off.</span>
-          <span>{osd.credit} · Data: NASA DONKI · Limits: NASA-STD-3001 Volumes 1 and 2. Crew values are SYNTHETIC. NASA does not endorse this project.</span>
-          <span>Readings stay on this device. Caffeinated Innovators Australia · NASA Space Apps Challenge 2026 · <a href={REPO}>Source and references</a> · <a href="agents.md">For AI agents</a></span>
+          <span>Assessment only, not a diagnosis. Rules are placeholders. Crew values are SYNTHETIC. {osd.credit} · NASA DONKI · NASA-STD-3001. NASA does not endorse this project.</span>
+          <span>Caffeinated Innovators Australia · NASA Space Apps Challenge 2026 · <a href={REPO}>Source</a> · <a href="agents.md">For AI agents</a></span>
         </footer>
       </div>
     </TierWords.Provider>
@@ -254,7 +253,7 @@ function CombinedCard({ day, setting, onOpen }: { day: DaySummary; setting: Sett
           </li>
         ))}
       </ul>
-      <p className="source">Rule {day.combined.ruleId}. Source: {day.combined.source} Confidence: {day.combined.confidence}</p>
+      <p className="source">Rule {day.combined.ruleId}. Source: {day.combined.source} Rule confidence: {day.combined.confidence}</p>
       {day.combined.placeholder ? <span className="placeholder">Placeholder rule, awaiting clinician review</span> : null}
       <div className="btn-row">
         <button className="btn" onClick={() => onOpen(top.reading!)}>{say('See what to do, and send the case to Earth', setting)}</button>
@@ -263,7 +262,8 @@ function CombinedCard({ day, setting, onOpen }: { day: DaySummary; setting: Sett
   );
 }
 
-function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: RuleFile }) {
+function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { rules: RuleFile; view: 'today' | 'schedule' | 'signals' | 'sources' }) {
+  const tierWordsNow = { ...TIER_WORD, ...(setting.tierWords ?? {}) };
   const [showAll, setShowAll] = useState(false);
   const mine = state.symptoms.filter((s) => s.crewId === crewId);
   const nothing = state.nothingToReport.includes(crewId);
@@ -294,48 +294,14 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
   const pathways = pathwayStatuses(state, seed, rules, crewId);
   for (const p of pathways) { const t = pathwayTier(p); if (t) tiers[p.pathway.region] = t; }
   const reset = () => commit({ ...initialState(seed), ui: { ...state.ui, doseLogged: false } });
-  return (
-    <>
-      <Context setting={setting} crewId={crewId} />
-      <h1 className="display">Day {seed.missionDay}. Here is your day.</h1>
-      <div className="where-row">
-        <div className="where">
-          <span className="caption">Who are you?</span>
-          <div className="seg" role="group" aria-label="Who are you?">
-            {seed.crew.map((c) => <button key={c.id} aria-pressed={c.id === crewId} onClick={() => ui({ crewId: c.id })}>{c.name.replace('Crew member', 'Crew')}</button>)}
-          </div>
-        </div>
-        <Where setting={setting} onPick={(id) => ui({ settingId: id })} />
-      </div>
-
-      <CombinedCard day={day} setting={setting} onOpen={(r) => go('result', r.id)} />
-
-      {pathways.map((p) => <PathwayCard key={p.key} p={p} setting={setting} />)}
-
-      {setting.id === 'earth' ? null : (
-        <section className="card" aria-label="Real NASA data in today's results">
-          <h2 className="title">Real NASA data in today's results</h2>
-          <ul className="rows">
-            <li><button className="row" onClick={() => open('cabin-co2')}><span className="row-name">Cabin air limit of {co2.limit?.high?.toFixed(0)} {co2.unit}, one-hour average<br /><span className="caption">Limits: NASA-STD-3001 Volume 2. It decides when cabin air is Urgent.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
-            <li><button className="row" onClick={() => go('radiation')}><span className="row-name">Radiation checks on mission days {seed.radiationDays.join(', ')}<br /><span className="caption">Data: NASA DONKI. Real solar particle events set the days the crew logs a dose.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
-            <li><button className="row" onClick={() => open('haemoglobin')}><span className="row-name">How far a blood count may move<br /><span className="caption">{osd.credit}. Real crew blood counts set the width of the haemoglobin range. Open the check to see them.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
-          </ul>
-          <p className="caption">Every crew value in this demo is SYNTHETIC. These three inputs are real.</p>
-        </section>
-      )}
-
-      {promptOpen ? (
-        <section className="card prompt-card" aria-live="polite">
-          <div className="card-head"><AdvisoryPill>Advisory: asked for today</AdvisoryPill><SyntheticTag /></div>
-          <h2 className="title">A thirty-second reaction-time check</h2>
-          <p>{day.prompt!.why}</p>
-          <p className="source">Rule {day.prompt!.ruleId}. Placeholder rule, awaiting clinician review.</p>
-          <div className="btn-row"><button className="btn" onClick={() => go('reading', day.prompt!.indicatorId)}>Start the reaction test</button></div>
-        </section>
-      ) : null}
-
-      <div className="grid">
-        <div className="stack">
+  const back = <div className="btn-row"><button className="btn secondary" onClick={() => go('home')}>Back to today</button></div>;
+  if (view === 'schedule') {
+    return (
+      <>
+        <Context setting={setting} crewId={crewId} />
+        <h1 className="display">Schedule</h1>
+        <div className="grid">
+          <div className="stack">
           <div className="card">
             <div className="card-head">
               <h2 className="title">Your check-ins, fitted around your day</h2>
@@ -348,10 +314,11 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
               </div>
               <button className="chip chip-toggle" aria-pressed={state.ui.slipped} onClick={() => ui({ slipped: !state.ui.slipped })}>EVA runs {seed.slipMinutes} min late</button>
             </div>
-            {day.items.some((x) => x.indicator.cadence === 'daily' && !x.reading) ? <div className="btn-row"><button className="btn" onClick={() => go('checkin')}>Do today's check-in on one screen</button></div> : null}
             {next ? <p><strong>Next:</strong> {next.label.toLowerCase()}, due now. It takes under a minute.</p> : <p className="muted">Nothing is due right now. Check-ins never interrupt a critical operation.</p>}
             <Timeline blocks={plan.blocks} items={plan.items} now={state.ui.clock} onOpen={open} />
           </div>
+          </div>
+          <div className="stack">
           <div className="card">
             <h2 className="title">Where you are: {setting.label}</h2>
             {setting.away ? <p><span className="num">{setting.away}</span> {setting.id === 'earth' ? 'to the nearest doctor.' : 'is how far away Earth is, one way.'}{setting.scenarioSynthetic ? <> <SyntheticTag /></> : null}</p> : null}
@@ -362,15 +329,26 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
             </dl>
             <span className="placeholder">{seed.settingStatus}</span>
           </div>
+            {back}
+          </div>
         </div>
-
-        <div className="stack">
+      </>
+    );
+  }
+  if (view === 'signals') {
+    return (
+      <>
+        <Context setting={setting} crewId={crewId} />
+        <h1 className="display">All signals</h1>
+        <CombinedCard day={day} setting={setting} onOpen={(r) => go('result', r.id)} />
+        {pathways.map((p) => <PathwayCard key={p.key} p={p} setting={setting} />)}
+        <div className="grid">
+          <div className="stack">
           <div className="card">
             <div className="card-head">
               <h2 className="title">Your signals</h2>
               <SyntheticTag />
             </div>
-            <BodyFigure onOpen={open} tiers={tiers} />
             <div className="btn-row">
               <span>{day.flagged.length + pathways.filter((p) => p.level !== 'check').length} need attention, {day.items.filter((x) => x.due && !x.reading && x.indicator.cadence !== 'sensor').length} due today, {day.items.length - day.items.filter(needsYou).length} quiet.</span>
               <button className="btn secondary" aria-pressed={showAll} onClick={() => setShowAll(!showAll)}>{showAll ? 'Show only what needs you' : `Show all ${day.items.length} signals`}</button>
@@ -407,6 +385,8 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
             </div>
           </div>
 
+          </div>
+          <div className="stack">
           <StreakCard streakDays={days} crewDone={goal.done} crewTotal={goal.total} unlocked={insights(days)}>
             {days >= 14 ? (
               <>
@@ -416,31 +396,35 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
             ) : null}
           </StreakCard>
 
-          <div className="card">
-            <div className="card-head">
-              <h2 className="title">Feeling off? Tell us in one tap</h2>
-              <SyntheticTag />
-            </div>
-            <div className="chips" role="group" aria-label="How you feel">
-              {seed.symptoms.options.map((o) => (
-                <button key={o} className="chip chip-toggle" aria-pressed={mine.some((x) => x.label === o)} onClick={() => commit(toggleSymptom(state, crewId, o, nowMs()))}>{o}</button>
-              ))}
-              <button className="chip chip-toggle" aria-pressed={nothing} onClick={() => commit(reportNothing(state, crewId))}>Nothing to report</button>
-            </div>
-            {mine.length > 0 ? (
-              <p aria-live="polite">Logged: {mine.map((x) => `${x.label.toLowerCase()} at ${hhmm(x.at)}`).join(', ')}. {say('This goes in your next case to Earth.', setting)}</p>
-            ) : nothing ? (
-              <p aria-live="polite">Logged: nothing to report. That is a check-in too.</p>
-            ) : (
-              <p className="muted">Nothing logged today. One tap is enough.</p>
-            )}
-            <div className="btn-row"><button className="btn secondary" onClick={() => go('feeling')}>Show where it is, step by step</button><button className="btn secondary" onClick={() => go('immune')}>Infections and healing</button></div>
-            <p className="caption">Only you see this unless you send it. <button className="link" onClick={() => go('about')}>Who sees what</button></p>
-            <span className="placeholder">{seed.symptoms.status}</span>
+            {back}
           </div>
+        </div>
+      </>
+    );
+  }
+  if (view === 'sources') {
+    return (
+      <>
+        <Context setting={setting} crewId={crewId} />
+        <h1 className="display">Sources and data</h1>
+      {setting.id === 'earth' ? null : (
+        <section className="card" aria-label="Real NASA data in today's results">
+          <h2 className="title">Real NASA data in today's results</h2>
+          <ul className="rows">
+            <li><button className="row" onClick={() => open('cabin-co2')}><span className="row-name">Cabin air limit of {co2.limit?.high?.toFixed(0)} {co2.unit}, one-hour average<br /><span className="caption">Limits: NASA-STD-3001 Volume 2. It decides when cabin air is Urgent.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
+            <li><button className="row" onClick={() => go('radiation')}><span className="row-name">Radiation checks on mission days {seed.radiationDays.join(', ')}<br /><span className="caption">Data: NASA DONKI. Real solar particle events set the days the crew logs a dose.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
+            <li><button className="row" onClick={() => open('haemoglobin')}><span className="row-name">How far a blood count may move<br /><span className="caption">{osd.credit}. Real crew blood counts set the width of the haemoglobin range. Open the check to see them.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
+          </ul>
+          <p className="caption">Every crew value in this demo is SYNTHETIC. These three inputs are real.</p>
+        </section>
+      )}
 
+        <div className="grid">
+          <div className="stack">
           {setting.id === 'earth' ? null : <SpaceWeather doseLogged={Boolean(latestReading(state, crewId, 'radiation'))} onDose={() => open('radiation')} />}
 
+          </div>
+          <div className="stack">
           <div className="card">
             <h2 className="title">The same problem, back on Earth</h2>
             <p><span className="num stat">{seed.earthBenefit.figure}</span> {seed.earthBenefit.text}</p>
@@ -455,6 +439,73 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
             <p className="caption">{osd.credit}</p>
             <div><button className="btn secondary" onClick={() => go('crew')}>Open real crew data</button></div>
           </div>
+            {back}
+          </div>
+        </div>
+      </>
+    );
+  }
+  // Today: a picture of where things stand. What is fine stays quiet; what needs the crew member is one tap from its detail.
+  const issues = [
+    ...day.flagged.map((x) => ({ key: x.reading!.id, tier: x.assessment!.tier as Tier | 'advisory', name: x.indicator.name, sub: x.indicator.environment ? 'Cabin reading' : x.assessment!.deltaText, val: `${shown(x.indicator, x.reading!.value)} ${x.indicator.unit}`, arrow: <LimitArrow tier={x.assessment!.tier} delta={x.assessment!.delta} />, go: () => go('result', x.reading!.id) })),
+    ...pathways.map((p) => ({ key: p.key, tier: (pathwayTier(p) ?? 'advisory') as Tier | 'advisory', name: p.pathway.region, sub: p.level === 'check' ? '3 quick questions' : p.title.includes(': ') ? cap(p.title.split(': ')[1]) : p.title, val: '', arrow: null, go: () => go('pathway', p.pathway.id) })),
+    ...(promptOpen ? [{ key: 'prompt', tier: 'advisory' as const, name: indicatorById(seed, day.prompt!.indicatorId).name, sub: 'Asked for today', val: '', arrow: null, go: () => go('reading', day.prompt!.indicatorId) }] : []),
+  ].sort((a, b) => (b.tier === 'advisory' ? -1 : RANK[b.tier]) - (a.tier === 'advisory' ? -1 : RANK[a.tier]));
+  const raised = issues.filter((x) => x.tier !== 'advisory');
+  const worst: Tier = raised.some((x) => x.tier === 'red') ? 'red' : raised.length ? 'amber' : 'green';
+  const dailyItems = day.items.filter((x) => x.indicator.cadence === 'daily');
+  const dailyDone = dailyItems.filter((x) => x.reading).length;
+  return (
+    <>
+      <Context setting={setting} crewId={crewId} />
+      <div className="today">
+        <div className="stack">
+          <div className={`status-big ${worst}`} role="status">
+            <span className="glyph"><TierShape tier={worst} size={56} /></span>
+            <span>
+              <span className="count">{raised.length === 0 ? 'All clear' : raised.length}</span>
+              {raised.length > 0 ? <span className="label"> {raised.length === 1 ? 'needs you' : 'need you'}{day.combined ? ' · moved together' : ''}</span> : null}
+            </span>
+          </div>
+          <ul className="issues" aria-label="What needs you">
+            {issues.map((x) => (
+              <li key={x.key}>
+                <button className={`issue ${x.tier}`} onClick={x.go}>
+                  <span className="glyph">{x.tier === 'advisory' ? <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l7 7-7 7-7-7z" /></svg> : <TierShape tier={x.tier} size={32} />}</span>
+                  <span><span className="name">{x.name}</span><span className="sub">{x.tier === 'advisory' ? x.sub : `${tierWordsNow[x.tier]} · ${x.sub}`}</span></span>
+                  <span className="val">{x.val}{x.arrow}</span>
+                  <span className="chev" aria-hidden="true">›</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="big-actions">
+            <button className="btn" onClick={() => go('checkin')} disabled={dailyDone === dailyItems.length}><Ring done={dailyDone} total={dailyItems.length} />{dailyDone === dailyItems.length ? 'Checked in' : 'Check in'}</button>
+            <button className="btn secondary" onClick={() => go('feeling')}>Feeling off?</button>
+          </div>
+        </div>
+        <div className="stack">
+          <div className="card">
+            <div className="card-head"><h2 className="title">Tap an area</h2><SyntheticTag /></div>
+            <BodyFigure onOpen={open} tiers={tiers} />
+          </div>
+          <div className="quiet-links">
+            <button className="btn secondary" onClick={() => go('schedule')}>Schedule</button>
+            <button className="btn secondary" onClick={() => go('signals')}>All signals</button>
+            <button className="btn secondary" onClick={() => go('sources')}>Sources</button>
+          </div>
+          <More label={`Demo: ${crewById(seed, crewId).name.replace('Crew member', 'Crew')} · ${setting.label}`}>
+      <div className="where-row">
+        <div className="where">
+          <span className="caption">Who are you?</span>
+          <div className="seg" role="group" aria-label="Who are you?">
+            {seed.crew.map((c) => <button key={c.id} aria-pressed={c.id === crewId} onClick={() => ui({ crewId: c.id })}>{c.name.replace('Crew member', 'Crew')}</button>)}
+          </div>
+        </div>
+        <Where setting={setting} onPick={(id) => ui({ settingId: id })} />
+      </div>
+
+          </More>
         </div>
       </div>
     </>
@@ -549,7 +600,7 @@ function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: S
             </div>
           </form>
           <div className="card">
-            <span className="why-label">{ind.environment ? say("The cabin's usual level", setting) : 'Your baseline'}</span>
+            <More label={ind.environment ? say("The cabin's usual range", setting) : 'Your own range'}>
             {band && ind.environment ? (
               <p>{say(`${ind.baselineLabel ?? 'Earlier in the mission'}, the cabin's one-hour average was ${band.mean.toFixed(ind.dp)} ${ind.unit}. The cabin's usual range is ${Math.max(ind.input.min, band.low).toFixed(ind.dp)} to ${band.high.toFixed(ind.dp)} ${ind.unit}. This is a reading of the shared cabin, not of you.`, setting)}</p>
             ) : band ? (
@@ -559,6 +610,7 @@ function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: S
             )}
             {ind.limit ? <p className="caption">{ind.limit.label}: {(lim.high ?? lim.low)!.toFixed(ind.dp)} {ind.unit}. Source: {ind.limit.source}.</p> : null}
             {ind.variationSource && band ? <RealBand mean={band.mean} k={rules.band.k} unit={ind.unit} dp={ind.dp} onOpen={() => go('crew')} /> : null}
+            </More>
           </div>
         </div>
         <ExplainCard how={ind.card.how} why={ind.card.why} what={say(ind.card.what, setting)} status={`${ind.cardNote ? `${ind.cardNote} ` : ''}${ind.card.status}`} hazards={ind.hazards.map((code) => ({ code, name: seed.hazards[code] }))} sources={ind.card.sources} />
@@ -608,24 +660,15 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
               <>
                 <BaselineChart points={missionPoints(state, reading.crewId, ind, 28, { reading, a: raw })} band={raw.band} refMin={ref?.min} refMax={ref?.max} limit={limit !== undefined && ind.limit ? { value: limit, label: ind.limit.label.replace(/ \(.*\)/, '') } : undefined} unit={ind.unit} dp={ind.dp} baselineLabel={say(ind.baselineLabel ?? 'Before launch', setting)} readingLabel={ind.cadence === 'weekly' ? 'This mission' : 'Past four weeks'} title={`${ind.name} against your own range. Today: ${shown(ind, reading.value)} ${ind.unit}.`} />
                 <ChartLegend bandLabel={ind.environment ? say("Cabin's usual range", setting) : 'Own expected range'} reference={Boolean(ref)} limitLabel={ind.limit?.label} />
-                <p className="caption">{ind.refSource ? `${ind.refSource}. ` : ''}{ind.limit ? `${ind.limit.label}: ${ind.limit.source}.` : ''}</p>
-                {ind.variationSource ? <RealBand mean={raw.band.mean} k={rules.band.k} unit={ind.unit} dp={ind.dp} onOpen={() => go('crew')} /> : null}
+                {ind.refSource || ind.limit ? <More label="Sources"><p className="caption">{ind.refSource ? `${ind.refSource}. ` : ''}{ind.limit ? `${ind.limit.label}: ${ind.limit.source}.` : ''}</p></More> : null}
+                {ind.variationSource ? <More label="Real NASA crew data behind this range"><RealBand mean={raw.band.mean} k={rules.band.k} unit={ind.unit} dp={ind.dp} onOpen={() => go('crew')} /></More> : null}
               </>
             )}
           </div>
         </div>
         <div className="stack">
-          <AlertCard a={a} synthetic>
-            {raw.findings.length > 1 ? (
-              <ul className="plain also">
-                {raw.findings.slice(1).map((f) => <li key={f.ruleId}>{say(f.why, setting)}</li>)}
-              </ul>
-            ) : null}
-            {ind.environment && raw.tier !== 'green' ? <p className="confirm" role="note">{say('This is a reading of the shared cabin, not of one person. The air system is checked first. It becomes a health matter for you if you also have symptoms or a slower reaction time.', setting)}</p> : null}
-            {ind.evidence ? <p className="caption">Evidence for this signal, as measured here: {ind.evidence}.{ind.evidence === 'experimental' ? ' An experimental signal can raise Crew medic but never Urgent by itself.' : ''} {seed.evidenceStatus}</p> : null}
-            {raw.findings.length > 0 ? <p className="caption">Rules that fired: {raw.findings.map((f) => f.ruleId).join(', ')}.</p> : null}
-            {conf.status === 'unconfirmed' ? <p className="confirm" role="status">{ind.environment ? 'One sensor so far. A second sensor or a second hour that agrees will mark this as confirmed.' : 'One reading so far. A second reading that agrees will mark this as confirmed.'}</p> : null}
-            {conf.status === 'confirmed' ? <p className="confirm ok" role="status">Confirmed by a second reading (the one at {hhmm(conf.previousAt!)} was also outside {ind.environment ? 'the usual range' : 'your range'}).</p> : null}
+          <AlertCard a={a} synthetic actions={<>
+            {a.tier !== 'green' ? <p className="confirm" role="status">{conf.status === 'confirmed' ? 'Confirmed by a second reading.' : 'Not yet confirmed. Repeat it.'}</p> : null}
             <div className="btn-row">
               {promptOpen ? <button className="btn" onClick={() => go('reading', day.prompt!.indicatorId)}>Next: thirty-second reaction test</button> : a.tier === 'green' ? (
                 <button className="btn" onClick={() => go('home')}>Log and finish</button>
@@ -636,6 +679,15 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
               <button className="btn secondary" onClick={() => go('reading', ind.id)}>Repeat the reading</button>
               <button className="btn secondary" onClick={() => go('home')}>Back to today</button>
             </div>
+          </>}>
+            {raw.findings.length > 1 ? (
+              <ul className="plain also">
+                {raw.findings.slice(1).map((f) => <li key={f.ruleId}>{say(f.why, setting)}</li>)}
+              </ul>
+            ) : null}
+            {ind.environment && raw.tier !== 'green' ? <p className="confirm" role="note">{say('This is a reading of the shared cabin, not of one person. The air system is checked first. It becomes a health matter for you if you also have symptoms or a slower reaction time.', setting)}</p> : null}
+            {ind.evidence ? <p className="caption">Two different labels. How the signal is measured: {ind.evidence === 'established' ? 'a standard instrument reading (established)' : ind.evidence === 'emerging' ? 'your own log (emerging)' : 'an uncalibrated check in this app (experimental)'}.{ind.evidence === 'experimental' ? ' An experimental signal can raise Crew medic but never Urgent by itself.' : ''} How sure the rule is: {raw.confidence.toLowerCase()}, until a clinician signs it. {seed.evidenceStatus}</p> : null}
+            {raw.findings.length > 0 ? <p className="caption">Rules that fired: {raw.findings.map((f) => f.ruleId).join(', ')}.</p> : null}
           </AlertCard>
           {others.length > 0 ? (
             <div className="card">
@@ -652,7 +704,6 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
                   </li>
                 ))}
               </ul>
-              <p className="caption">These go in the same case pack, so Earth sees the whole picture.</p>
             </div>
           ) : null}
         </div>
@@ -681,15 +732,19 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
       <Context setting={setting} crewId={reading.crewId} />
       <div className="grid">
         <section className="gap" aria-label="Time until help can answer">
-          <Where setting={setting} onPick={(id) => { ui({ settingId: id }); setStartAt(nowMs()); }} />
           <span className="kicker">{left > 0 ? setting.gapLabel : setting.nowLabel}</span>
           <div className="gap-clock" role="timer">{clock(left)}</div>
-          <p>{setting.detail}</p>
-          <p className="gap-advice">{setting.advice}</p>
-          <p className="caption">{setting.basis}</p>
+          <p className="gap-advice">{left > 0 ? setting.advice : say(setting.id === 'earth' ? 'Help can reach you from now. Keep going with the steps until it does.' : 'The wait is over: a reply from Earth can arrive from now. Keep going with the steps until it does.', setting)}</p>
           {setting.scenarioSynthetic ? <SyntheticTag /> : null}
-          <p className="gap-problem">{problem.text} <span className="caption">Source: <a href={problem.link}>{problem.source}</a>.</span></p>
-          <span className="placeholder">{seed.settingStatus}</span>
+          <More label="How this is worked out">
+            <p>{setting.detail}</p>
+            <p className="caption">{setting.basis}</p>
+            <p className="gap-problem">{problem.text} <span className="caption">Source: <a href={problem.link}>{problem.source}</a>.</span></p>
+            <span className="placeholder">{seed.settingStatus}</span>
+          </More>
+          <More label={`Demo: ${setting.label}`}>
+            <Where setting={setting} onPick={(id) => { ui({ settingId: id }); setStartAt(nowMs()); }} />
+          </More>
         </section>
         <div className="stack">
           <EarthLoop state={state} commit={commit} setting={setting} rules={rules} pack={pack} />
@@ -708,14 +763,10 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
                 </li>
               ))}
             </ul>
-            <p className="caption">{say('Tick each step as you do it. Earth sees what you have done.', setting).replace('. the', '. The')}</p>
-            <span className="placeholder">Placeholder steps, awaiting clinician review</span>
+            <span className="placeholder">Placeholder steps</span>
           </div>
           <div className="card">
-            <div className="card-head">
-              <h2 className="title">Case pack</h2>
-              <SyntheticTag />
-            </div>
+            <More label="Case pack">
             <dl className="pack">
               <dt>Reading</dt><dd>{ind.name} {shown(ind, reading.value)} {ind.unit} ({raw.deltaText})</dd>
               <dt>{ind.environment ? 'Usual range' : 'Own range'}</dt><dd>{content.trend.ownRange[0]} to {content.trend.ownRange[1]} {ind.unit}; the past 14 days and today's readings are attached</dd>
@@ -725,6 +776,7 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
               <dt>How you feel</dt><dd>{content.symptoms.length > 0 ? content.symptoms.map((x) => x.label).join(', ') : 'Nothing logged today.'}</dd>
             </dl>
             <p className="caption">{pack.status === 'queued' ? `Sent at ${hhmm(pack.createdAt)} and kept in the outbox on this device. Anything you tick or log from now is added to the case.` : `Exported at ${hhmm(pack.exportedAt ?? pack.createdAt)}.`}</p>
+            </More>
             <div className="btn-row">
               <button className="btn secondary" onClick={() => go('outbox')}>Open outbox</button>
               <button className="btn secondary" onClick={() => go('home')}>Back to today</button>
@@ -750,12 +802,11 @@ function EarthLoop({ state, commit, setting, rules, pack }: { state: State; comm
     <>
       <LinkBanner status={link.status} secondsLeft={link.secondsLeft} setting={setting} say={say} />
       {replies.length > 0 ? <ReplyCard replies={replies} onAccept={(id) => commit(acceptReply(state, id, nowMs()))} hhmm={hhmm} say={say} setting={setting} /> : null}
-      <HandoverCard content={caseContent(state, seed, rules, pack.id)} hhmm={hhmm} setting={setting} say={say} />
+      <More label="Handover sent"><HandoverCard content={caseContent(state, seed, rules, pack.id)} hhmm={hhmm} setting={setting} say={say} /></More>
       <div className="btn-row">
         <button className="btn secondary" onClick={() => go('inbox', pack.id)}>{doctor ? 'See this case as the doctor sees it' : 'See this case as Earth sees it'}</button>
         {link.status === 'waiting' ? <button className="btn secondary" onClick={() => commit({ ...state, ui: { ...state.ui, skipMs: (state.ui.skipMs ?? 0) + Math.ceil(link.secondsLeft) * 1000 } })}>Demo: skip ahead {Math.ceil(link.secondsLeft / 60)} min</button> : null}
       </div>
-      {link.status === 'waiting' ? <p className="caption">{doctor ? 'A reply cannot arrive before the doctor has seen the case and answered.' : 'A reply cannot arrive sooner: the case takes one leg to reach Earth and the answer takes one leg back.'} The demo button moves the mission clock forward.</p> : null}
     </>
   );
 }
@@ -775,7 +826,7 @@ function PathwayCard({ p, setting }: { p: PathwayStatus; setting: Setting }) {
       <div className="card-head"><TierPill tier={pathwayTier(p)!} /><SyntheticTag /></div>
       <h2 className="title">{p.title}</h2>
       <p>{say(p.why, setting)}</p>
-      <p className="source">Rule {p.ruleId}. Source: {p.source} Confidence: {p.confidence}</p>
+      <p className="source">Rule {p.ruleId}. Source: {p.source} Rule confidence: {p.confidence}</p>
       {p.placeholder ? <span className="placeholder">Placeholder rule, awaiting clinician review</span> : null}
       <div className="btn-row"><button className="btn" onClick={() => go('pathway', p.pathway.id)}>{p.level === 'early' ? 'See what to do' : say('See what to do, and send the case to Earth', setting)}</button></div>
     </section>
@@ -820,29 +871,28 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
             <section className={`alert alert-${pathwayTier(active)}`} aria-live="polite">
               <div className="card-head"><TierPill tier={pathwayTier(active)!} /><SyntheticTag /></div>
               <h1 className="title">{active.title}</h1>
-              <div className="why">
-                <span className="why-label">Why this alert?</span>
+              <p>Not a diagnosis. A pattern to check.</p>
+              <More label="Why this alert?">
                 <p>{say(active.why, setting)}</p>
-                <p className="source">Rule {active.ruleId}. Source: {active.source} Confidence: {active.confidence}</p>
-              </div>
-              {active.placeholder ? <span className="placeholder">Placeholder rule, awaiting clinician review</span> : null}
+                <p className="source">Rule {active.ruleId}. Source: {active.source} Rule confidence: {active.confidence}</p>
+                {active.placeholder ? <span className="placeholder">Placeholder rule, awaiting clinician review</span> : null}
+              </More>
             </section>
           ) : (
             <section className="card prompt-card" aria-live="polite">
               <div className="card-head"><AdvisoryPill>Advisory: three quick questions</AdvisoryPill><SyntheticTag /></div>
               <h1 className="title">{p ? p.title : `${pathway.region}: nothing logged`}</h1>
-              <p>{p ? say(p.why, setting) : 'Tap anything below that applies to you now. If nothing does, there is nothing to do here.'}</p>
+              <p>{p ? 'Tap what applies.' : 'Tap what applies. If nothing does, there is nothing to do here.'}</p>
             </section>
           )}
           <div className="card">
-            <h2 className="title">1. Where is the pain?</h2>
+            <h2 className="title">Where?</h2>
             {chips(pathway.core)}
-            <h2 className="title">2. Do you also have any of these?</h2>
+            <h2 className="title">Also?</h2>
             {chips(pathway.supporting)}
-            <h2 className="title">3. Either of these means act now</h2>
+            <h2 className="title">Act now if</h2>
             {chips(pathway.urgent)}
-            <p className="caption">Tap any that apply. The rules update as you tap, and what you log goes in the case.</p>
-            <span className="placeholder">{seed.symptoms.status}</span>
+            <span className="placeholder">Placeholder list</span>
           </div>
           {pathway.tests.map((t) => (
             <div className="card" key={t.id}>
@@ -850,7 +900,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
               <div className="chips" role="group" aria-label={t.label}>
                 {t.options.map((o) => <button key={o} className="chip chip-toggle" aria-pressed={tests[t.id] === o} onClick={() => commit(logPathwayTest(state, rules, { crewId, pathwayId, testId: t.id, result: o }))}>{o}</button>)}
               </div>
-              <p className="caption">{say('The result is logged and goes in the case. It does not change the result on this screen: what it means is for your crew medic and Earth.', setting)}</p>
+              <p className="caption">Logged for the case. It does not change the result.</p>
             </div>
           ))}
           <div className="card">
@@ -858,27 +908,26 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
             <div className="chips" role="group" aria-label="Pain score from 0, no pain, to 10, the worst you can imagine">
               {Array.from({ length: 11 }, (_, n) => <button key={n} className="chip" onClick={() => commit(logPain(state, { crewId, pathwayId, score: n, at: nowMs() }))}>{n}</button>)}
             </div>
-            {pain.length > 0 ? <p aria-live="polite">Logged: {pain.map((x) => `${x.score} at ${hhmm(x.at)}`).join(', ')}.</p> : <p className="muted">0 is no pain. 10 is the worst you can imagine. Log it again whenever it changes.</p>}
-            <p className="caption">{say('No threshold is applied to this score. Your crew medic and Earth read how it moves over time.', setting)}</p>
+            {pain.length > 0 ? <p aria-live="polite">Logged: {pain.map((x) => `${x.score} at ${hhmm(x.at)}`).join(', ')}.</p> : <p className="muted">0 none · 10 worst</p>}
           </div>
           <div className="card">
-            <h2 className="title">What your record shows</h2>
+            <More label="Your record, and NASA's reasons">
             <ul className="plain">
               {context.length > 0 ? context.map((c) => <li key={c.indicatorId}>{c.flagged ? <strong>{c.text}</strong> : c.text}</li>) : <li>Log a symptom above to see your recent trends here.</li>}
             </ul>
             {pathway.background.map((b) => <p key={b.link} className="caption">{b.text} Source: <a href={b.link}>{b.source}</a>.</p>)}
+            </More>
           </div>
         </div>
         <div className="stack">
           {pack ? (
             <section className="gap" aria-label="Time until help can answer">
-              <Where setting={setting} onPick={(id) => { ui({ settingId: id }); setStartAt(nowMs()); }} />
               <span className="kicker">{left > 0 ? setting.gapLabel : setting.nowLabel}</span>
               <div className="gap-clock" role="timer">{clock(left)}</div>
-              <p>{setting.detail}</p>
-              <p className="gap-advice">{setting.advice}</p>
-              <p className="caption">{setting.basis}</p>
+              <p className="gap-advice">{left > 0 ? setting.advice : say(setting.id === 'earth' ? 'Help can reach you from now. Keep going with the steps until it does.' : 'The wait is over: a reply from Earth can arrive from now. Keep going with the steps until it does.', setting)}</p>
               {setting.scenarioSynthetic ? <SyntheticTag /> : null}
+              <More label="How this is worked out"><p>{setting.detail}</p><p className="caption">{setting.basis}</p></More>
+              <More label={`Demo: ${setting.label}`}><Where setting={setting} onPick={(id) => { ui({ settingId: id }); setStartAt(nowMs()); }} /></More>
             </section>
           ) : null}
           {pack ? <EarthLoop state={state} commit={commit} setting={setting} rules={rules} pack={pack} /> : null}
@@ -895,8 +944,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
                   </li>
                 ))}
               </ul>
-              <p className="caption">{say('Tick each step as you do it. Earth sees what you have done.', setting).replace('. the', '. The')}</p>
-              <span className="placeholder">Placeholder steps, awaiting clinician review</span>
+              <span className="placeholder">Placeholder steps</span>
               {pack || !canSend ? null : (
                 <>
                   <p className="gap-advice">{setting.advice}</p>
@@ -906,13 +954,13 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
             </div>
           ) : (
             <div className="card">
-              <span className="why-label">What happens next</span>
-              <p>{say('If your answers match the pattern, you get the steps to start now and a case to send to Earth. If they do not, nothing is raised and your log stays private.', setting)}</p>
+              <span className="why-label">Next</span>
+              <p>A match gives you steps and a case to send. No match raises nothing.</p>
             </div>
           )}
           {pack && content ? (
             <div className="card">
-              <div className="card-head"><h2 className="title">Case pack</h2><SyntheticTag /></div>
+              <More label="Case pack">
               <dl className="pack">
                 <dt>Checked for</dt><dd>{content.pattern.checkedFor} (rule {content.pattern.rule}). Not a diagnosis.</dd>
                 <dt>Assessment</dt><dd>{content.assessment.tier ? TIER_WORD[content.assessment.tier] : 'Symptoms since cleared'}</dd>
@@ -924,6 +972,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
                 <dt>Done so far</dt><dd>{content.stepsDone.length > 0 ? content.stepsDone.map((x) => cap(say(x, setting))).join(' ') : 'Nothing ticked yet.'}</dd>
               </dl>
               <p className="caption">{pack.status === 'queued' ? `Sent at ${hhmm(pack.createdAt)} and kept in the outbox on this device. Anything you tick or log from now is added to the case.` : `Exported at ${hhmm(pack.exportedAt ?? pack.createdAt)}.`}</p>
+              </More>
               <div className="btn-row"><button className="btn secondary" onClick={() => go('outbox')}>Open outbox</button></div>
             </div>
           ) : null}

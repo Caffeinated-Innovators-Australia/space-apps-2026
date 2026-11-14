@@ -48,7 +48,7 @@ export function CrewData({ k }: { k: number }) {
             {analytes.map((x) => <button key={x} aria-pressed={x === analyte} onClick={() => setAnalyte(x)}>{x}</button>)}
           </div>
         </div>
-        <BaselineChart points={points} band={band} refMin={s.refMin} refMax={s.refMax} unit={unit} dp={dp} title={`${analyte} for crew ${subject}: pre-flight baseline and post-flight draws.`} baselineLabel="Before launch (their baseline)" />
+        <BaselineChart points={points} band={band} refMin={s.refMin} refMax={s.refMax} unit={unit} dp={dp} title={`${analyte} for crew ${subject}: pre-flight baseline and post-flight draws.`} baselineLabel="Before launch (their baseline)" readingLabel="After return" />
         <ChartLegend />
         <p>
           Own expected range: {band.low.toFixed(dp)} to {band.high.toFixed(dp)} {unit}. Laboratory reference range: {s.refMin} to {s.refMax} {unit}.
@@ -84,17 +84,16 @@ export function RealBand({ mean, k, unit, dp, onOpen }: { mean: number; k: numbe
   const half = k * v.pooledSd;
   const span = half * 1.5;
   const pos = (d: number) => `${Math.max(0, Math.min(100, 50 + (d / span) * 50))}%`;
-  const inside = devs.filter((d) => Math.abs(d) <= half).length;
   return (
     <div className="x-realband">
       <span className="why-label">Real NASA crew data set the width of this range</span>
-      <div className="x-realband-strip" role="img" aria-label={`${devs.length} real pre-flight blood counts from ${v.crew} crew, each shown as its distance from that person's own average. ${inside} of ${devs.length} fall inside the range the rules use.`}>
+      <div className="x-realband-strip" role="img" aria-label={`${devs.length} real pre-flight blood counts from ${v.crew} crew, each shown as its distance from that person's own average, against the range width the rules use.`}>
         <div className="x-realband-band" style={{ left: pos(-half), right: `calc(100% - ${pos(half)})` }} />
         <div className="x-realband-mid" />
         {devs.map((d, i) => <span key={i} className="x-realband-dot" style={{ left: pos(d) }} />)}
       </div>
       <div className="x-realband-axis"><span className="mono">−{half.toFixed(dp)} {unit}</span><span>own average</span><span className="mono">+{half.toFixed(dp)} {unit}</span></div>
-      <p>{v.crew} real crew members had blood taken {v.draws / v.crew} times before launch. Each dot is one real draw, placed by how far it sat from that person's own average. They varied by <span className="mono">{v.pooledSd.toFixed(2)}</span> {unit} (one standard deviation), so your range is your own average of <span className="mono">{mean.toFixed(dp)}</span> plus or minus <span className="mono">{half.toFixed(dp)}</span> {unit}. {inside} of the {devs.length} real draws fall inside a range of that width.</p>
+      <p>{v.crew} real crew members had blood taken {v.draws / v.crew} times before launch. Each dot is one real draw, placed by how far it sat from that person's own average. They varied by <span className="mono">{v.pooledSd.toFixed(2)}</span> {unit} (one standard deviation), so your range is your own average of <span className="mono">{mean.toFixed(dp)}</span> plus or minus <span className="mono">{half.toFixed(dp)}</span> {unit}. The range is built from these same draws, so they sit inside it by construction: this shows where the width comes from, it does not test it.</p>
       <p className="caption">{osd.credit}. Inspiration4, pre-flight draws only. Four people and twelve draws is a small sample: it shows the idea, it does not prove it. Your own values here are SYNTHETIC.</p>
       <div><button className="btn secondary" onClick={onOpen}>See the same rule run on the real crew</button></div>
     </div>

@@ -65,6 +65,18 @@ This is NASA's guidance on how a crew display should behave. It is not NASA bran
 | D-34 | Suppress, inhibit and enable each alert; one action to silence all | Appendix F.6.4i, F.6.4k | Not built. Alerts can be acknowledged only | Not met |
 | D-35 | Avoid nuisance alerts | NASA alerts workshop material, 2024 | One reading asks for a retest before anything stronger; results are marked unconfirmed until a second reading agrees. Rule numbers await clinician review | Partly met |
 
+## Brevity and glanceability (added after clinician review, 14 Nov 2026)
+
+The team's clinicians reviewed the screens and found them far too wordy for a crew member at work. These criteria were added, and the screens were rebuilt to them.
+
+| # | Criterion | Source | How the app meets it | Status |
+|---|---|---|---|---|
+| D-36 | The interface keeps cognitive workload acceptable | NASA-STD-3001 Volume 2 Rev F [V2 5007], Cognitive Workload (Bedford Workload Scale) | Each screen has one job. Today shows only what needs the crew member. Not measured on a workload scale: that needs real users | Partly met: not measured |
+| D-37 | The crew member can assess the situation rapidly and accurately | NASA-STD-3001 Volume 2 Rev F section 5.1.6, Situation Awareness | Today opens on one status mark: a shape, a colour and a count. Each thing that needs attention is one tile. What is fine is not listed | Met by inspection |
+| D-38 | Simple instructions, because astronauts are not assumed to be medical experts; a visual tool | NASA Space Apps 2026 challenge statement, considerations and objectives | Steps are short and numbered. The body figure is the centre of Today. Reasons, sources and fine print are one tap away behind a "Why" control | Met |
+| D-39 | A word budget per screen, counted on the live app | Our own measure, set after the clinicians' review | Today 116 to 143 words on one tablet screen, down from 991 words on five screens. Result about 200 words. Pathway about 215 words. Budgets: Today 150, any working screen 260 | Met for Today, results, pathway and wait screens. The Menu and check-in screens are over budget |
+| D-40 | Detail is never removed, only deferred | The project's own rules: every threshold shows its source; placeholders are marked | Every "Why" control holds the reason, the rule, its source and the placeholder note. The word "Placeholder" and the SYNTHETIC label stay visible | Met |
+
 ## Deviations and limits
 
 1. **The word SYNTHETIC stays in capitals.** The challenge rules and our own data rules require synthetic data to be labelled, and our submission check looks for that exact word. It is not an acronym, so this departs from D-19. It carries no colour.

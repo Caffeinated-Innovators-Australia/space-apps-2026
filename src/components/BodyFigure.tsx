@@ -30,7 +30,7 @@ export function BodyFigure({ onOpen, tiers }: { onOpen: (indicatorId: string) =>
         const tier = tiers[s.group];
         const label = tier ? `${s.label}: ${words[tier]}` : s.label;
         return (
-          <g key={s.group} className="spot" role="button" tabIndex={0} aria-label={`${label}. Open the check-in.`} onClick={() => onOpen(s.target)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(s.target); } }}>
+          <g key={s.group} className={`spot ${tier && tier !== 'green' ? tier : 'quiet'}`} role="button" tabIndex={0} aria-label={`${label}. Open the check-in.`} onClick={() => onOpen(s.target)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(s.target); } }}>
             <line className="lead" x1={s.x} y1={s.y} x2={236} y2={s.y} />
             <circle className="ring" cx={s.x} cy={s.y} r="11" />
             <circle className="dot" cx={s.x} cy={s.y} r="4" />

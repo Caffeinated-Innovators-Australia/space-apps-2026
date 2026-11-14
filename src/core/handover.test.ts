@@ -43,7 +43,7 @@ describe('isbar', () => {
     expect(all).toContain(String(c.reading.value));
     expect(all).toContain(c.assessment.rules[0].id);
     expect(all).toContain('Urgent');
-    expect(all).toContain(`Steps done: ${c.stepsDone[0]}`);
+    expect(all).toContain(`Steps done: ${c.stepsDone[0].replace(/\.$/, "")}`);
     expect(all).not.toMatch(/undefined|NaN|\[object/);
     expect(h[3].lines.at(-1)).toBe(NOT_A_DIAGNOSIS);
     expect(h[4].lines).toEqual([REQUEST_LINE]);

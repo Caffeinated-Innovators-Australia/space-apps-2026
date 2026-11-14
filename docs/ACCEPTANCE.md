@@ -2,7 +2,7 @@
 
 One test per requirement. Each runs on the live app in under 2 minutes: https://caffeinated-innovators-australia.github.io/space-apps-2026/
 
-All tests follow the Day 87 story for Jo at the Mars base. Start each run from Today, choose "Jo" and "Mars base", and press "Reset the demo" if it shows. Every crew value is SYNTHETIC. The demo values below are the ones the reading screen offers as a chip ("Demo value for today" or "Sensor value").
+All tests follow the Day 87 story for Jo at the Mars base. Navigation changed on 14 November (D-025): Today now shows only what needs the crew member. The timeline is under "Schedule", the full list under "All signals", and data sources under "Sources". The crew and place switchers are under "Demo" on Today. Start each run from Today, choose "Jo" and "Mars base", and press "Reset the demo" if it shows. Every crew value is SYNTHETIC. The demo values below are the ones the reading screen offers as a chip ("Demo value for today" or "Sensor value").
 
 ## Must requirements
 
@@ -42,5 +42,6 @@ All tests follow the Day 87 story for Jo at the Mars base. Start each run from T
 | AT-27 | FR-29, FR-30 | From the pathway, press "Send case to Earth". Open "Earth inbox", open the case, choose "Add a step", write a note and a step, and send. Go back to the pathway | The crew side shows the handover in five sections, the countdown banner, then the reply with the doctor's words and "Add to my steps". In the Menu, "No link to Earth" changes the banner to queued |
 | AT-28 | FR-35 | Press Emergency on any screen. Press Next five times. Tap "End emergency" briefly, then hold it for three seconds | Step 1 is Danger. Step 6 shows "30 compressions, then 2 breaths" with its source and a pace marker. A brief tap ends nothing. Holding ends it and shows a summary with times |
 | AT-29 | FR-33, FR-34, FR-36 | Open Menu. Open the crew medic overview. Open Radiation and Infections and healing from their links | The overview shows tiers and counts only, with "Nothing shared" for crew who sent nothing. Radiation shows the total against 600 mSv with solar event days marked. A tracked cut can be marked Better |
+| AT-30 | NFR-11 | Open Today as Jo on a tablet. Count the words. Open the cabin carbon dioxide result. Tap "Why this alert?" | Today shows a status mark, one tile for "Kidneys and urine", the check-in button with its ring, and the body figure, in no more than 150 words on one screen. The result shows the numbered steps with the reason hidden. Tapping "Why this alert?" shows the reason, the rule's source, its confidence and the placeholder note |
 
 14 Nov 2026: automated run on a local build at desktop, tablet and phone sizes passed the journey, scheduler, streak, export, persistence and impossible-reading checks. Clinician sign-off (SR-01) remains open.

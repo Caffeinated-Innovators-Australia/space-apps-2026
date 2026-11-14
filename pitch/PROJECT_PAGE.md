@@ -8,7 +8,7 @@ Draft text for every field of the Space Apps project page. Drafted with AI assis
 
 ## High-level summary
 
-On the way to Mars, a question to Earth's doctors can take up to 45 minutes to come back, and astronauts are not assumed to be medical experts. Our tool helps them act in that gap. It checks fifteen indicators in seven groups, from sleep to near vision. Take Day 87 on a Mars base: one astronaut's sleep has slid for three weeks, though every night sat inside their own range, and cabin carbon dioxide reads 3.4 mmHg, above NASA's cabin limit. The tool spots the trend, asks for a reaction test of about thirty seconds, explains each signal on a card with its NASA hazards, shows the signals together, and sends a case with a countdown to Earth's reply. Three things set it apart: check-ins that hold and re-plan around a spacewalk, a countdown to Earth's reply paired with steps to take meanwhile, and a streak that rewards honest reporting, never good numbers. Rules decide; no AI model runs in the app. The same idea matters on Earth: in very remote Australia, potentially avoidable deaths run at 252 per 100,000 people against 88 in major cities.
+On the way to Mars, a question to Earth's doctors can take up to 45 minutes to come back, and astronauts are not assumed to be medical experts. Our tool helps them act in that gap. Take Jo, on Day 87 at a Mars base, 18 light-minutes from Earth. For three days her fluid intake has been low, so the tool raises an early warning that names kidney stone risk, with NASA's evidence report as its source. Then pain starts. Three taps later the rules say who to tell and what to do first, and a case goes to Earth as a clinical handover. A countdown shows that no answer can arrive for 36 minutes, so the crew starts the steps. The doctor's reply lands as a step, and when fever appears the result turns Urgent. Then the same case runs for Sam, a station hand in outback Australia, 640 km from the nearest doctor. The gap is the same: in very remote Australia, potentially avoidable deaths run at 252 per 100,000 people against 88 in major cities. Behind that one story the tool watches fifteen indicators against each person's own baseline, fits its check-ins around the crew's day, and rewards honest reporting, never good numbers. Rules decide; no AI model runs in the app.
 
 ## Link to project demo
 
@@ -31,6 +31,8 @@ Source code: https://github.com/Caffeinated-Innovators-Australia/space-apps-2026
 **Built around the crew's day.** A prompt scheduler runs on a mock crew timeline. It never prompts during a critical operation (the demo EVA, 08:00 to 12:00), holds those check-ins until five minutes after it ends, and re-plans when the EVA runs 45 minutes late. An honest-reporting loop keeps the data true: a streak counts check-ins, never results; a shared crew goal has no ranking; "Nothing to report" is a valid one-tap log; insights unlock at 14 and 30 days of streak. A "Who sees what" table on the "Privacy and limits" screen shows what the crew medic, the flight surgeon and the rest of the crew can see (a draft policy for the team to confirm).
 
 **When symptoms form a pattern.** A medical event is more than one number. If an astronaut logs pain in the side or lower back, the app asks three quick questions. If the answers match the pattern a crew medic checks for a kidney stone, a risk NASA names for spaceflight, it raises a Crew medic or Urgent result, gives the steps to start now, keeps a pain log and builds a case for Earth with the person's recent fluid and exercise trends. It names a pattern to check, never a diagnosis. The symptoms, tiers and steps are placeholders for our clinicians to write.
+
+**Built to be read at a glance.** Our clinicians reviewed the screens and told us they carried too many words for a crew member at work. We rebuilt them. Today now opens on one mark, a shape, a colour and a count, with one tile for each thing that needs attention and a body figure to tap. What is fine is not shown. Reasons and sources are one tap away. The first screen went from 991 words over five screens to under 150 on one.
 
 **Both ends of the conversation.** A sent case is a handover in the order clinicians use: identify, situation, background, assessment, request. The remote doctor reads it in an Earth inbox and replies, and the reply lands back with the crew as steps they can add. If there is no link, the case queues. An early warning comes before any symptom: three days of low fluid raise a Crew medic result that names kidney stone risk, with NASA's evidence report as the source. An Emergency button on every screen opens basic life support steps one at a time, read aloud. Its wording is a placeholder taken from a published guideline.
 
@@ -56,6 +58,8 @@ We used Claude Code (Anthropic) as a build assistant. The idea is the team's own
 
 ## NASA data
 
+What each NASA source decides in the app: OSD-569 sets how wide the haemoglobin range is; NASA-STD-3001 sets when cabin air is Urgent, the strength floor and the radiation limit; DONKI sets the days the crew logs a radiation dose; the renal stone evidence report and the urinary health brief are the sources for the kidney stone warning and pathway.
+
 - **NASA Open Science Data Repository (OSDR), OSD-569, Inspiration4 complete blood count (LSDS-7).** https://osdr.nasa.gov/bio/repo/data/studies/OSD-569 . Real blood counts for four crew, three draws before launch and four after return. Bundled in the app. It is used in two ways: the variation in these crew members' own pre-flight haemoglobin draws sets the width of the haemoglobin band, and its laboratory ranges set the haemoglobin limit; and the "Real crew data" screen shows the same band rule running on the real crew.
 - **NASA DONKI, solar energetic particle events** (Community Coordinated Modeling Center, NASA Goddard Space Flight Center). https://ccmc.gsfc.nasa.gov/tools/DONKI/ . Real space-weather records, bundled in the app. They fill the space-weather card, and the events that fall inside the mission window are listed in the mission data as radiation prompt days.
 - **NASA-STD-3001 Volume 2.** The cabin carbon dioxide limit of 3 mmHg (one-hour average). It is a habitat design requirement, not a clinical alert threshold; using it as a prompt is our choice.
@@ -63,11 +67,11 @@ We used Claude Code (Anthropic) as a build assistant. The idea is the team's own
 - **NASA-STD-3001 Volume 1, career radiation limit.** Career effective dose from spaceflight below 600 mSv. Radiation dose is shown as a share of this limit. Dose from earlier flights is not counted.
 - **NASA Human Research Program: 5 Hazards of Human Spaceflight; Risks of Human Spaceflight; Ongoing HRP Research in Space.** https://www.nasa.gov/hrp/hazards/ , https://www.nasa.gov/hrp/risks/ , https://www.nasa.gov/hrp/ongoing-hrp-research/ . The hazards and risks pages are linked as sources on every explanation card, beside its hazard chips.
 
-NASA does not endorse this project. No NASA logos are used.
-
 - **NASA Human Research Program, Evidence Report: Risk of Renal Stone Formation (2017), and the Risk of Renal Stone Formation page.** The source for the early warning: three days of low fluid raise a result that names kidney stone risk. https://humanresearchroadmap.nasa.gov/evidence/reports/Renal.pdf and https://www.nasa.gov/directorates/esdmd/hhp/risk-of-renal-stone-formation/
 - **NASA Office of the Chief Health and Medical Officer, Medical Technical Brief MTB-003, Urinary Health, Rev A.** Quoted on the kidney stone pathway for prevention and for ultrasound, and the source given to our clinicians for the steps they will write. https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf
 - **NASA, Risk of Altered Immune System Responses.** Quoted on the Infections and healing screen. https://www.nasa.gov/reference/risk-of-altered-immune-system-responses/
+
+NASA does not endorse this project. No NASA logos are used.
 
 ## Space agency partner data and other references
 

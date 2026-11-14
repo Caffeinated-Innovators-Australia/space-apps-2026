@@ -19,7 +19,7 @@ const TIER_WORDS: Record<Tier, string> = { green: 'Self-manage', amber: 'Crew me
 export const NOT_A_DIAGNOSIS = 'Assessment and next steps only. Not a diagnosis.';
 export const REQUEST_LINE = 'Please review and advise on next steps.';
 
-const list = (items: string[], none: string) => (items.length ? items.join('; ') : none);
+const list = (items: string[], none: string) => (items.length ? items.map((x) => x.replace(/\.$/, '')).join('; ') : none);
 
 /** Turn either kind of case into a handover in ISBAR order. Every line comes from a field already in the case; nothing clinical is added. */
 export function isbar(content: CaseContent, opts: IsbarOptions = {}): IsbarSection[] {

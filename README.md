@@ -6,7 +6,9 @@ Challenge: Create Health Monitoring Software for Astronauts on Space Missions. M
 
 On the way to Mars, a question to Earth's doctors can take up to 45 minutes to come back. This tool helps an astronaut who is not a medical expert act in that gap.
 
-The demo is one story: Day 87 on a Mars base. Jo's sleep has slid over three weeks, although each night stayed inside their own range. Cabin carbon dioxide has crept up and today reads 3.4 mmHg, above NASA's cabin limit of 3 mmHg. The tool spots the sleep trend, rates the cabin reading Urgent against the NASA limit, asks for a reaction-time check (a tap test in the app, about thirty seconds), explains each signal, shows the three flagged signals together on one card, and escalates with a case pack and a countdown to Earth's earliest reply.
+The demo is one story. Jo is on Day 87 at a Mars base, 18 light-minutes from Earth. Three days of low fluid raise an early warning that names kidney stone risk, with NASA's evidence report as its source. Then pain starts: three taps, and the rules say who to tell and what to do first. A case goes to Earth as a clinical handover, and a countdown shows that no answer can arrive for 36 minutes, so the crew starts the steps. The doctor's reply lands as a step, and fever turns the result Urgent. Then the same case runs for Sam, a station hand in outback Australia, 640 km from the nearest doctor.
+
+A second thread runs the same day. Jo's sleep has slid over three weeks, although each night stayed inside her own range. Cabin carbon dioxide has crept up and today's one-hour average is 3.4 mmHg, above NASA's cabin limit of 3 mmHg. The tool spots the sleep trend, treats the cabin reading as an air-system matter first, asks for a reaction-time check (a tap test in the app, about thirty seconds), and shows the flagged signals together on one card.
 
 Fifteen indicators in seven groups, by body system:
 
