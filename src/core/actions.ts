@@ -58,7 +58,7 @@ export function assessValue(seed: Seed, rules: RuleFile, crewId: string, indicat
   if (baseline.length === 0) throw new Error(`${crew.name} has no baseline for ${ind.name}.`);
   if (!plausible(ind, value)) throw new Error(`${ind.name} must be between ${ind.input.min} and ${ind.input.max} ${ind.unit}. Check the reading and enter it again.`);
   const ref = ind.ref?.[crew.sex];
-  return assess(rules, {
+  const a = assess(rules, {
     region: ind.region, indicator: ind.name, unit: ind.unit, dp: ind.dp, watch: ind.watch, value, baseline,
     history: [...logged(crew.mission[ind.id]), ...earlier],
     fixedSd: ind.fixedSd,
@@ -66,6 +66,8 @@ export function assessValue(seed: Seed, rules: RuleFile, crewId: string, indicat
     limitHigh: ind.limit?.high ?? ref?.max,
     limitLabel: ind.limit?.label ?? (ref ? 'laboratory reference range' : undefined),
   });
+  const own = ind.steps?.[a.tier];
+  return own ? { ...a, steps: own } : a;
 }
 
 /** Assess a saved reading as it stood when it was taken. */

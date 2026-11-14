@@ -53,6 +53,9 @@ INDICATORS = [
     {"id": "cabin-co2", "name": "Cabin carbon dioxide", "region": "Cabin", "unit": "mmHg", "dp": 1, "watch": "high", "cadence": "sensor", "slot": "any",
      "baselineLabel": "First two weeks of the mission",
      "input": {"kind": "sensor", "min": 0, "max": 20, "prompt": "Cabin sensor, one-hour average"},
+     # The cabin is an environment problem before it is a medical one, so the air system comes first (CR-19).
+     "steps": {"amber": ["Tell the commander so the air system can be checked.", "Confirm with a second sensor.", "Do a reaction-time check."],
+               "red": ["Tell the commander now so the air system can be checked.", "Confirm with a second sensor.", "Do a reaction-time check, and tell your crew medic if you have a headache.", "Send the case to Earth."]},
      "limit": {"high": 3.0, "label": "NASA cabin limit", "source": "NASA-STD-3001 Volume 2: one-hour average cabin carbon dioxide of 3 mmHg or less", "grade": "A"},
      "hazards": ["E"],
      "card": {"how": "Read automatically from the cabin sensor as a one-hour average. You can also type a reading from a handheld monitor.",

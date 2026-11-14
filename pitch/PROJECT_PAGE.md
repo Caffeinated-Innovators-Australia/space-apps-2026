@@ -8,11 +8,11 @@ Draft text for every field of the Space Apps project page. Drafted with AI assis
 
 ## High-level summary
 
-On the way to Mars, a question to Earth's doctors can take up to 45 minutes to come back, and astronauts are not assumed to be medical experts. Our tool helps them act in that gap. Take Day 87 on a Mars base: one astronaut's sleep has slid for three weeks, though every night sat inside their own range, and cabin carbon dioxide reads 3.4 mmHg, above NASA's cabin limit. The tool spots the trend, asks for a reaction test of about thirty seconds, explains each signal on a card with its NASA hazards, shows the signals together, and sends a case with a countdown to Earth's reply. Rules decide; no AI model runs in the app. The same idea matters on Earth: in very remote Australia, potentially avoidable deaths run at 252 per 100,000 people against 88 in major cities.
+On the way to Mars, a question to Earth's doctors can take up to 45 minutes to come back, and astronauts are not assumed to be medical experts. Our tool helps them act in that gap. Take Day 87 on a Mars base: one astronaut's sleep has slid for three weeks, though every night sat inside their own range, and cabin carbon dioxide reads 3.4 mmHg, above NASA's cabin limit. The tool spots the trend, asks for a reaction test of about thirty seconds, explains each signal on a card with its NASA hazards, shows the signals together, and sends a case with a countdown to Earth's reply. Three things set it apart: check-ins that hold and re-plan around a spacewalk, a countdown to Earth's reply paired with steps to take meanwhile, and a streak that rewards honest reporting, never good numbers. Rules decide; no AI model runs in the app. The same idea matters on Earth: in very remote Australia, potentially avoidable deaths run at 252 per 100,000 people against 88 in major cities.
 
 ## Link to project demo
 
-Draft cut (29.1 seconds, no sound, predates the Day 87 story and will be recut): https://github.com/Caffeinated-Innovators-Australia/space-apps-2026/blob/main/pitch/demo-draft.mp4
+Draft cut (28.5 seconds, no sound, captioned; it follows the official suggested outline and shows the Day 87 story on the live app): https://github.com/Caffeinated-Innovators-Australia/space-apps-2026/blob/main/pitch/demo-draft.mp4
 
 [Team: replace with the final hosted video, 30 seconds or less, with our doctor's voice. See pitch/VIDEO_PLAN.md.]
 

@@ -177,6 +177,19 @@
     "max": 20,
     "prompt": "Cabin sensor, one-hour average"
    },
+   "steps": {
+    "amber": [
+     "Tell the commander so the air system can be checked.",
+     "Confirm with a second sensor.",
+     "Do a reaction-time check."
+    ],
+    "red": [
+     "Tell the commander now so the air system can be checked.",
+     "Confirm with a second sensor.",
+     "Do a reaction-time check, and tell your crew medic if you have a headache.",
+     "Send the case to Earth."
+    ]
+   },
    "limit": {
     "high": 3.0,
     "label": "NASA cabin limit",

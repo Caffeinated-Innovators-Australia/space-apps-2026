@@ -23,6 +23,8 @@ export interface Indicator {
   /** Within-person standard deviation from real crew data, where we have it. */
   fixedSd?: number;
   variationSource?: string;
+  /** Next steps for this indicator, where they differ from the general steps in the rules file. */
+  steps?: Partial<Record<'green' | 'amber' | 'red', string[]>>;
   hazards: string[];
   card: { how: string; why: string; what: string; status: string; sources: { label: string; url: string }[] };
 }

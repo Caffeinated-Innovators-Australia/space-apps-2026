@@ -32,6 +32,7 @@ describe('the day 87 story', () => {
     const co2 = rec(s, 'cabin-co2', demoValue(seed, 'crew-1', 'cabin-co2'), 2000);
     expect(co2.assessment.tier).toBe('red');
     expect(co2.assessment.ruleId).toContain('LM-01');
+    expect(co2.assessment.steps[0]).toContain('air system');
     s = co2.state;
     const rt = rec(s, 'reaction', demoValue(seed, 'crew-1', 'reaction'), 3000);
     expect(rt.assessment.tier).toBe('amber');
@@ -67,7 +68,7 @@ describe('action layer', () => {
   it('queues one case per reading, includes the other signals, and exports once', () => {
     let s = rec(initialState(seed), 'sleep', 6.2, 1000).state;
     const co2 = rec(s, 'cabin-co2', 3.4, 2000);
-    s = toggleStep(co2.state, co2.reading.id, 'Tell your crew medic now.');
+    s = toggleStep(co2.state, co2.reading.id, 'Confirm with a second sensor.');
     s = toggleSymptom(s, 'crew-1', 'Headache', 2500);
     const sent = sendCase(s, { readingId: co2.reading.id, settingId: 'mars-base', at: 3000 });
     expect(sendCase(sent.state, { readingId: co2.reading.id, settingId: 'mars-base', at: 4000 }).state.outbox).toHaveLength(1);
@@ -75,7 +76,7 @@ describe('action layer', () => {
     expect(c.assessment.tier).toBe('red');
     expect(c.assessment.rules[0].placeholder).toBe(true);
     expect(c.otherSignalsToday.map((x) => x.indicator)).toContain('Sleep');
-    expect(c.stepsDone).toEqual(['Tell your crew medic now.']);
+    expect(c.stepsDone).toEqual(['Confirm with a second sensor.']);
     expect(c.symptoms[0].label).toBe('Headache');
     expect(c.synthetic).toBe(true);
     const out = exportOutbox(sent.state, seed, rules, 5000);
