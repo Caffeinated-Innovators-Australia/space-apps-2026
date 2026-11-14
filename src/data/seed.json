@@ -521,6 +521,7 @@
   },
   {
    "id": "cabin-co2",
+   "environment": true,
    "group": "Cabin and radiation",
    "name": "Cabin carbon dioxide",
    "region": "Cabin",

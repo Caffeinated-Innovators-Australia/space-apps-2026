@@ -117,6 +117,7 @@ export function assessValue(seed: Seed, rules: RuleFile, crewId: string, indicat
     limitLow: lim.low,
     limitHigh: lim.high,
     limitLabel: lim.label,
+    environment: ind.environment,
   });
   const own = ind.steps?.[a.tier];
   return own ? { ...a, steps: own } : a;

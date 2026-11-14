@@ -86,6 +86,8 @@ export interface AssessInput {
   /** For scales with fixed ends: the range is described within these ends. */
   displayMin?: number;
   displayMax?: number;
+  /** A reading of the shared habitat (cabin air), averaged over one hour by the sensor. */
+  environment?: boolean;
 }
 
 function signed(r: Partial<Signed> | undefined, id: string): void {
@@ -171,10 +173,24 @@ export function tierFor(value: number, band: Band, refMin?: number, refMax?: num
   return beyond ? 'red' : 'amber';
 }
 
+/** Wording for a habitat reading: it belongs to the cabin, not to the person, and the sensor reports a one-hour average. */
+export function cabinWords(text: string): string {
+  return text
+    .replace(/Your cabin carbon dioxide is/g, 'The one-hour average cabin carbon dioxide is')
+    .replace(/Your cabin/g, 'The cabin').replace(/your cabin/g, 'the cabin')
+    .replace(/Your last (\d+) readings of cabin/g, 'The last $1 logged one-hour averages of cabin')
+    .replace(/Your last (\d+) readings average/g, 'The last $1 logged one-hour averages come to')
+    .replace(/your own expected range/g, "the cabin's usual range")
+    .replace(/within your own range/g, 'within its usual range').replace(/change from your own range/g, 'change from its usual range')
+    .replace(/against your baseline of/g, "against the cabin's usual level of")
+    .replace(/vs your baseline/g, "vs the cabin's usual level").replace(/same as your baseline/g, "same as the cabin's usual level");
+}
+
 function fill(template: string, vars: Record<string, string>): string {
   const out = template.replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? `{${k}}`);
   // The cabin is shared, so it is "the cabin", not "your cabin".
-  return out.replace(/Your cabin/g, 'The cabin').replace(/your cabin/g, 'the cabin').replace(/Your last (\d+) readings of cabin/g, 'The last $1 readings of cabin');
+  const shared = out.replace(/Your cabin/g, 'The cabin').replace(/your cabin/g, 'the cabin').replace(/Your last (\d+) readings of cabin/g, 'The last $1 readings of cabin');
+  return vars.environment === 'yes' ? cabinWords(out) : shared;
 }
 
 /** Assess one new reading in the light of the person's baseline and earlier readings. */
@@ -193,6 +209,7 @@ export function assess(file: RuleFile, input: AssessInput): Assessment {
     bandHigh: fmt(Math.min(band.high, input.displayMax ?? Infinity), dp),
     baselineMean: fmt(band.mean, dp),
     limitLabel: input.limitLabel ?? 'limit',
+    environment: input.environment ? 'yes' : 'no',
   };
   const findings: Finding[] = [];
   const add = (r: RuleDef, extra: Record<string, string> = {}) => {
@@ -223,7 +240,8 @@ export function assess(file: RuleFile, input: AssessInput): Assessment {
   const tier: Tier = shown.length ? shown[0].tier : 'green';
   const delta = round(input.value - band.mean, dp);
   const sign = delta > 0 ? '+' : delta < 0 ? '−' : '';
-  const deltaText = delta === 0 ? 'same as your baseline' : `${sign}${fmt(Math.abs(delta), dp)} ${input.unit} vs your baseline`;
+  const personal = delta === 0 ? 'same as your baseline' : `${sign}${fmt(Math.abs(delta), dp)} ${input.unit} vs your baseline`;
+  const deltaText = input.environment ? cabinWords(personal) : personal;
   const top = shown[0];
   return {
     tier,
@@ -231,7 +249,7 @@ export function assess(file: RuleFile, input: AssessInput): Assessment {
     why: tier === 'green' ? fill(file.green.why, vars) : shown.map((x) => x.why).join(' '),
     findings: shown,
     steps: file.steps[tier],
-    source: top ? top.source : 'Your own baseline. No rule fired.',
+    source: top ? top.source : input.environment ? "The cabin's usual range. No rule fired." : 'Your own baseline. No rule fired.',
     confidence: top ? top.confidence : 'Low',
     placeholder: top ? top.placeholder : file.rules.every((r) => r.signed_off_by.trim().toLowerCase() === 'placeholder'),
     reviewedBy: top ? top.reviewedBy : null,

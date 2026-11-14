@@ -14,8 +14,8 @@ import { VisionTest } from './components/VisionTest';
 import { AdvisoryPill, AlertCard, LimitArrow, ReadingTile, SyntheticTag, TierPill, TIER_WORD, TierWords } from './components/ui';
 import {
   acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
-  initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
-  logPain, pathwayAlerts, pathwayCaseContent, pathwayStatuses, sendPathwayCase, togglePathwayStep, toggleStep, toggleSymptom,
+  fromMin, initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
+  logPain, pathwayAlerts, pathwayCaseContent, pathwayStatuses, sendPathwayCase, togglePathwayStep, toggleStep, toggleSymptom, toMin,
   type Assessment, type DaySummary, type Indicator, type PathwayStatus, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
 import osd from './data/osd569_cbc.json';
@@ -34,7 +34,13 @@ const store = deviceStore();
 const K = 2; // matches band.k in rules/rules.yaml; the engine itself always reads the file
 const REPO = 'https://github.com/Caffeinated-Innovators-Australia/space-apps-2026';
 
-const hhmm = (t: number) => new Date(t).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: false });
+/** The demo's mission clock: the chosen clock time, moving forward in real time from the moment it was set. */
+const BOOT = Date.now();
+let anchor = { clock: '06:45', at: BOOT };
+const missionSeconds = (t: number) => Math.max(0, toMin(anchor.clock) * 60 + Math.floor((t - anchor.at) / 1000)) % 86400;
+/** A logged time, shown as mission time so it agrees with the mission clock in the status bar. */
+const hhmm = (t: number) => fromMin(Math.floor(missionSeconds(t) / 60));
+const hhmmss = (t: number) => `${hhmm(t)}:${String(missionSeconds(t) % 60).padStart(2, '0')}`;
 /** Swap setting-specific words (for example "Earth" becomes "the on-call doctor" in remote Australia). */
 function say(text: string, s: Setting): string {
   let out = text;
@@ -76,6 +82,7 @@ export function App() {
   if (!state) return <div className="app"><p className="muted">Opening the record on this device…</p></div>;
   const commit = (next: State) => { setState(next); void store.save(next); };
   const ui = (patch: Partial<State['ui']>) => commit({ ...state, ui: { ...state.ui, ...patch } });
+  anchor = { clock: state.ui.clock, at: state.ui.clockSetAt ?? BOOT };
   const setting = settingById(seed, state.ui.settingId);
   const crew = crewById(seed, seed.crew.some((c) => c.id === state.ui.crewId) ? state.ui.crewId : seed.crew[0].id);
   const tierWords = { ...TIER_WORD, ...(setting.tierWords ?? {}) };
@@ -142,12 +149,17 @@ function StatusBar({ state, commit, rules, crewId }: { state: State; commit: (s:
     ...day.flagged.map((x) => ({ id: x.reading!.id, tier: x.assessment!.tier, name: x.indicator.name, open: () => go('result', x.reading!.id) })),
     ...pathwayAlerts(state, seed, rules, crewId).map((p) => ({ id: p.key, tier: p.tier, name: `${p.name} symptoms`, open: () => go('pathway', p.pathwayId) })),
   ].sort((x, y) => RANK[y.tier] - RANK[x.tier]);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
   const done = state.acknowledged ?? [];
   const open = flagged.filter((x) => !done.includes(x.id));
   const top = open[0];
   return (
     <div className="statusbar" role="status" aria-label="Mission time and alerts">
-      <span>Mission time <span className="time">{String(seed.missionDay).padStart(4, '0')}/{state.ui.clock}:00</span></span>
+      <span>Mission time <span className="time">{String(seed.missionDay).padStart(4, '0')}/{hhmmss(now)}</span></span>
       <span className="alertline">
         {top ? (
           <>
@@ -235,6 +247,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
   const promptOpen = day.prompt && !day.items.find((x) => x.indicator.id === day.prompt!.indicatorId)?.reading;
   const crew = crewById(seed, crewId);
   const sleep = indicatorById(seed, 'sleep');
+  const co2 = indicatorById(seed, 'cabin-co2');
   const open = (id: string) => { const r = day.items.find((x) => x.indicator.id === id)?.reading; go(r ? 'result' : 'reading', r ? r.id : id); };
   const reset = () => commit({ ...initialState(seed), ui: { ...state.ui, doseLogged: false } });
   return (
@@ -254,6 +267,18 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
       <CombinedCard day={day} setting={setting} onOpen={(r) => go('result', r.id)} />
 
       {pathwayStatuses(state, seed, rules, crewId).map((p) => <PathwayCard key={p.key} p={p} setting={setting} />)}
+
+      {setting.id === 'earth' ? null : (
+        <section className="card" aria-label="Real NASA data in today's results">
+          <h2 className="title">Real NASA data in today's results</h2>
+          <ul className="rows">
+            <li><button className="row" onClick={() => open('cabin-co2')}><span className="row-name">Cabin air limit of {co2.limit?.high?.toFixed(0)} {co2.unit}, one-hour average<br /><span className="caption">Limits: NASA-STD-3001 Volume 2. It decides when cabin air is Urgent.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
+            <li><button className="row" onClick={() => open('radiation')}><span className="row-name">Radiation checks on mission days {seed.radiationDays.join(', ')}<br /><span className="caption">Data: NASA DONKI. Real solar particle events set the days the crew logs a dose.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
+            <li><button className="row" onClick={() => go('crew')}><span className="row-name">How far a blood count may move<br /><span className="caption">{osd.credit}. Real crew blood counts set the width of the haemoglobin range.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
+          </ul>
+          <p className="caption">Every crew value in this demo is SYNTHETIC. These three inputs are real.</p>
+        </section>
+      )}
 
       {promptOpen ? (
         <section className="card prompt-card" aria-live="polite">
@@ -275,7 +300,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
             <div className="where">
               <span className="caption">Mission clock</span>
               <div className="seg" role="group" aria-label="Mission clock">
-                {seed.clockOptions.map((c) => <button key={c} aria-pressed={c === state.ui.clock} onClick={() => ui({ clock: c })}>{c}</button>)}
+                {seed.clockOptions.map((c) => <button key={c} aria-pressed={c === state.ui.clock} onClick={() => ui({ clock: c, clockSetAt: Date.now() })}>{c}</button>)}
               </div>
               <button className="chip chip-toggle" aria-pressed={state.ui.slipped} onClick={() => ui({ slipped: !state.ui.slipped })}>EVA runs {seed.slipMinutes} min late</button>
             </div>
@@ -471,8 +496,10 @@ function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: S
             </div>
           </form>
           <div className="card">
-            <span className="why-label">Your baseline</span>
-            {band ? (
+            <span className="why-label">{ind.environment ? say("The cabin's usual level", setting) : 'Your baseline'}</span>
+            {band && ind.environment ? (
+              <p>{say(`${ind.baselineLabel ?? 'Earlier in the mission'}, the cabin's one-hour average was ${band.mean.toFixed(ind.dp)} ${ind.unit}. The cabin's usual range is ${Math.max(ind.input.min, band.low).toFixed(ind.dp)} to ${band.high.toFixed(ind.dp)} ${ind.unit}. This is a reading of the shared cabin, not of you.`, setting)}</p>
+            ) : band ? (
               <p>{say(ind.baselineLabel ?? 'Before launch', setting)}, your average was {band.mean.toFixed(ind.dp)} {ind.unit}. Your own expected range is {Math.max(ind.input.min, band.low).toFixed(ind.dp)} to {Math.min(ind.input.max, band.high).toFixed(ind.dp)} {ind.unit}. Every reading is compared with your own numbers.</p>
             ) : (
               <p>This is a running total, so it is compared with a limit, not with a personal range.</p>
@@ -512,10 +539,10 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
       <Context setting={setting} crewId={reading.crewId} />
       <div className="grid wide-left">
         <div className="stack">
-          <ReadingTile label={`${ind.name}, ${hhmm(reading.at)}`} value={shown(ind, reading.value)} unit={ind.unit} delta={a.deltaText} arrow={cumulative ? null : <LimitArrow tier={raw.tier} delta={raw.delta} />} />
+          <ReadingTile label={`${ind.name}${ind.environment ? ', one-hour average' : ''}, ${hhmm(reading.at)}`} value={shown(ind, reading.value)} unit={ind.unit} delta={a.deltaText} arrow={cumulative ? null : <LimitArrow tier={raw.tier} delta={raw.delta} />} />
           <div className="card">
             <div className="card-head">
-              <h2 className="title">{cumulative ? 'Against the limit' : 'Against your own baseline'}</h2>
+              <h2 className="title">{cumulative ? 'Against the limit' : ind.environment ? say("Against the cabin's usual range", setting) : 'Against your own baseline'}</h2>
               <SyntheticTag />
             </div>
             {cumulative && limit !== undefined ? (
@@ -527,7 +554,7 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
             ) : (
               <>
                 <BaselineChart points={missionPoints(state, reading.crewId, ind, 28, { reading, a: raw })} band={raw.band} refMin={ref?.min} refMax={ref?.max} limit={limit !== undefined && ind.limit ? { value: limit, label: ind.limit.label.replace(/ \(.*\)/, '') } : undefined} unit={ind.unit} dp={ind.dp} baselineLabel={say(ind.baselineLabel ?? 'Before launch', setting)} readingLabel={ind.cadence === 'weekly' ? 'This mission' : 'Past four weeks'} title={`${ind.name} against your own range. Today: ${shown(ind, reading.value)} ${ind.unit}.`} />
-                <ChartLegend bandLabel="Own expected range" reference={Boolean(ref)} limitLabel={ind.limit?.label} />
+                <ChartLegend bandLabel={ind.environment ? say("Cabin's usual range", setting) : 'Own expected range'} reference={Boolean(ref)} limitLabel={ind.limit?.label} />
                 <p className="caption">{ind.refSource ? `${ind.refSource}. ` : ''}{ind.limit ? `${ind.limit.label}: ${ind.limit.source}.` : ''}</p>
               </>
             )}
@@ -540,9 +567,10 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
                 {raw.findings.slice(1).map((f) => <li key={f.ruleId}>{say(f.why, setting)}</li>)}
               </ul>
             ) : null}
+            {ind.environment && raw.tier !== 'green' ? <p className="confirm" role="note">{say('This is a reading of the shared cabin, not of one person. The air system is checked first. It becomes a health matter for you if you also have symptoms or a slower reaction time.', setting)}</p> : null}
             {raw.findings.length > 0 ? <p className="caption">Rules that fired: {raw.findings.map((f) => f.ruleId).join(', ')}.</p> : null}
-            {conf.status === 'unconfirmed' ? <p className="confirm" role="status">One reading so far. A second reading that agrees will mark this as confirmed.</p> : null}
-            {conf.status === 'confirmed' ? <p className="confirm ok" role="status">Confirmed by a second reading (the one at {hhmm(conf.previousAt!)} was also outside your range).</p> : null}
+            {conf.status === 'unconfirmed' ? <p className="confirm" role="status">{ind.environment ? 'One sensor so far. A second sensor or a second hour that agrees will mark this as confirmed.' : 'One reading so far. A second reading that agrees will mark this as confirmed.'}</p> : null}
+            {conf.status === 'confirmed' ? <p className="confirm ok" role="status">Confirmed by a second reading (the one at {hhmm(conf.previousAt!)} was also outside {ind.environment ? 'the usual range' : 'your range'}).</p> : null}
             <div className="btn-row">
               {promptOpen ? <button className="btn" onClick={() => go('reading', day.prompt!.indicatorId)}>Next: thirty-second reaction test</button> : a.tier === 'green' ? (
                 <button className="btn" onClick={() => go('home')}>Log and finish</button>
@@ -556,7 +584,7 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
           </AlertCard>
           {others.length > 0 ? (
             <div className="card">
-              <span className="why-label">Also outside your range today</span>
+              <span className="why-label">Also outside range today</span>
               <ul className="rows">
                 {others.map((x) => (
                   <li key={x.indicator.id}>
@@ -634,7 +662,7 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
             </div>
             <dl className="pack">
               <dt>Reading</dt><dd>{ind.name} {shown(ind, reading.value)} {ind.unit} ({raw.deltaText})</dd>
-              <dt>Own range</dt><dd>{content.trend.ownRange[0]} to {content.trend.ownRange[1]} {ind.unit}; the past 14 days and today's readings are attached</dd>
+              <dt>{ind.environment ? 'Usual range' : 'Own range'}</dt><dd>{content.trend.ownRange[0]} to {content.trend.ownRange[1]} {ind.unit}; the past 14 days and today's readings are attached</dd>
               <dt>Assessment</dt><dd>{TIER_WORD[raw.tier]}{content.assessment.confirmedByRepeatReading ? ', confirmed by a second reading' : ', one reading so far'}. Rules {raw.ruleId}. {raw.source}</dd>
               <dt>Other signals</dt><dd>{content.otherSignalsToday.length > 0 ? content.otherSignalsToday.map((x) => `${x.indicator} ${x.value} ${x.unit}`).join('; ') : 'None today.'}</dd>
               <dt>Done so far</dt><dd>{reading.stepsDone.length > 0 ? reading.stepsDone.map((x) => cap(say(x, setting))).join(' ') : 'Nothing ticked yet.'}</dd>

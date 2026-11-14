@@ -15,6 +15,8 @@ export interface Indicator {
   cadence: 'daily' | 'weekly' | 'prompted' | 'sensor';
   /** For weekly check-ins: the day of the mission week it falls due (mission day modulo 7). */
   weekDay?: number;
+  /** True for a reading of the shared habitat, such as cabin air. It is worded as the cabin's, never as the person's own. */
+  environment?: boolean;
   /** 'cumulative' marks a running total, such as radiation dose, which is judged against a limit and not a personal band. */
   mode?: 'cumulative';
   slot: 'morning' | 'evening' | 'any';
@@ -126,7 +128,7 @@ export interface State {
   painLog?: PainEntry[];
   /** Pathway steps ticked as done, keyed by crew member and pathway. */
   pathwaySteps?: Record<string, string[]>;
-  ui: { crewId: string; settingId: string; theme: string; doseLogged: boolean; clock: string; slipped: boolean };
+  ui: { crewId: string; settingId: string; theme: string; doseLogged: boolean; clock: string; slipped: boolean; /** Real time at which the mission clock was last set, so logged times read as mission time. */ clockSetAt?: number };
 }
 
 export interface Store {

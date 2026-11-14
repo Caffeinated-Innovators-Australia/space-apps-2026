@@ -87,7 +87,7 @@ export function AlertCard({ a, synthetic, children }: { a: Assessment; synthetic
         ))}
       </ol>
       <div className="why">
-        <span className="why-label">Why this alert?</span>
+        <span className="why-label">{a.tier === 'green' ? 'Why this result?' : 'Why this alert?'}</span>
         <p>{a.why}</p>
         <p className="source">
           Source: {a.source.replace(/\.$/, '')} · Confidence: {a.confidence}

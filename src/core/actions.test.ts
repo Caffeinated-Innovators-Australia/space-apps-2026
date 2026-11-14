@@ -181,3 +181,18 @@ describe('honest reporting', () => {
     expect(s.nothingToReport).toEqual([]);
   });
 });
+
+describe('cabin readings are worded as the cabin\'s, not the person\'s', () => {
+  it('describes cabin carbon dioxide as a one-hour average against the cabin\'s usual range', () => {
+    const a = assessValue(seed, rules, 'crew-1', 'cabin-co2', 3.4);
+    expect(a.tier).toBe('red');
+    expect(a.why).toContain('The one-hour average cabin carbon dioxide is 3.4 mmHg');
+    expect(a.why).toContain("the cabin's usual range");
+    expect(a.why).not.toMatch(/your own|your baseline/i);
+    expect(a.deltaText).toBe("+1.3 mmHg vs the cabin's usual level");
+  });
+  it('keeps personal wording for a personal reading', () => {
+    const a = assessValue(seed, rules, 'crew-1', 'sleep', 6.2);
+    expect(a.why).toMatch(/your baseline|your own/);
+  });
+});

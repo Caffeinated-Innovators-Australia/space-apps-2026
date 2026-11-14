@@ -51,7 +51,7 @@ INDICATORS = [
      "card": {"how": "Hold the tablet steady. When the panel turns bright, tap it as fast as you can. Five rounds, about thirty seconds.",
               "why": "Poor sleep and raised cabin carbon dioxide both slow thinking. A short reaction test shows it when you may not feel it.",
               "what": "If you are slower than your own range, rest and repeat. If it holds, hand over safety-critical tasks and tell your crew medic."}},
-    {"id": "cabin-co2", "group": "Cabin and radiation", "name": "Cabin carbon dioxide", "region": "Cabin", "unit": "mmHg", "dp": 1, "watch": "high", "cadence": "sensor", "slot": "any",
+    {"id": "cabin-co2", "environment": True, "group": "Cabin and radiation", "name": "Cabin carbon dioxide", "region": "Cabin", "unit": "mmHg", "dp": 1, "watch": "high", "cadence": "sensor", "slot": "any",
      "baselineLabel": "First two weeks of the mission",
      "input": {"kind": "sensor", "min": 0, "max": 20, "prompt": "Cabin sensor, one-hour average"},
      # The cabin is an environment problem before it is a medical one, so the air system comes first (CR-19).
