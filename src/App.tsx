@@ -15,13 +15,14 @@ import { AdvisoryPill, AlertCard, LimitArrow, More, ReadingTile, Ring, Synthetic
 import {
   acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
   fromMin, initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
-  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, toMin,
+  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, emergencySymptoms, toMin,
   type Assessment, type DaySummary, type Indicator, type PathwayStatus, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
 import osd from './data/osd569_cbc.json';
 import seedJson from './data/seed.json';
 import { doctorSay, HandoverCard, LinkBanner, ReplyCard } from './components/Handover';
 import { acceptReply, arrivedReplies, changePlace, linkStatus, type CasePack } from './core/index.ts';
+import { EmergencyBanner } from './components/EmergencyBanner.tsx';
 import { EmergencyButton } from './components/EmergencyButton';
 import { CheckIn } from './screens/CheckIn';
 import { Emergency } from './screens/Emergency';
@@ -177,7 +178,12 @@ export function App() {
           {route.name === 'emergency' ? null : <EmergencyButton go={go} />}
           <button className="ghost" onClick={() => ui({ theme: state.ui.theme === 'cabin' ? 'day' : 'cabin' })}>{state.ui.theme === 'cabin' ? 'Day theme' : 'Cabin theme'}</button>
         </header>
-        {rules ? <StatusBar state={state} commit={commit} rules={rules} crewId={crew.id} setting={setting} /> : null}
+        {rules ? (
+          <div className="sticky-top">
+            <StatusBar state={state} commit={commit} rules={rules} crewId={crew.id} setting={setting} />
+            {route.name === 'emergency' || route.name === 'astra' ? null : <EmergencyBanner alert={emergencySymptoms(state, rules, crew.id)} go={go} />}
+          </div>
+        ) : null}
 
         <main className="stack">
           {!rules ? (

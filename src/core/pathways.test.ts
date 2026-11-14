@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import seedJson from '../data/seed.json';
 import { acknowledge, caseContent, exportOutbox, initialState, toggleSymptom } from './actions.ts';
-import { logPain, logPathwayTest, pathwayAlerts, pathwayStatuses, sendPathwayCase, togglePathwayStep } from './pathways.ts';
+import { emergencySymptoms, logPain, logPathwayTest, pathwayAlerts, pathwayStatuses, sendPathwayCase, togglePathwayStep } from './pathways.ts';
 import { parseRules } from './rules.ts';
 import type { Seed, State } from './types.ts';
 
@@ -123,5 +123,33 @@ describe('kidney stone pathway (KS-01)', () => {
     const c = caseContent(sent.state, seed, rules, sent.pack.id);
     expect(c.kind === 'symptom-pathway' && c.tests[0].result).toBe('Present');
     expect(() => logPathwayTest(s, rules, { crewId: 'crew-4', pathwayId: 'KS-01', testId: 'urine-strip', result: 'Maybe' })).toThrow();
+  });
+});
+
+describe('emergency symptoms (EMS-01)', () => {
+  it('uses only symptoms the crew can log', () => {
+    for (const l of rules.emergency_symptoms!.symptoms) expect(seed.symptoms.options).toContain(l);
+  });
+  it('is raised by one symptom alone, and names the rule and its source', () => {
+    for (const l of ['Chest pain', 'Short of breath', 'Collapse']) {
+      const hit = emergencySymptoms(log(initialState(seed), 'crew-4', l), rules, 'crew-4');
+      expect(hit?.symptoms).toEqual([l]);
+      expect(hit?.title).toBe('Press Emergency now');
+      expect(hit?.ruleId).toBe('EMS-01');
+      expect(hit?.source).toBeTruthy();
+      expect(hit?.placeholder).toBe(true);
+    }
+  });
+  it('is not raised by other symptoms, or for another person', () => {
+    const s = log(initialState(seed), 'crew-4', 'Cough', 'Chest pain');
+    expect(emergencySymptoms(log(initialState(seed), 'crew-4', 'Cough', 'Tired'), rules, 'crew-4')).toBeNull();
+    expect(emergencySymptoms(s, rules, 'crew-1')).toBeNull();
+  });
+  it('clears when the symptom is tapped again', () => {
+    const s = toggleSymptom(log(initialState(seed), 'crew-4', 'Chest pain'), 'crew-4', 'Chest pain', 2000);
+    expect(emergencySymptoms(s, rules, 'crew-4')).toBeNull();
+  });
+  it('refuses the rule without a source', () => {
+    expect(() => parseRules(text.replace(/(id: EMS-01[\s\S]*?)source: .*\n/, '$1'))).toThrow();
   });
 });

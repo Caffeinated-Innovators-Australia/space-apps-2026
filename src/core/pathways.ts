@@ -229,3 +229,15 @@ export function pathwayAlerts(state: State, seed: Seed, rules: RuleFile, crewId:
     .map((s) => ({ key: s.key, tier: pathwayTier(s) as Tier, name: s.pathway.region, pathwayId: s.pathway.id }))
     .sort((a, b) => RANK[b.tier] - RANK[a.tier]);
 }
+
+/**
+ * The emergency symptoms this person has logged, with the rule that names them, or null when there are none.
+ * One logged symptom is enough: no pattern and no second symptom. It names no condition.
+ */
+export function emergencySymptoms(state: State, rules: RuleFile, crewId: string) {
+  const rule = rules.emergency_symptoms;
+  if (!rule) return null;
+  const logged = state.symptoms.filter((s) => s.crewId === crewId && rule.symptoms.includes(s.label));
+  if (logged.length === 0) return null;
+  return { ruleId: rule.id, title: rule.title, why: rule.why, source: rule.source, confidence: rule.confidence, placeholder: rule.signed_off_by.trim().toLowerCase() === 'placeholder', symptoms: logged.map((s) => s.label), since: Math.min(...logged.map((s) => s.at)) };
+}

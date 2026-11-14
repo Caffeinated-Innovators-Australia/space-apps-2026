@@ -59,6 +59,14 @@ export interface MonitorAlertRule extends Signed {
   steps: string[];
 }
 
+/** Symptoms that call for the Emergency button the moment one is logged. */
+export interface EmergencySymptomRule extends Signed {
+  id: string;
+  title: string;
+  symptoms: string[];
+  why: string;
+}
+
 /** The whole rules file, checked. */
 export interface RuleFile {
   version: string;
@@ -72,6 +80,8 @@ export interface RuleFile {
   steps: Record<Tier, string[]>;
   /** Rules that read one set of vital signs. Empty when the file has none. */
   monitor_alerts: MonitorAlertRule[];
+  /** Absent when the file has none. */
+  emergency_symptoms?: EmergencySymptomRule;
 }
 
 export interface Band { low: number; high: number; mean: number; sd: number }
@@ -167,6 +177,12 @@ export function parseRules(text: string): RuleFile {
     for (const b of w.background) if (!b.text || !b.source || !b.link) throw new Error(`Pathway ${id}: every background line needs its source and link.`);
   }
   for (const t of TIERS) if (!Array.isArray(f.steps?.[t]) || f.steps[t].length === 0) throw new Error(`Every tier needs at least one next step: none for ${t}.`);
+  if (f.emergency_symptoms) {
+    const e = f.emergency_symptoms;
+    signed(e, e.id ?? 'emergency symptoms');
+    if (!e.id || !e.title || !e.why) throw new Error('Emergency symptoms: needs an id, a title and the why wording.');
+    if (!Array.isArray(e.symptoms) || e.symptoms.length === 0) throw new Error('Emergency symptoms: needs at least one symptom.');
+  }
   f.monitor_alerts = f.monitor_alerts ?? [];
   if (!Array.isArray(f.monitor_alerts)) throw new Error('monitor_alerts must be a list of rules.');
   for (const m of f.monitor_alerts) {

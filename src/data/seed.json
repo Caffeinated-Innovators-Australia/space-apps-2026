@@ -14488,6 +14488,7 @@
    "Cough",
    "Short of breath",
    "Chest pain",
+   "Collapse",
    "Nauseous",
    "Vomiting",
    "Diarrhoea",
@@ -14517,7 +14518,8 @@
     "symptoms": [
      "Tired",
      "Fever or chills",
-     "Confused"
+     "Confused",
+     "Collapse"
     ]
    },
    {

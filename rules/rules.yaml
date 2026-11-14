@@ -211,3 +211,14 @@ monitor_alerts:
     source: "Placeholder thresholds from the team's clinical lead (build pack v3.3), awaiting sign-off."
     confidence: Low
     signed_off_by: placeholder
+
+# Symptoms that mean "press Emergency now" the moment one is logged. No pattern, no second symptom, no wait.
+# The app shows a red banner on every screen until the symptom is cleared. It names no condition.
+emergency_symptoms:
+  id: EMS-01
+  title: "Press Emergency now"
+  symptoms: ["Chest pain", "Short of breath", "Collapse"]
+  why: "Chest pain, shortness of breath and collapse are treated as an emergency until a clinician says otherwise."
+  source: "Placeholder list from the team's clinicians (review of the build, 15 Nov 2026), awaiting sign-off."
+  confidence: Low
+  signed_off_by: placeholder

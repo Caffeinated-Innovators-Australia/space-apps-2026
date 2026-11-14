@@ -284,9 +284,9 @@ seed = {
     "clockOptions": ["06:45", "09:30", "12:10", "21:10"],
     "slipMinutes": 45,
     "radiationDays": event_days,
-    "symptoms": {"status": "Placeholder list, awaiting clinician review (CR-10, CR-51)", "options": ["Tired", "Fever or chills", "Confused", "Headache", "Dizzy on standing", "Blurred vision", "Low mood", "Sore throat", "Cough", "Short of breath", "Chest pain", "Nauseous", "Vomiting", "Diarrhoea", "Constipated", "Belly pain", "Pain in side or lower back", "Blood in urine", "Pain passing urine", "Cannot pass urine", "Rash", "Itchy skin", "Cut slow to heal", "Cold sore", "Muscle or joint pain", "Stiffness"], "followUps": ["Comes in waves"]},
+    "symptoms": {"status": "Placeholder list, awaiting clinician review (CR-10, CR-51)", "options": ["Tired", "Fever or chills", "Confused", "Headache", "Dizzy on standing", "Blurred vision", "Low mood", "Sore throat", "Cough", "Short of breath", "Chest pain", "Collapse", "Nauseous", "Vomiting", "Diarrhoea", "Constipated", "Belly pain", "Pain in side or lower back", "Blood in urine", "Pain passing urine", "Cannot pass urine", "Rash", "Itchy skin", "Cut slow to heal", "Cold sore", "Muscle or joint pain", "Stiffness"], "followUps": ["Comes in waves"]},
     "symptomZones": {"status": "Placeholder grouping, awaiting clinician review (CR-10, CR-51)", "zones": [
-        {"id": "whole", "label": "Whole body", "symptoms": ["Tired", "Fever or chills", "Confused"]},
+        {"id": "whole", "label": "Whole body", "symptoms": ["Tired", "Fever or chills", "Confused", "Collapse"]},
         {"id": "head", "label": "Head, eyes and mind", "symptoms": ["Headache", "Dizzy on standing", "Blurred vision", "Low mood"]},
         {"id": "chest", "label": "Throat, chest and breathing", "symptoms": ["Sore throat", "Cough", "Short of breath", "Chest pain"]},
         {"id": "gut", "label": "Stomach and gut", "symptoms": ["Nauseous", "Vomiting", "Diarrhoea", "Constipated", "Belly pain"]},

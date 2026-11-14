@@ -4,8 +4,8 @@
  "areas": [
   { "id": "mind", "label": "Mind and sleep", "short": "Mind and sleep", "group": "Mind and sleep", "symptoms": ["Low mood", "Tired", "Headache", "Confused"], "records": [] },
   { "id": "eyes", "label": "Eyes", "short": "Eyes", "group": "Eyes", "symptoms": ["Blurred vision"], "records": ["amsler", "retinal-scan", "eye-pressure", "visual-field"] },
-  { "id": "lungs", "label": "Lungs and breathing", "short": "Lungs", "symptoms": ["Cough", "Short of breath", "Chest pain", "Sore throat"], "records": [] },
-  { "id": "heart", "label": "Heart", "short": "Heart", "group": "Heart", "together": true, "symptoms": ["Chest pain", "Dizzy on standing"], "records": ["ecg", "hrv"] },
+  { "id": "lungs", "label": "Lungs and breathing", "short": "Lungs", "symptoms": ["Short of breath", "Chest pain", "Cough", "Sore throat"], "records": [] },
+  { "id": "heart", "label": "Heart", "short": "Heart", "group": "Heart", "together": true, "symptoms": ["Chest pain", "Collapse", "Dizzy on standing"], "records": ["ecg", "hrv"] },
   { "id": "gut", "label": "Stomach and gut", "short": "Gut", "symptoms": ["Nauseous", "Vomiting", "Diarrhoea", "Constipated", "Belly pain"], "records": ["bowels"] },
   { "id": "blood", "label": "Blood, immune and hormones", "short": "Blood and immune", "group": "Blood", "symptoms": ["Fever or chills", "Sore throat", "Cold sore"], "records": ["wcc", "cortisol", "vbg-ph", "vbg-lactate"] },
   { "id": "skin", "label": "Skin", "short": "Skin", "symptoms": ["Rash", "Itchy skin", "Cut slow to heal", "Cold sore"], "records": [] },
