@@ -40,7 +40,7 @@ US_SPELLINGS = {
     r"\bvisualiz(e|ed|ation)\b": "visualise", r"\bdefense\b": "defence", r"\bliter(s)?\b": "litre",
     r"\banemia\b": "anaemia", r"\bpediatric\b": "paediatric", r"\bhemoglobin\b": "haemoglobin",
 }
-SECRET_RE = re.compile(r"(sk-[A-Za-z0-9_\-]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{30,}|AIza[0-9A-Za-z_\-]{35}|"
+SECRET_RE = re.compile(r"((?<![A-Za-z0-9])sk-[A-Za-z0-9_\-]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{30,}|AIza[0-9A-Za-z_\-]{35}|"
                        r"-----BEGIN (RSA |EC )?PRIVATE KEY-----)")
 PLACEHOLDER_UI_RE = re.compile(r"lorem ipsum|TODO|FIXME|XXX|placeholder text", re.I)
 URL_RE = re.compile(r"https?://[^\s)\]>\"']+")
