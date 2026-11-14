@@ -68,7 +68,7 @@ prompts:
   - id: PR-01
     when_flagged: [sleep, cabin-co2]
     then_prompt: reaction
-    why: "Poor sleep and raised cabin carbon dioxide can both slow thinking. A thirty-second reaction test shows whether they have."
+    why: "Poor sleep and raised cabin carbon dioxide can both slow thinking. A reaction check shows whether they have."
     source: "Placeholder rule, awaiting clinician review. The link is described in the team's challenge brief."
     confidence: Low
     signed_off_by: placeholder
@@ -124,18 +124,25 @@ pathways:
       title: "Pain in your side or lower back: three quick questions"
       why: "You logged {core}. Pain here has many causes. Three quick questions tell the rules whether your crew medic should check for a kidney stone."
     titles:
-      amber: "Kidneys and urine: symptoms for your crew medic"
+      amber: "Kidneys and urine: tell your crew medic today"
       red: "Kidneys and urine: needs action now"
     why:
       amber: "You logged {symptoms}. Together these match the pattern your crew medic checks for a kidney stone. This is a pattern to check, not a diagnosis."
       red: "You logged {symptoms}. With {urgent}, the pattern your crew medic checks for a kidney stone needs action now. This is a pattern to check, not a diagnosis."
     steps:
+      # Step wording from the team's clinical lead (build pack v3.3). Placeholder until signed off. No drug names or doses.
       amber:
         - "Tell your crew medic."
+        - "Run the urine test strip."
+        - "Follow the guided ultrasound."
+        - "Keep drinking, and strain your urine."
+        - "Pain relief as your crew medic's protocol sets out."
         - "Log your pain score now, and again whenever it changes."
         - "Send the case to Earth."
       red:
         - "Tell your crew medic now."
+        - "Open emergency mode."
+        - "Record vital signs."
         - "Log your pain score now, and again whenever it changes."
         - "Send the case to Earth."
     background:
@@ -164,3 +171,43 @@ steps:
     - "Tell your crew medic now."
     - "Repeat the reading to confirm."
     - "Send the case to Earth."
+
+# Monitor alerts: rules that read ONE set of vital signs (the latest), not a trend.
+# Each rule fires when ANY of its "when" groups matches, and a group matches when ALL of its comparisons hold.
+# A comparison is a field (temp in °C, hr pulse a minute, sbp and dbp blood pressure in mmHg, rr breaths a minute)
+# with one of >=, <=, > or < and a number. A missing value never matches.
+# Oxygen saturation (spo2) never raises an alert on its own: readings run lower and are less reliable at low
+# cabin pressure. The parser refuses a group that compares spo2 alone. Neither rule below uses it.
+# construct is the emergency module's pathway number: 12 Infection and sepsis, 4 Shock.
+# No cardiac arrest rule here: a set of vital signs carries no heart rhythm.
+# STATUS: every threshold and step below is the clinical lead's placeholder (build pack v3.3), awaiting sign-off.
+monitor_alerts:
+  - id: SEP-01
+    name: "Possible sepsis"
+    title: "Possible sepsis: start now"
+    checks_for: "Checks for sepsis, an infection spreading through the body: a fever or a low temperature, with low blood pressure or fast breathing."
+    construct: 12
+    when:
+      - { temp: ">= 38", sbp: "<= 100" }
+      - { temp: ">= 38", rr: ">= 22" }
+      - { temp: "<= 36", sbp: "<= 100", rr: ">= 22" }
+    steps:
+      - "Lie the person flat and keep them warm."
+      - "Record vitals from the monitor."
+      - "Crew medic: follow your sepsis protocol."
+    source: "Placeholder thresholds from the team's clinical lead (build pack v3.3), awaiting sign-off."
+    confidence: Low
+    signed_off_by: placeholder
+  - id: SHK-01
+    name: "Possible shock"
+    title: "Possible shock: start now"
+    checks_for: "Checks for shock, when blood is not reaching the body well enough: low blood pressure with a fast pulse."
+    construct: 4
+    when:
+      - { sbp: "< 90", hr: "> 110" }
+    steps:
+      - "Lie the person flat and keep them warm."
+      - "Record vitals from the monitor."
+    source: "Placeholder thresholds from the team's clinical lead (build pack v3.3), awaiting sign-off."
+    confidence: Low
+    signed_off_by: placeholder

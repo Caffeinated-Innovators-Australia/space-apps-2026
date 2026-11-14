@@ -1,0 +1,34 @@
+{
+  "id": "guided-ultrasound",
+  "title": "Guided ultrasound",
+  "status": "Placeholder wording, awaiting clinician sign-off",
+  "source": "Team's clinical lead, build pack v3.3. Placeholder.",
+  "imageNote": "Live image would show here. No image is captured or kept in this demo.",
+  "steps": [
+    {
+      "id": "us-1",
+      "title": "Get ready",
+      "instruction": "Get the ultrasound probe and gel ready, as your kit card shows."
+    },
+    {
+      "id": "us-2",
+      "title": "Left side",
+      "instruction": "Probe on the left side, just below the ribs. Marker towards the head.",
+      "lookFor": "Look for: swollen kidney",
+      "note": "Compare with the right side in step 3.",
+      "side": "left"
+    },
+    {
+      "id": "us-3",
+      "title": "Right side",
+      "instruction": "Probe on the right side, just below the ribs. Marker towards the head.",
+      "lookFor": "Look for: the same view as step 2, to compare the two sides.",
+      "side": "right"
+    },
+    {
+      "id": "us-4",
+      "title": "Save",
+      "instruction": "Save. The steps you completed go into the case for your crew medic and Earth."
+    }
+  ]
+}

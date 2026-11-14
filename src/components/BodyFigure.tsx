@@ -34,7 +34,7 @@ export function BodyFigure({ onOpen, tiers }: { onOpen: (indicatorId: string) =>
             <line className="lead" x1={s.x} y1={s.y} x2={236} y2={s.y} />
             <circle className="ring" cx={s.x} cy={s.y} r="11" />
             <circle className="dot" cx={s.x} cy={s.y} r="4" />
-            <text x={240} y={s.y + 4}>{s.label}{tier && tier !== 'green' ? <tspan className={`t-${tier}`}> {tier === 'amber' ? '\u25B2' : '\u2B23'}</tspan> : null}</text>
+            <text x={240} y={s.y + 4}>{s.label}{tier && tier !== 'green' ? <tspan className={`t-${tier}`}> {tier === 'amber' ? '\u25B2' : '\u25A0'}</tspan> : null}</text>
           </g>
         );
       })}

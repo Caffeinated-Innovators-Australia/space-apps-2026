@@ -109,14 +109,14 @@
     "kind": "test",
     "min": 100,
     "max": 2000,
-    "prompt": "Reaction test: five taps"
+    "prompt": "Reaction check"
    },
    "hazards": [
     "E",
     "I"
    ],
    "card": {
-    "how": "Hold the tablet steady. When the panel turns bright, tap it as fast as you can. Five rounds, about thirty seconds.",
+    "how": "Hold the tablet steady. Tap as soon as the counter appears. The full check runs three minutes; the demo runs thirty seconds.",
     "why": "Poor sleep and raised cabin carbon dioxide both slow thinking. A short reaction test shows it when you may not feel it.",
     "what": "If you are slower than your own range, rest and repeat. If it holds, hand over safety-critical tasks and tell your crew medic.",
     "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
@@ -14610,7 +14610,7 @@
    {
     "what": "Your readings and trends",
     "you": "Always",
-    "medic": "Only what you send, or a confirmed Urgent result",
+    "medic": "Only what you send, or a confirmed Act now result",
     "surgeon": "Only the cases you send",
     "crew": "Never"
    },

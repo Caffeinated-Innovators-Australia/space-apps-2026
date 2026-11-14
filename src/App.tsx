@@ -1,6 +1,6 @@
 // App shell and screens. Every change to the record goes through the action layer in src/core.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import rulesText from '../rules/rules.yaml?raw';
 import { BaselineChart, ChartLegend, type ChartPoint } from './components/BaselineChart';
 import { BodyFigure } from './components/BodyFigure';
@@ -32,6 +32,12 @@ import { FeelingOff } from './screens/FeelingOff';
 import { Immune } from './screens/Immune';
 import { Radiation } from './screens/Radiation';
 import { CrewData, RealBand, SpaceWeather } from './screens/RealData';
+import { Vitals, MonitorAlertCard } from './screens/Vitals';
+import { Ultrasound } from './screens/Ultrasound';
+import { CrewCheckIn } from './screens/CrewCheckIn';
+import { Location } from './screens/Location';
+import { Astra } from './screens/Astra';
+import { crewCheckDue, noteGravityChange, showDizzinessOnStanding, ultrasoundAvailable, ultrasoundSummary, vitalsAlerts, vitalsLine, latestVitals } from './core/index.ts';
 import { deviceStore } from './store/indexeddb.ts';
 
 interface Extras {
@@ -69,7 +75,7 @@ function clock(totalSeconds: number): string {
 }
 const shown = (i: Indicator, v: number) => (i.input.kind === 'scale' ? `${v.toFixed(0)}` : v.toFixed(i.dp));
 
-const ROUTES = ['reading', 'result', 'gap', 'pathway', 'crew', 'outbox', 'about', 'checkin', 'feeling', 'inbox', 'medic', 'menu', 'emergency', 'radiation', 'immune', 'schedule', 'signals', 'sources'] as const;
+const ROUTES = ['reading', 'result', 'gap', 'pathway', 'crew', 'outbox', 'about', 'checkin', 'feeling', 'inbox', 'medic', 'menu', 'emergency', 'radiation', 'immune', 'schedule', 'signals', 'sources', 'vitals', 'ultrasound', 'crewcheck', 'location', 'astra'] as const;
 interface Route { name: 'home' | (typeof ROUTES)[number]; arg?: string }
 function readRoute(): Route {
   const [name, arg] = window.location.hash.replace(/^#\/?/, '').split('/');
@@ -79,6 +85,19 @@ function readRoute(): Route {
 function go(name: Route['name'] | string, arg?: string) {
   window.location.hash = name === 'home' ? '/' : `/${name}${arg ? `/${arg}` : ''}`;
 }
+
+/** At 0 g, dizziness on standing means nothing, so it is not offered there. */
+function feelingSeed(setting: Setting): Seed {
+  if (showDizzinessOnStanding(setting)) return seed;
+  const keep = (x: string) => x !== 'Dizzy on standing';
+  return { ...seed, symptoms: { ...seed.symptoms, options: seed.symptoms.options.filter(keep) }, symptomZones: seed.symptomZones ? { ...seed.symptomZones, zones: seed.symptomZones.zones.map((z) => ({ ...z, symptoms: z.symptoms.filter(keep) })) } : undefined };
+}
+/** Change place, and note it when the gravity changes, so the adapting period can start. */
+function place(st: State, id: string, at: number): State {
+  return noteGravityChange(changePlace(st, id, at), settingById(seed, st.ui.settingId), settingById(seed, id), at);
+}
+/** Where an Act now alert that is a life threat sends the crew: the emergency module's pathway. */
+const emergencyFor = (construct: number) => go('astra', String(construct));
 
 export function App() {
   const [route, setRoute] = useState<Route>(readRoute);
@@ -154,10 +173,20 @@ export function App() {
             <MedicOverview {...shared} {...extra} rules={rules} />
           ) : route.name === 'menu' ? (
             <Menu {...shared} {...extra} rules={rules} />
+          ) : route.name === 'vitals' ? (
+            <Vitals {...shared} {...extra} rules={rules} onSend={pathwayStatuses(state, seed, rules, crew.id).some((x) => x.pathway.id === 'KS-01' && (x.level === 'amber' || x.level === 'red')) ? () => { if (!state.outbox.some((k) => k.pathwayId === 'KS-01' && k.crewId === crew.id && k.status === 'queued')) commit(sendPathwayCase(state, seed, rules, { crewId: crew.id, pathwayId: 'KS-01', settingId: setting.id, at: nowMs() }).state); go('pathway', 'KS-01'); } : undefined} />
+          ) : route.name === 'ultrasound' ? (
+            <Ultrasound {...shared} {...extra} rules={rules} returnTo={{ route: 'pathway', arg: route.arg ?? 'KS-01' }} />
+          ) : route.name === 'crewcheck' ? (
+            <CrewCheckIn {...shared} {...extra} rules={rules} />
+          ) : route.name === 'location' ? (
+            <Location {...shared} {...extra} rules={rules} onChange={(id) => commit(place(state, id, nowMs()))} />
+          ) : route.name === 'astra' ? (
+            <Astra {...shared} {...extra} rules={rules} arg={route.arg} />
           ) : route.name === 'checkin' ? (
             <CheckIn {...shared} {...extra} rules={rules} />
           ) : route.name === 'feeling' ? (
-            <FeelingOff {...shared} {...extra} rules={rules} />
+            <FeelingOff {...shared} {...extra} seed={feelingSeed(setting)} rules={rules} />
           ) : route.name === 'pathway' && rules.pathways.some((w) => w.id === route.arg) ? (
             <PathwayScreen {...shared} rules={rules} pathwayId={route.arg!} />
           ) : route.name === 'gap' && reading ? (
@@ -183,6 +212,7 @@ function StatusBar({ state, commit, rules, crewId, setting }: { state: State; co
   const flagged = [
     ...day.flagged.filter((x) => !(noCabin && x.indicator.environment)).map((x) => ({ id: x.reading!.id, tier: x.assessment!.tier, name: x.indicator.name, open: () => go('result', x.reading!.id) })),
     ...pathwayAlerts(state, seed, rules, crewId).map((p) => ({ id: p.key, tier: p.tier, name: p.name, open: () => go('pathway', p.pathwayId) })),
+    ...vitalsAlerts(state, rules, crewId).map((v) => ({ id: v.key, tier: v.tier as Tier, name: 'Vital signs', open: () => go('vitals') })),
   ].sort((x, y) => RANK[y.tier] - RANK[x.tier]);
   const [now, setNow] = useState(nowMs());
   useEffect(() => {
@@ -413,7 +443,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
         <section className="card" aria-label="Real NASA data in today's results">
           <h2 className="title">Real NASA data in today's results</h2>
           <ul className="rows">
-            <li><button className="row" onClick={() => open('cabin-co2')}><span className="row-name">Cabin air limit of {co2.limit?.high?.toFixed(0)} {co2.unit}, one-hour average<br /><span className="caption">Limits: NASA-STD-3001 Volume 2. It decides when cabin air is Urgent.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
+            <li><button className="row" onClick={() => open('cabin-co2')}><span className="row-name">Cabin air limit of {co2.limit?.high?.toFixed(0)} {co2.unit}, one-hour average<br /><span className="caption">Limits: NASA-STD-3001 Volume 2. It decides when cabin air is Act now.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
             <li><button className="row" onClick={() => go('radiation')}><span className="row-name">Radiation checks on mission days {seed.radiationDays.join(', ')}<br /><span className="caption">Data: NASA DONKI. Real solar particle events set the days the crew logs a dose.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
             <li><button className="row" onClick={() => open('haemoglobin')}><span className="row-name">How far a blood count may move<br /><span className="caption">{osd.credit}. Real crew blood counts set the width of the haemoglobin range. Open the check to see them.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
           </ul>
@@ -433,7 +463,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
             <p className="muted">A crew far from Earth and a family hours from a hospital need the same thing: care that starts before the expert arrives.</p>
             <p className="caption">Source: <a href={seed.earthBenefit.link}>{seed.earthBenefit.source}</a>.</p>
             <p>{seed.reach.earth.text} <span className="caption">Source: <a href={seed.reach.earth.link}>{seed.reach.earth.source}</a>.</span></p>
-            <div><button className="btn secondary" onClick={() => commit(changePlace(state, setting.id === 'earth' ? seed.settings[0].id : 'earth', nowMs()))}>{setting.id === 'earth' ? 'Back to the Mars base' : 'See it in remote Australia'}</button></div>
+            <div><button className="btn secondary" onClick={() => commit(place(state, setting.id === 'earth' ? seed.settings[0].id : 'earth', nowMs()))}>{setting.id === 'earth' ? 'Back to the Mars base' : 'See it in remote Australia'}</button></div>
           </div>
           <div className="card">
             <h2 className="title">The same idea, on real crew data</h2>
@@ -451,6 +481,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
   const issues = [
     ...day.flagged.filter((x) => !(setting.habitat === false && x.indicator.environment)).map((x) => ({ key: x.reading!.id, tier: x.assessment!.tier as Tier | 'advisory', name: x.indicator.name, sub: x.indicator.environment ? 'Cabin reading' : x.assessment!.deltaText, val: `${shown(x.indicator, x.reading!.value)} ${x.indicator.unit}`, arrow: <LimitArrow tier={x.assessment!.tier} delta={x.assessment!.delta} />, go: () => go('result', x.reading!.id) })),
     ...pathways.map((p) => ({ key: p.key, tier: (pathwayTier(p) ?? 'advisory') as Tier | 'advisory', name: p.pathway.region, sub: p.level === 'check' ? '3 quick questions' : p.title.includes(': ') ? cap(p.title.split(': ')[1]) : p.title, val: '', arrow: null, go: () => go('pathway', p.pathway.id) })),
+    ...vitalsAlerts(state, rules, crewId).map((v) => ({ key: v.key, tier: 'red' as Tier | 'advisory', name: 'Vital signs', sub: v.title, val: '', arrow: null, go: () => go('vitals') })),
     ...(promptOpen ? [{ key: 'prompt', tier: 'advisory' as const, name: indicatorById(seed, day.prompt!.indicatorId).name, sub: 'Asked for today', val: '', arrow: null, go: () => go('reading', day.prompt!.indicatorId) }] : []),
   ].sort((a, b) => (b.tier === 'advisory' ? -1 : RANK[b.tier]) - (a.tier === 'advisory' ? -1 : RANK[a.tier]));
   const raised = issues.filter((x) => x.tier !== 'advisory');
@@ -460,6 +491,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
   return (
     <>
       <Context setting={setting} crewId={crewId} />
+      {vitalsAlerts(state, rules, crewId).map((v) => <MonitorAlertCard key={v.key} alert={v} setting={setting} say={say} hhmm={hhmm} synthetic onEmergency={() => emergencyFor(v.construct)} />)}
       <div className="today">
         <div className="stack">
           <div className={`status-big ${worst}`} role="status">
@@ -495,6 +527,8 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
             <button className="btn secondary" onClick={() => go('schedule')}>Schedule</button>
             <button className="btn secondary" onClick={() => go('signals')}>All signals</button>
             <button className="btn secondary" onClick={() => go('sources')}>Sources</button>
+            <button className="btn secondary" onClick={() => go('vitals')}>Vital signs</button>
+            {seed.crewCheck && crewCheckDue(state, seed, crewId) ? <button className="btn secondary" onClick={() => go('crewcheck')}>Weekly crew check-in</button> : null}
           </div>
           <More label={`Demo: ${crewById(seed, crewId).name.replace('Crew member', 'Crew')} · ${setting.label}`}>
       <div className="where-row">
@@ -504,7 +538,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
             {seed.crew.map((c) => <button key={c.id} aria-pressed={c.id === crewId} onClick={() => ui({ crewId: c.id })}>{c.name.replace('Crew member', 'Crew')}</button>)}
           </div>
         </div>
-        <Where setting={setting} onPick={(id) => commit(changePlace(state, id, nowMs()))} />
+        <Where setting={setting} onPick={(id) => commit(place(state, id, nowMs()))} />
       </div>
 
           </More>
@@ -547,11 +581,13 @@ function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: S
   const demo = demoValue(seed, crewId, ind.id);
   const [problem, setProblem] = useState('');
   useEffect(() => setProblem(''), [text, indicatorId, crewId]);
+  const pvtDetail = useRef<{ median: number; lapses: number; trials: number } | null>(null);
   const submit = () => {
     if (!valid) return;
     try {
       const r = recordReading(state, seed, rules, { crewId, indicatorId, value: Number(n.toFixed(ind.dp)), at: nowMs() });
-      commit(r.state);
+      const d = pvtDetail.current;
+      commit(d && d.median === Number(n.toFixed(ind.dp)) ? { ...r.state, reactionDetail: { ...(r.state.reactionDetail ?? {}), [r.reading.id]: d } } : r.state);
       go('result', r.reading.id);
     } catch (e) {
       setProblem((e as Error).message);
@@ -578,7 +614,7 @@ function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: S
             {ind.input.kind === 'scale' ? (
               <ScaleInput labels={ind.input.labels ?? []} value={valid ? n : undefined} onPick={(v) => setText(String(v))} />
             ) : ind.input.kind === 'test' ? (
-              <ReactionTest onResult={(ms) => setText(String(ms))} />
+              <ReactionTest onResult={(ms) => setText(String(ms))} onDetail={(d) => { pvtDetail.current = d; }} />
             ) : ind.input.kind === 'vision' ? (
               <VisionTest onResult={(lines) => setText(String(lines))} />
             ) : null}
@@ -632,6 +668,7 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
   const lim = limitsFor(seed, reading.crewId, ind.id);
   const cumulative = ind.mode === 'cumulative';
   const raw = assessReading(state, seed, rules, reading);
+  const pvt = state.reactionDetail?.[reading.id];
   // The card leads with the strongest finding; any others are listed under it.
   const a = localise({ ...raw, why: raw.findings[0]?.why ?? raw.why }, setting);
   const sent = state.outbox.some((p) => p.readingId === reading.id);
@@ -670,9 +707,10 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
         </div>
         <div className="stack">
           <AlertCard a={a} synthetic actions={<>
+            {pvt ? <p className="caption">Median {pvt.median} ms · lapses over 500 ms: {pvt.lapses} · {pvt.trials} taps. PVT-style check, not NASA's Cognition battery.</p> : null}
             {a.tier !== 'green' ? <p className="confirm" role="status">{conf.status === 'confirmed' ? 'Confirmed by a second reading.' : 'Not yet confirmed. Repeat it.'}</p> : null}
             <div className="btn-row">
-              {promptOpen ? <button className="btn" onClick={() => go('reading', day.prompt!.indicatorId)}>Next: thirty-second reaction test</button> : a.tier === 'green' ? (
+              {promptOpen ? <button className="btn" onClick={() => go('reading', day.prompt!.indicatorId)}>Next: reaction check</button> : a.tier === 'green' ? (
                 <button className="btn" onClick={() => go('home')}>Log and finish</button>
               ) : (
                 <button className="btn" onClick={send}>{sent ? 'Open the case' : say('Send case to Earth', setting)}</button>
@@ -688,7 +726,7 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
               </ul>
             ) : null}
             {ind.environment && raw.tier !== 'green' ? <p className="confirm" role="note">{say('This is a reading of the shared cabin, not of one person. The air system is checked first. It becomes a health matter for you if you also have symptoms or a slower reaction time.', setting)}</p> : null}
-            {ind.evidence ? <p className="caption">Two different labels. How the signal is measured: {ind.evidence === 'established' ? 'a standard instrument reading (established)' : ind.evidence === 'emerging' ? 'your own log (emerging)' : 'an uncalibrated check in this app (experimental)'}.{ind.evidence === 'experimental' ? ' An experimental signal can raise Crew medic but never Urgent by itself.' : ''} How sure the rule is: {raw.confidence.toLowerCase()}, until a clinician signs it. {seed.evidenceStatus}</p> : null}
+            {ind.evidence ? <p className="caption">Two different labels. How the signal is measured: {ind.evidence === 'established' ? 'a standard instrument reading (established)' : ind.evidence === 'emerging' ? 'your own log (emerging)' : 'an uncalibrated check in this app (experimental)'}.{ind.evidence === 'experimental' ? ' An experimental signal can raise Watch but never Act now by itself.' : ''} How sure the rule is: {raw.confidence.toLowerCase()}, until a clinician signs it. {seed.evidenceStatus}</p> : null}
             {raw.findings.length > 0 ? <p className="caption">Rules that fired: {raw.findings.map((f) => f.ruleId).join(', ')}.</p> : null}
           </AlertCard>
           {others.length > 0 ? (
@@ -745,7 +783,7 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
             <span className="placeholder">{seed.settingStatus}</span>
           </More>
           <More label={`Demo: ${setting.label}`}>
-            <Where setting={setting} onPick={(id) => { const t = nowMs(); commit(changePlace(state, id, t)); setStartAt(t); }} />
+            <Where setting={setting} onPick={(id) => { const t = nowMs(); commit(place(state, id, t)); setStartAt(t); }} />
           </More>
         </section>
         <div className="stack">
@@ -857,7 +895,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
   const send = () => { const r = sendPathwayCase(state, seed, rules, { crewId, pathwayId, settingId: setting.id, at: nowMs() }); commit(r.state); setStartAt(r.pack.createdAt); };
   const content = pack ? pathwayCaseContent(state, seed, rules, pack.id) : undefined;
   const left = setting.replySeconds - (now - startAt) / 1000;
-  const meanwhile = (active?.steps ?? []).filter((st) => !/send the case/i.test(st));
+  const meanwhile = (active?.steps ?? []).filter((st) => !/send the case/i.test(st) && (ultrasoundAvailable(setting) || !/ultrasound/i.test(st)));
   const done = state.pathwaySteps?.[key] ?? [];
   const context = p?.context ?? [];
   const chips = (labels: string[]) => (
@@ -936,7 +974,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
               <p className="gap-advice">{left > 0 ? setting.advice : say(setting.id === 'earth' ? 'Help can reach you from now. Keep going with the steps until it does.' : 'The wait is over: a reply from Earth can arrive from now. Keep going with the steps until it does.', setting)}</p>
               {setting.scenarioSynthetic ? <SyntheticTag /> : null}
               <More label="How this is worked out"><p>{setting.detail}</p><p className="caption">{setting.basis}</p></More>
-              <More label={`Demo: ${setting.label}`}><Where setting={setting} onPick={(id) => { const t = nowMs(); commit(changePlace(state, id, t)); setStartAt(t); }} /></More>
+              <More label={`Demo: ${setting.label}`}><Where setting={setting} onPick={(id) => { const t = nowMs(); commit(place(state, id, t)); setStartAt(t); }} /></More>
             </section>
           ) : null}
           {pack ? <EarthLoop state={state} commit={commit} setting={setting} rules={rules} pack={pack} /> : null}
@@ -954,6 +992,14 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
                 ))}
               </ul>
               <span className="placeholder">Placeholder steps</span>
+              {canSend ? (
+                <div className="btn-row">
+                  {active.level === 'red' ? <button className="btn" onClick={() => emergencyFor(12)}>Open emergency mode</button> : null}
+                  <button className="btn secondary" onClick={() => go('vitals')}>Record vital signs</button>
+                  {ultrasoundAvailable(setting) ? <button className="btn secondary" onClick={() => go('ultrasound', pathwayId)}>Guided ultrasound</button> : null}
+                </div>
+              ) : null}
+              {canSend && (latestVitals(state, crewId) || ultrasoundSummary(state, crewId)) ? <p className="caption">{[latestVitals(state, crewId) ? `Vital signs: ${vitalsLine(latestVitals(state, crewId)!.values)}` : '', ultrasoundSummary(state, crewId) ?? ''].filter(Boolean).join(' ')}</p> : null}
               {pack || !canSend ? null : (
                 <>
                   <p className="gap-advice">{setting.advice}</p>

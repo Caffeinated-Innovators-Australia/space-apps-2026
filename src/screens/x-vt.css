@@ -1,0 +1,24 @@
+/* Styles for the vital signs screen and the monitor alert card. Every class starts with x-vt-. */
+/* AI assistance: drafted with Claude Code (see AI_USE.md). */
+.x-vt-demo { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+.x-vt-fields { display: flex; flex-direction: column; }
+.x-vt-row { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid var(--line); }
+.x-vt-row:first-child { border-top: 0; }
+.x-vt-name { font-weight: 600; font-size: 18px; }
+.x-vt-stepper { display: flex; align-items: stretch; gap: 12px; }
+.x-vt-step { flex: none; min-width: 56px; min-height: 56px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface-200); color: var(--ink); font-family: var(--font-mono); font-size: 28px; cursor: pointer; }
+.x-vt-step:disabled { color: var(--unavailable); border-color: var(--line); cursor: not-allowed; }
+.x-vt-field { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; background: var(--surface-200); border: 1px solid var(--line-strong); border-radius: 8px; padding: 0 12px; min-height: 56px; }
+.x-vt-field:focus-within { box-shadow: var(--focus-ring); }
+.x-vt-field input { flex: 1; min-width: 0; width: 100%; background: none; border: 0; color: var(--ink); font-family: var(--font-mono); font-size: 24px; font-weight: 500; padding: 8px 0; }
+.x-vt-field input:focus, .x-vt-field input:focus-visible { outline: none; box-shadow: none; }
+.x-vt-unit { flex: none; color: var(--ink-muted); font-size: 16px; }
+.x-vt-error { font-size: 16px; color: var(--ink); border-left: 4px solid var(--line-strong); padding-left: 8px; }
+.x-vt-note { display: flex; flex-direction: column; gap: 4px; background: var(--surface-200); border-radius: 8px; padding: 12px; font-size: 16px; }
+.x-vt-big { min-height: 56px; font-size: 18px; }
+.x-vt-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.x-vt-actions .x-vt-big { flex: 1 1 220px; }
+.x-vt-reasons { margin: 4px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 18px; }
+.x-vt-notdx { font-size: 16px; }
+.x-vt-quiet { font-size: 16px; color: var(--ink-muted); }
+.x-vt-alert .more-body { display: flex; flex-direction: column; gap: 8px; }

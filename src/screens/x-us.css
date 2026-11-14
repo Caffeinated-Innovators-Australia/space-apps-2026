@@ -1,0 +1,32 @@
+/* Styles for the guided ultrasound screen. Every class is prefixed x-us-.
+   AI assistance: drafted with Claude Code (see AI_USE.md). */
+
+.x-us { display: flex; flex-direction: column; gap: 16px; max-width: 760px; width: 100%; margin: 0 auto; min-width: 0; }
+.x-us-head { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+/* Progress row: procedure step numbers are magenta; a tick shows the done ones, so colour is never the only cue. */
+.x-us-rail { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.x-us-rail li { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; border: 2px solid var(--procedure); border-radius: 8px; font-size: 20px; font-weight: 700; color: var(--procedure); background: var(--surface-100); }
+.x-us-rail li[data-current='true'] { background: var(--procedure); color: var(--surface-000); }
+.x-us-tick { font-size: 18px; line-height: 1; }
+
+.x-us-step { background: var(--surface-100); border: 2px solid var(--procedure); border-radius: 12px; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.x-us-name { font-size: 18px; font-weight: 600; color: var(--procedure); }
+.x-us-say { font-size: 28px; line-height: 1.25; font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
+@media (min-width: 800px) { .x-us-say { font-size: 36px; } }
+.x-us-look { font-size: 22px; font-weight: 600; color: var(--ink); }
+.x-us-note { font-size: 18px; color: var(--ink); }
+
+.x-us-figure { width: 100%; max-width: 260px; height: auto; align-self: center; }
+.x-us-body { fill: var(--surface-200); stroke: var(--line-strong); stroke-width: 2; stroke-linejoin: round; }
+.x-us-ribs { fill: none; stroke: var(--line-strong); stroke-width: 2; stroke-dasharray: 6 4; }
+.x-us-side { fill: var(--ink-muted); font-size: 16px; font-family: var(--font-sans); }
+.x-us-mark rect { fill: var(--procedure); stroke: var(--ink); stroke-width: 2; }
+.x-us-mark path { stroke: var(--procedure); stroke-width: 4; stroke-linecap: round; }
+
+.x-us-image { border: 2px dashed var(--line-strong); border-radius: 8px; padding: 24px 16px; text-align: center; font-size: 16px; color: var(--ink-muted); background: var(--surface-200); }
+.x-us-undo { align-self: flex-start; font-family: var(--font-sans); }
+
+.x-us-nav { display: flex; gap: 12px; align-items: stretch; flex-wrap: wrap; }
+.x-us-nav .btn { min-height: 56px; }
+.x-us-next { flex: 1 1 200px; font-size: 22px; }

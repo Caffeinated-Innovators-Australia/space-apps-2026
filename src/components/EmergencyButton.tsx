@@ -5,7 +5,7 @@ import '../screens/emergency.css';
 /**
  * Black background, white text and a white border in BOTH themes. This is the one deliberate
  * exception to the colour tokens: the button must look the same everywhere so it is found at once,
- * and it must not borrow red (reserved for the Urgent tier) or any other colour that means a tier.
+ * and it must not borrow red (reserved for the Act now tier) or any other colour that means a tier.
  */
 export function EmergencyButton({ go }: { go: (route: string, arg?: string) => void }) {
   return (

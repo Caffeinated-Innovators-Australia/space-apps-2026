@@ -20,8 +20,8 @@ export interface MedicOverviewProps {
 
 function RowBody({ r, hhmm }: { r: MedicRow; hhmm: (t: number) => string }) {
   const extra = [
-    ...r.confirmedUrgent.map((u) => `${u.indicator}: Urgent, confirmed by a repeat reading at ${hhmm(u.at)}`),
-    ...r.urgentPathways.map((p) => `${p.checkFor}: symptom pattern to check for, Urgent, case sent`),
+    ...r.confirmedUrgent.map((u) => `${u.indicator}: Act now, confirmed by a repeat reading at ${hhmm(u.at)}`),
+    ...r.urgentPathways.map((p) => `${p.checkFor}: symptom pattern to check for, Act now, case sent`),
   ];
   return (
     <>

@@ -10,7 +10,7 @@ function offline(): Plugin {
     name: 'offline-service-worker',
     apply: 'build',
     generateBundle(_, bundle) {
-      const files = ['', 'icon.svg', 'icon-180.png', 'icon-192.png', 'icon-512.png', 'manifest.webmanifest', 'agents.md', ...Object.keys(bundle)].map((f) => BASE + f);
+      const files = ['', 'icon.svg', 'icon-180.png', 'icon-192.png', 'icon-512.png', 'manifest.webmanifest', 'agents.md', 'astra/index.html', ...Object.keys(bundle)].map((f) => BASE + f);
       const version = createHash('sha256').update(files.join('|')).digest('hex').slice(0, 12);
       const source = `// Generated at build time. Caches the whole app for offline use.
 const CACHE = 'crew-health-${version}';
@@ -24,7 +24,8 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== self.location.origin) return;
-  const key = e.request.mode === 'navigate' ? '${BASE}' : e.request;
+  // The emergency module is its own page inside a frame: serve it as itself, never as the app shell.
+  const key = e.request.mode === 'navigate' && !url.pathname.includes('/astra/') ? '${BASE}' : e.request;
   e.respondWith(caches.match(key, { ignoreSearch: true }).then((hit) => hit || fetch(e.request)));
 });
 `;

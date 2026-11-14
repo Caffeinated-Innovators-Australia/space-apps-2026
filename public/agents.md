@@ -69,7 +69,7 @@ Symptoms that form a pattern open a pathway. The first is a possible kidney ston
 
 `assess` and `record` return an assessment with these fields:
 
-- `tier`: `green` (Self-manage), `amber` (Crew medic) or `red` (Urgent). The team has not yet settled what amber and red mean (CR-18).
+- `tier`: `green` (Nothing to do), `amber` (Watch) or `red` (Act now). Emergency is a mode opened from an Act now alert, not a tier.
 - `title`: one plain line, for example "Sleep: change from your own range".
 - `why`: the plain-language reason, with the numbers filled in.
 - `findings`: one entry per rule that fired, each with `ruleId`, `tier`, `why`, `source`, `confidence`, `placeholder` and `reviewedBy`.

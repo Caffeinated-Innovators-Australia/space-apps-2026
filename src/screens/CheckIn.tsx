@@ -98,6 +98,7 @@ export function CheckIn({ state, commit, setting, crewId, seed, rules, go, say, 
                 {ind.input.kind === 'scale' ? (
                   <div role="group" aria-labelledby={`${id}-label`}>
                     <ScaleInput labels={ind.input.labels ?? []} value={ok(ind) ? Number(text(ind)) : undefined} onPick={(n) => set(ind, String(n))} />
+                    {ind.id === 'mood' && <p className="caption">Private. You choose whether to share.</p>}
                   </div>
                 ) : (
                   <div className="x-ci-stepper">

@@ -72,6 +72,8 @@ export function isbar(content: CaseContent, opts: IsbarOptions = {}): IsbarSecti
     `Recent trends: ${list(content.recentTrends.map((x) => `${x.summary}${x.drifted ? ' (drifted)' : ''}`), 'none')}`,
     `Pain scores: ${list(content.painScores.map((p) => `${p.score} out of ${p.outOf} at ${time(p.at)}`), 'none logged')}`,
     `Tests: ${list(content.tests.map((x) => `${x.test}: ${x.result}`), 'none')}`,
+    ...(content.vitals ? [`Vital signs: ${content.vitals}`] : []),
+    ...(content.ultrasound ? [content.ultrasound] : []),
     `Other signals today: ${list(others, 'none')}`,
   ];
   const assessment = [

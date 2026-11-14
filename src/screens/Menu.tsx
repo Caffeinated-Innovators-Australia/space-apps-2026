@@ -31,6 +31,7 @@ const INPUT_WORDS: Record<Indicator['input']['kind'], string> = {
 const EVIDENCE_WORDS: Record<NonNullable<Indicator['evidence']>, string> = { established: 'Established', emerging: 'Emerging', experimental: 'Experimental' };
 
 import { changePlace } from '../core/handover.ts';
+import { noteGravityChange } from '../core/profiles.ts';
 
 export function Menu({ state, commit, ui, setting, seed, go, say }: MenuProps) {
   const [confirmReset, setConfirmReset] = useState(false);
@@ -43,6 +44,20 @@ export function Menu({ state, commit, ui, setting, seed, go, say }: MenuProps) {
 
       <h2 className="title x-mo-section">Privacy and sharing</h2>
       {privacy ? <PrivacyTable rows={privacy.rows} status={privacy.status} /> : <div className="card"><p className="caption">The sharing policy is not in this build's data.</p></div>}
+
+      <div className="card">
+        <h2 className="title">More checks and settings</h2>
+        <ul className="rows">
+          {[['vitals', 'Vital signs', 'Temperature, pulse, blood pressure, breathing'], ['crewcheck', 'Weekly crew check-in', 'Five questions, seen by the flight psychologist only'], ['location', 'Location', 'Gravity, cabin atmosphere and what changes'], ['astra', 'Emergency module', 'Voice-first emergency pathways, a separate team prototype']].map(([route, name, sub]) => (
+            <li key={route}>
+              <button className="row" onClick={() => go(route)}>
+                <span className="row-name">{say(name, setting)}<br /><span className="caption">{say(sub, setting)}</span></span>
+                <span className="chev" aria-hidden="true">›</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       <div className="card">
         <h2 className="title">Thresholds</h2>
@@ -82,7 +97,7 @@ export function Menu({ state, commit, ui, setting, seed, go, say }: MenuProps) {
 
       <div className="card">
         <h2 className="title">Sources and evidence</h2>
-        <p>An experimental signal can raise Crew medic but never Urgent by itself.</p>
+        <p>An experimental signal can raise Watch but never Act now by itself.</p>
         <ul className="rows">
           {seed.indicators.map((i) => (
             <li key={i.id}>
@@ -104,7 +119,7 @@ export function Menu({ state, commit, ui, setting, seed, go, say }: MenuProps) {
         <h2 className="title">For the demo</h2>
         <p className="caption">These controls exist only to show the app. A real mission would not have them.</p>
         <div className="seg" role="group" aria-label="Where are you?">
-          {seed.settings.map((c) => <button key={c.id} aria-pressed={c.id === setting.id} onClick={() => commit(changePlace(state, c.id, Date.now()))}>{c.label}</button>)}
+          {seed.settings.map((c) => <button key={c.id} aria-pressed={c.id === setting.id} onClick={() => commit(noteGravityChange(changePlace(state, c.id, Date.now()), setting, c, Date.now()))}>{c.label}</button>)}
         </div>
         <div className="btn-row x-mo-section">
           <button className="chip chip-toggle" aria-pressed={!!state.ui.linkDown} onClick={() => ui({ linkDown: !state.ui.linkDown })}>{say('No link to Earth', setting)}</button>

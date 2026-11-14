@@ -38,6 +38,27 @@ export interface PathwayRule extends Signed {
   test_notes?: { when: Record<string, string>; text: string }[];
 }
 
+/** A vital-sign field a monitor alert may compare. spo2 may appear only beside another field, never alone. */
+export type MonitorField = 'temp' | 'hr' | 'sbp' | 'dbp' | 'rr' | 'spo2';
+const MONITOR_FIELDS: MonitorField[] = ['temp', 'hr', 'sbp', 'dbp', 'rr', 'spo2'];
+export type MonitorOp = '>=' | '<=' | '>' | '<';
+export interface MonitorComparison { field: MonitorField; op: MonitorOp; value: number }
+/**
+ * A rule that reads one set of vital signs. It fires when any group in `when` matches; a group matches when all its comparisons hold.
+ * In the file each group is a map such as { temp: ">= 38", sbp: "<= 100" }; `groups` is the same, checked and parsed.
+ */
+export interface MonitorAlertRule extends Signed {
+  id: string;
+  name: string;
+  title: string;
+  checks_for: string;
+  /** The emergency module's pathway number. */
+  construct: number;
+  when: Record<string, string>[];
+  groups: MonitorComparison[][];
+  steps: string[];
+}
+
 /** The whole rules file, checked. */
 export interface RuleFile {
   version: string;
@@ -49,6 +70,8 @@ export interface RuleFile {
   prompts: PromptRule[];
   pathways: PathwayRule[];
   steps: Record<Tier, string[]>;
+  /** Rules that read one set of vital signs. Empty when the file has none. */
+  monitor_alerts: MonitorAlertRule[];
 }
 
 export interface Band { low: number; high: number; mean: number; sd: number }
@@ -144,6 +167,29 @@ export function parseRules(text: string): RuleFile {
     for (const b of w.background) if (!b.text || !b.source || !b.link) throw new Error(`Pathway ${id}: every background line needs its source and link.`);
   }
   for (const t of TIERS) if (!Array.isArray(f.steps?.[t]) || f.steps[t].length === 0) throw new Error(`Every tier needs at least one next step: none for ${t}.`);
+  f.monitor_alerts = f.monitor_alerts ?? [];
+  if (!Array.isArray(f.monitor_alerts)) throw new Error('monitor_alerts must be a list of rules.');
+  for (const m of f.monitor_alerts) {
+    const id = m?.id ?? 'monitor alert';
+    signed(m, id);
+    if (!m.name || !m.title || !m.checks_for) throw new Error(`Monitor alert ${id}: needs a name, a title and the checks_for wording.`);
+    if (!Number.isInteger(m.construct)) throw new Error(`Monitor alert ${id}: needs the emergency module's pathway number as construct.`);
+    if (!Array.isArray(m.steps) || m.steps.length === 0) throw new Error(`Monitor alert ${id}: needs at least one first step.`);
+    if (!Array.isArray(m.when) || m.when.length === 0) throw new Error(`Monitor alert ${id}: needs at least one group of conditions under when.`);
+    m.groups = m.when.map((g) => {
+      const entries = Object.entries(g ?? {});
+      if (entries.length === 0) throw new Error(`Monitor alert ${id}: a condition group is empty.`);
+      const group = entries.map(([field, cond]) => {
+        if (!MONITOR_FIELDS.includes(field as MonitorField)) throw new Error(`Monitor alert ${id}: unknown vital sign "${field}".`);
+        const hit = /^\s*(>=|<=|>|<)\s*(-?\d+(?:\.\d+)?)\s*$/.exec(String(cond));
+        if (!hit) throw new Error(`Monitor alert ${id}: "${field}: ${cond}" is not a comparison such as ">= 38".`);
+        return { field: field as MonitorField, op: hit[1] as MonitorOp, value: Number(hit[2]) };
+      });
+      // Oxygen saturation is less reliable at low cabin pressure, so it never raises an alert by itself.
+      if (group.every((c) => c.field === 'spo2')) throw new Error(`Monitor alert ${id}: oxygen saturation may never raise an alert on its own.`);
+      return group;
+    });
+  }
   return f;
 }
 

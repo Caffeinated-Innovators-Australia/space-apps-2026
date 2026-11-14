@@ -2,6 +2,8 @@
 // A pathway names a pattern to check and the next steps. It never names a finding: that is for the clinicians.
 // Pure functions, like the rest of the action layer. Rules decide; nothing here calls a language model.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
+import { latestVitals, vitalsLine } from './vitals.ts';
+import { ultrasoundSummary } from './ultrasound.ts';
 import { crewById, daySummary, indicatorById, latestReading, settingById } from './actions.ts';
 import { personalBand, RANK, round, type PathwayRule, type RuleFile, type Tier } from './rules.ts';
 import type { CasePack, PainEntry, Seed, State } from './types.ts';
@@ -192,6 +194,8 @@ export function pathwayCaseContent(state: State, seed: Seed, rules: RuleFile, pa
     },
     symptoms: state.symptoms.filter((s) => s.crewId === pack.crewId).map((s) => ({ label: s.label, at: iso(s.at) })),
     tests: pathway.tests.map((t) => ({ test: t.label, result: state.pathwayTests?.[key]?.[t.id] ?? 'Not recorded' })),
+    vitals: latestVitals(state, pack.crewId) ? vitalsLine(latestVitals(state, pack.crewId)!.values) : undefined,
+    ultrasound: ultrasoundSummary(state, pack.crewId),
     painScores: (state.painLog ?? []).filter((p) => p.crewId === pack.crewId && p.pathwayId === pathway.id).map((p) => ({ score: p.score, outOf: 10, at: iso(p.at) })),
     recentTrends: pathwayContext(state, seed, rules, pack.crewId, pathway).map((c) => ({ indicator: c.name, summary: c.text, drifted: c.flagged })),
     otherSignalsToday: day.flagged.filter((x) => !(x.indicator.environment && settingById(seed, pack.settingId).habitat === false)).map((x) => ({ indicator: x.indicator.name, value: x.reading!.value, unit: x.indicator.unit, tier: x.assessment!.tier, why: x.assessment!.why })),

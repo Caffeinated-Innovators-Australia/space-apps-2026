@@ -46,9 +46,9 @@ INDICATORS = [
               "why": "Isolation and confinement wear on everyone. An honest daily check-in shows a trend long before it shows in your work.",
               "what": "A low day is logged and nothing more. A run of low days is shared with your crew medic, and only with them."}},
     {"id": "reaction", "group": "Mind and sleep", "name": "Reaction time", "region": "Mind", "unit": "ms", "dp": 0, "watch": "high", "cadence": "prompted", "slot": "any",
-     "input": {"kind": "test", "min": 100, "max": 2000, "prompt": "Reaction test: five taps"},
+     "input": {"kind": "test", "min": 100, "max": 2000, "prompt": "Reaction check"},
      "hazards": ["E", "I"],
-     "card": {"how": "Hold the tablet steady. When the panel turns bright, tap it as fast as you can. Five rounds, about thirty seconds.",
+     "card": {"how": "Hold the tablet steady. Tap as soon as the counter appears. The full check runs three minutes; the demo runs thirty seconds.",
               "why": "Poor sleep and raised cabin carbon dioxide both slow thinking. A short reaction test shows it when you may not feel it.",
               "what": "If you are slower than your own range, rest and repeat. If it holds, hand over safety-critical tasks and tell your crew medic."}},
     {"id": "cabin-co2", "environment": True, "group": "Cabin and radiation", "name": "Cabin carbon dioxide", "region": "Cabin", "unit": "mmHg", "dp": 1, "watch": "high", "cadence": "sensor", "slot": "any",
@@ -308,7 +308,7 @@ seed = {
     "privacy": {
         "status": "Draft policy for the team to confirm (CR-13)",
         "rows": [
-            {"what": "Your readings and trends", "you": "Always", "medic": "Only what you send, or a confirmed Urgent result", "surgeon": "Only the cases you send", "crew": "Never"},
+            {"what": "Your readings and trends", "you": "Always", "medic": "Only what you send, or a confirmed Act now result", "surgeon": "Only the cases you send", "crew": "Never"},
             {"what": "Mood and symptom logs", "you": "Always", "medic": "Only a run of low days, or what you send", "surgeon": "Only the cases you send", "crew": "Never"},
             {"what": "Check-in streak and crew goal", "you": "Always", "medic": "Totals only", "surgeon": "Totals only", "crew": "Crew total only, never who"},
             {"what": "Cabin carbon dioxide", "you": "Always", "medic": "Always", "surgeon": "Always", "crew": "Always: it is the shared cabin"},

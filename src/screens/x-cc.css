@@ -1,0 +1,13 @@
+/* Weekly crew check-in screen. */
+/* AI assistance: drafted with Claude Code (see AI_USE.md). */
+.x-cc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 20px; }
+.x-cc-item { display: flex; flex-direction: column; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line); }
+.x-cc-item:first-child { border-top: 0; padding-top: 0; }
+.x-cc-q { margin: 0; font-weight: 600; }
+.x-cc-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink-muted); margin-right: 8px; }
+.x-cc-scale { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.x-cc-btn { min-height: 56px; min-width: 44px; font-size: 20px; font-weight: 600; font-family: var(--font-mono); font-variant-numeric: tabular-nums; background: var(--surface-200); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 10px; cursor: pointer; }
+.x-cc-btn[aria-pressed='true'] { box-shadow: inset 0 0 0 3px var(--focus); border-color: var(--focus); background: var(--surface-100); }
+.x-cc-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.x-cc-ends { display: flex; justify-content: space-between; gap: 12px; }
+.x-cc-meta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }

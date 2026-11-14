@@ -1,0 +1,9 @@
+/* Styles for the Emergency module screen, which embeds the ASTRA prototype. Every class starts x-as-.
+   AI assistance: drafted with Claude Code (see AI_USE.md). */
+.x-as-screen { display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; }
+.x-as-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.x-as-back { min-height: 44px; }
+.x-as-note { margin: 0; font-size: 16px; color: var(--ink-muted); flex: 1 1 200px; min-width: 0; }
+.x-as-frame { display: block; width: 100%; flex: 1; min-height: max(480px, calc(100dvh - 160px)); border: 1px solid var(--line); border-radius: 8px; background: var(--surface-100); }
+.x-as-frame[hidden] { display: none; }
+.x-as-failed { display: flex; flex-direction: column; gap: 12px; }
