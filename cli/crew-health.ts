@@ -5,7 +5,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assessValue, casePackContent, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, initialState, parseRules, recordReading, sendCase, streak, type Seed, type State } from '../src/core/index.ts';
+import { assessValue, caseContent, casePackContent, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, initialState, logPain, parseRules, pathwayCaseContent, pathwayStatuses, recordReading, sendCase, sendPathwayCase, streak, toggleSymptom, type Seed, type State } from '../src/core/index.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const rules = parseRules(readFileSync(join(root, 'rules/rules.yaml'), 'utf8'));
@@ -23,6 +23,8 @@ const save = (s: State) => writeFileSync(stateFile, JSON.stringify(s, null, 1) +
 const need = (k: string): string => { if (!opts[k]) throw new Error(`Missing --${k}.`); return opts[k]; };
 const print = (x: unknown) => console.log(JSON.stringify(x, null, 2));
 
+const view = (s: State, crewId: string) => pathwayStatuses(s, seed, rules, crewId).map((p) => ({ rule: p.pathway.id, checksFor: p.pathway.name, level: p.level, title: p.title, why: p.why, steps: p.steps, recentTrends: p.context.map((c) => c.text), painScores: p.pain.map((x) => x.score), placeholder: p.placeholder, note: 'A pattern to check, not a diagnosis.' }));
+
 const HELP = `crew-health: assess a health reading against a crew member's own baseline and their mission so far.
 Assessment and next steps only. Not a diagnosis. Rules are placeholders until clinicians sign them off.
 Crew values are SYNTHETIC.
@@ -37,6 +39,11 @@ Commands (all print JSON):
   history --crew ID --indicator ID                  baseline, the mission so far and today's readings
   streak  --crew ID                                 check-in streak and the shared crew goal
   send    --reading ID [--setting ID]               queue a case for the next link to Earth
+  symptoms                                          list the symptoms a crew member can log, and the patterns the rules act on
+  symptom --crew ID --label "TEXT"                  log a symptom, or clear it if already logged
+  pathways --crew ID                                symptom patterns open for this person now, with next steps
+  pain    --crew ID --pathway ID --score N          log a pain score from 0 to 10; no threshold is applied
+  send-pathway --crew ID --pathway ID [--setting ID]  queue a symptom-pattern case for the next link to Earth
   outbox                                            list queued and exported cases
   export  [--out FILE]                              write queued cases to a file and mark them exported
   demo    --crew ID --indicator ID                  the example value for today's demo
@@ -72,7 +79,29 @@ try {
       print(casePackContent(r.state, seed, rules, r.pack.id));
       break;
     }
-    case 'outbox': { const s = load(); print(s.outbox.map((p) => casePackContent(s, seed, rules, p.id))); break; }
+    case 'symptoms': print({ status: seed.symptoms.status, options: seed.symptoms.options, patterns: rules.pathways.map((w) => ({ id: w.id, checksFor: w.name, opensOn: w.core, alsoAsks: w.supporting, urgentWith: w.urgent, source: w.source, confidence: w.confidence, signedOffBy: w.signed_off_by })) }); break;
+    case 'symptom': {
+      const label = need('label');
+      if (!seed.symptoms.options.includes(label)) throw new Error(`Unknown symptom "${label}". Known: ${seed.symptoms.options.join('; ')}.`);
+      const s = toggleSymptom(load(), need('crew'), label, Date.now());
+      save(s);
+      print({ logged: s.symptoms.filter((x) => x.crewId === opts.crew).map((x) => x.label), pathways: view(s, opts.crew) });
+      break;
+    }
+    case 'pathways': print(view(load(), need('crew'))); break;
+    case 'pain': {
+      const s = logPain(load(), { crewId: need('crew'), pathwayId: need('pathway'), score: Number(need('score')), at: Date.now() });
+      save(s);
+      print({ painScores: (s.painLog ?? []).filter((x) => x.crewId === opts.crew && x.pathwayId === opts.pathway), note: 'No threshold is applied to a pain score.' });
+      break;
+    }
+    case 'send-pathway': {
+      const r = sendPathwayCase(load(), seed, rules, { crewId: need('crew'), pathwayId: need('pathway'), settingId: opts.setting ?? seed.settings[0].id, at: Date.now() });
+      save(r.state);
+      print(pathwayCaseContent(r.state, seed, rules, r.pack.id));
+      break;
+    }
+    case 'outbox': { const s = load(); print(s.outbox.map((p) => caseContent(s, seed, rules, p.id))); break; }
     case 'export': {
       const r = exportOutbox(load(), seed, rules, Date.now());
       save(r.state);

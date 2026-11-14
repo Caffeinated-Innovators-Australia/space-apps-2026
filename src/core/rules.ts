@@ -13,6 +13,27 @@ export interface RuleDef extends Signed { id: string; kind: RuleKind; tier: Tier
 export interface CombinedRule extends Signed { id: string; min_flags: number; title: string; why: string }
 export interface PromptRule extends Signed { id: string; when_flagged: string[]; then_prompt: string; why: string }
 
+/**
+ * A symptom pathway: a pattern of logged symptoms the rules act on. It names a pattern to check, never a finding.
+ * core symptoms open the pathway; core plus enough supporting symptoms is amber; any urgent symptom on top is red.
+ */
+export interface PathwayRule extends Signed {
+  id: string;
+  name: string;
+  region: string;
+  core: string[];
+  supporting: string[];
+  min_supporting: number;
+  urgent: string[];
+  /** Indicators whose recent trend is shown beside the pattern, and sent with the case. */
+  context: string[];
+  check: { title: string; why: string };
+  titles: Record<'amber' | 'red', string>;
+  why: Record<'amber' | 'red', string>;
+  steps: Record<'amber' | 'red', string[]>;
+  background: { text: string; source: string; link: string }[];
+}
+
 /** The whole rules file, checked. */
 export interface RuleFile {
   version: string;
@@ -22,6 +43,7 @@ export interface RuleFile {
   rules: RuleDef[];
   combined: CombinedRule;
   prompts: PromptRule[];
+  pathways: PathwayRule[];
   steps: Record<Tier, string[]>;
 }
 
@@ -91,6 +113,24 @@ export function parseRules(text: string): RuleFile {
   signed(f.combined, f.combined.id);
   for (const p of f.prompts ?? []) signed(p, p.id ?? 'prompt');
   f.prompts = f.prompts ?? [];
+  f.pathways = f.pathways ?? [];
+  for (const w of f.pathways) {
+    const id = w?.id ?? 'pathway';
+    signed(w, id);
+    if (!w.name || !w.region) throw new Error(`Pathway ${id}: missing name or region.`);
+    if (!Array.isArray(w.core) || w.core.length === 0) throw new Error(`Pathway ${id}: needs at least one core symptom.`);
+    w.supporting = w.supporting ?? [];
+    w.urgent = w.urgent ?? [];
+    w.context = w.context ?? [];
+    w.background = w.background ?? [];
+    w.min_supporting = Number(w.min_supporting ?? 1);
+    if (!w.check?.title || !w.check.why) throw new Error(`Pathway ${id}: missing the check wording.`);
+    for (const t of ['amber', 'red'] as const) {
+      if (!w.titles?.[t] || !w.why?.[t]) throw new Error(`Pathway ${id}: missing the ${t} title or explanation.`);
+      if (!Array.isArray(w.steps?.[t]) || w.steps[t].length === 0) throw new Error(`Pathway ${id}: needs at least one next step for ${t}.`);
+    }
+    for (const b of w.background) if (!b.text || !b.source || !b.link) throw new Error(`Pathway ${id}: every background line needs its source and link.`);
+  }
   for (const t of TIERS) if (!Array.isArray(f.steps?.[t]) || f.steps[t].length === 0) throw new Error(`Every tier needs at least one next step: none for ${t}.`);
   return f;
 }

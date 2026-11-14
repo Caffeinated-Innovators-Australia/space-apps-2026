@@ -13,10 +13,10 @@ import { Timeline } from './components/Timeline';
 import { VisionTest } from './components/VisionTest';
 import { AdvisoryPill, AlertCard, LimitArrow, ReadingTile, SyntheticTag, TierPill, TIER_WORD, TierWords } from './components/ui';
 import {
-  acknowledge, assessReading, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
+  acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
   initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
-  toggleStep, toggleSymptom,
-  type Assessment, type DaySummary, type Indicator, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
+  logPain, pathwayAlerts, pathwayCaseContent, pathwayStatuses, sendPathwayCase, togglePathwayStep, toggleStep, toggleSymptom,
+  type Assessment, type DaySummary, type Indicator, type PathwayStatus, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
 import osd from './data/osd569_cbc.json';
 import seedJson from './data/seed.json';
@@ -48,10 +48,10 @@ function clock(totalSeconds: number): string {
 }
 const shown = (i: Indicator, v: number) => (i.input.kind === 'scale' ? `${v.toFixed(0)}` : v.toFixed(i.dp));
 
-interface Route { name: 'home' | 'reading' | 'result' | 'gap' | 'crew' | 'outbox' | 'about'; arg?: string }
+interface Route { name: 'home' | 'reading' | 'result' | 'gap' | 'pathway' | 'crew' | 'outbox' | 'about'; arg?: string }
 function readRoute(): Route {
   const [name, arg] = window.location.hash.replace(/^#\/?/, '').split('/');
-  const ok = ['reading', 'result', 'gap', 'crew', 'outbox', 'about'].includes(name);
+  const ok = ['reading', 'result', 'gap', 'pathway', 'crew', 'outbox', 'about'].includes(name);
   return ok ? { name: name as Route['name'], arg } : { name: 'home' };
 }
 function go(name: Route['name'], arg?: string) {
@@ -90,7 +90,7 @@ export function App() {
         <header className="top">
           <button className="brand" onClick={() => go('home')}>Crew health check</button>
           <nav className="nav" aria-label="Main">
-            <button aria-current={['home', 'reading', 'result', 'gap'].includes(route.name) ? 'page' : undefined} onClick={() => go('home')}>Today</button>
+            <button aria-current={['home', 'reading', 'result', 'gap', 'pathway'].includes(route.name) ? 'page' : undefined} onClick={() => go('home')}>Today</button>
             <button aria-current={route.name === 'crew' ? 'page' : undefined} onClick={() => go('crew')}>Real crew data</button>
             <button aria-current={route.name === 'outbox' ? 'page' : undefined} onClick={() => go('outbox')}>Outbox{queued ? ` (${queued})` : ''}</button>
             <button aria-current={route.name === 'about' ? 'page' : undefined} onClick={() => go('about')}>Privacy and limits</button>
@@ -116,6 +116,8 @@ export function App() {
             <ReadingScreen {...shared} rules={rules} indicatorId={seed.indicators.some((i) => i.id === route.arg) ? route.arg! : seed.indicators[0].id} />
           ) : route.name === 'result' && reading ? (
             <Result {...shared} rules={rules} reading={reading} />
+          ) : route.name === 'pathway' && rules.pathways.some((w) => w.id === route.arg) ? (
+            <PathwayScreen {...shared} rules={rules} pathwayId={route.arg!} />
           ) : route.name === 'gap' && reading ? (
             <Gap {...shared} rules={rules} reading={reading} />
           ) : (
@@ -136,9 +138,12 @@ export function App() {
 /** Always on screen: mission time and the alert that most needs attention (NASA display standard, Appendix F.4.2 and F.6.1). */
 function StatusBar({ state, commit, rules, crewId }: { state: State; commit: (s: State) => void; rules: RuleFile; crewId: string }) {
   const day = daySummary(state, seed, rules, crewId);
-  const flagged = [...day.flagged].sort((a, b) => RANK[b.assessment!.tier] - RANK[a.assessment!.tier]);
+  const flagged = [
+    ...day.flagged.map((x) => ({ id: x.reading!.id, tier: x.assessment!.tier, name: x.indicator.name, open: () => go('result', x.reading!.id) })),
+    ...pathwayAlerts(state, seed, rules, crewId).map((p) => ({ id: p.key, tier: p.tier, name: `${p.name} symptoms`, open: () => go('pathway', p.pathwayId) })),
+  ].sort((x, y) => RANK[y.tier] - RANK[x.tier]);
   const done = state.acknowledged ?? [];
-  const open = flagged.filter((x) => !done.includes(x.reading!.id));
+  const open = flagged.filter((x) => !done.includes(x.id));
   const top = open[0];
   return (
     <div className="statusbar" role="status" aria-label="Mission time and alerts">
@@ -146,9 +151,9 @@ function StatusBar({ state, commit, rules, crewId }: { state: State; commit: (s:
       <span className="alertline">
         {top ? (
           <>
-            <TierPill tier={top.assessment!.tier} />
-            <button className="open" onClick={() => go('result', top.reading!.id)}>{top.indicator.name}{open.length > 1 ? `, and ${open.length - 1} more` : ''}</button>
-            <button className="small" onClick={() => commit(acknowledge(state, top.reading!.id))}>Acknowledge</button>
+            <TierPill tier={top.tier} />
+            <button className="open" onClick={top.open}>{top.name}{open.length > 1 ? `, and ${open.length - 1} more` : ''}</button>
+            <button className="small" onClick={() => commit(acknowledge(state, top.id))}>Acknowledge</button>
           </>
         ) : flagged.length > 0 ? (
           <span>{flagged.length} {flagged.length === 1 ? 'alert' : 'alerts'} acknowledged</span>
@@ -247,6 +252,8 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
       </div>
 
       <CombinedCard day={day} setting={setting} onOpen={(r) => go('result', r.id)} />
+
+      {pathwayStatuses(state, seed, rules, crewId).map((p) => <PathwayCard key={p.key} p={p} setting={setting} />)}
 
       {promptOpen ? (
         <section className="card prompt-card" aria-live="polite">
@@ -645,6 +652,167 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
   );
 }
 
+/** The card on Today when logged symptoms form a pattern the rules act on. */
+function PathwayCard({ p, setting }: { p: PathwayStatus; setting: Setting }) {
+  return p.level === 'check' ? (
+    <section className="card prompt-card" aria-live="polite">
+      <div className="card-head"><AdvisoryPill>Advisory: three quick questions</AdvisoryPill><SyntheticTag /></div>
+      <h2 className="title">{p.title}</h2>
+      <p>{say(p.why, setting)}</p>
+      <p className="source">Rule {p.pathway.id}. {p.placeholder ? 'Placeholder rule, awaiting clinician review.' : ''}</p>
+      <div className="btn-row"><button className="btn" onClick={() => go('pathway', p.pathway.id)}>Answer the questions</button></div>
+    </section>
+  ) : (
+    <section className={`alert alert-${p.level}`} aria-live="polite">
+      <div className="card-head"><TierPill tier={p.level as Tier} /><SyntheticTag /></div>
+      <h2 className="title">{p.title}</h2>
+      <p>{say(p.why, setting)}</p>
+      <p className="source">Rule {p.pathway.id}. Source: {p.pathway.source} Confidence: {p.pathway.confidence}</p>
+      {p.placeholder ? <span className="placeholder">Placeholder rule, awaiting clinician review</span> : null}
+      <div className="btn-row"><button className="btn" onClick={() => go('pathway', p.pathway.id)}>{say('See what to do, and send the case to Earth', setting)}</button></div>
+    </section>
+  );
+}
+
+/** One symptom pathway from start to finish: the follow-up questions, the steps, the pain log and the case for Earth. */
+function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }: Shared & { rules: RuleFile; pathwayId: string }) {
+  const pathway = rules.pathways.find((w) => w.id === pathwayId)!;
+  const p = pathwayStatuses(state, seed, rules, crewId).find((x) => x.pathway.id === pathwayId);
+  const key = `pathway:${crewId}:${pathwayId}`;
+  const pack = state.outbox.find((x) => x.readingId === key);
+  const [startAt, setStartAt] = useState(pack?.createdAt ?? Date.now());
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, []);
+  const mine = state.symptoms.filter((x) => x.crewId === crewId);
+  const has = (label: string) => mine.some((x) => x.label === label);
+  const pain = (state.painLog ?? []).filter((x) => x.crewId === crewId && x.pathwayId === pathwayId);
+  const active = p && p.level !== 'check' ? p : undefined;
+  const send = () => { const r = sendPathwayCase(state, seed, rules, { crewId, pathwayId, settingId: setting.id, at: Date.now() }); commit(r.state); setStartAt(r.pack.createdAt); };
+  const content = pack ? pathwayCaseContent(state, seed, rules, pack.id) : undefined;
+  const left = setting.replySeconds - (now - startAt) / 1000;
+  const meanwhile = (active?.steps ?? []).filter((st) => !/send the case/i.test(st));
+  const done = state.pathwaySteps?.[key] ?? [];
+  const context = p?.context ?? [];
+  const chips = (labels: string[]) => (
+    <div className="chips" role="group">
+      {labels.map((o) => <button key={o} className="chip chip-toggle" aria-pressed={has(o)} onClick={() => commit(toggleSymptom(state, crewId, o, Date.now()))}>{o}</button>)}
+    </div>
+  );
+  return (
+    <>
+      <Context setting={setting} crewId={crewId} />
+      <div className="grid wide-left">
+        <div className="stack">
+          {active ? (
+            <section className={`alert alert-${active.level}`} aria-live="polite">
+              <div className="card-head"><TierPill tier={active.level as Tier} /><SyntheticTag /></div>
+              <h1 className="title">{active.title}</h1>
+              <div className="why">
+                <span className="why-label">Why this alert?</span>
+                <p>{say(active.why, setting)}</p>
+                <p className="source">Rule {pathway.id}. Source: {pathway.source} Confidence: {pathway.confidence}</p>
+              </div>
+              {active.placeholder ? <span className="placeholder">Placeholder rule, awaiting clinician review</span> : null}
+            </section>
+          ) : (
+            <section className="card prompt-card" aria-live="polite">
+              <div className="card-head"><AdvisoryPill>Advisory: three quick questions</AdvisoryPill><SyntheticTag /></div>
+              <h1 className="title">{p ? p.title : `${pathway.region}: nothing logged`}</h1>
+              <p>{p ? say(p.why, setting) : 'Tap anything below that applies to you now. If nothing does, there is nothing to do here.'}</p>
+            </section>
+          )}
+          <div className="card">
+            <h2 className="title">1. Where is the pain?</h2>
+            {chips(pathway.core)}
+            <h2 className="title">2. Do you also have any of these?</h2>
+            {chips(pathway.supporting)}
+            <h2 className="title">3. Either of these means act now</h2>
+            {chips(pathway.urgent)}
+            <p className="caption">Tap any that apply. The rules update as you tap, and what you log goes in the case.</p>
+            <span className="placeholder">{seed.symptoms.status}</span>
+          </div>
+          <div className="card">
+            <h2 className="title">Pain now, from 0 to 10</h2>
+            <div className="chips" role="group" aria-label="Pain score from 0, no pain, to 10, the worst you can imagine">
+              {Array.from({ length: 11 }, (_, n) => <button key={n} className="chip" onClick={() => commit(logPain(state, { crewId, pathwayId, score: n, at: Date.now() }))}>{n}</button>)}
+            </div>
+            {pain.length > 0 ? <p aria-live="polite">Logged: {pain.map((x) => `${x.score} at ${hhmm(x.at)}`).join(', ')}.</p> : <p className="muted">0 is no pain. 10 is the worst you can imagine. Log it again whenever it changes.</p>}
+            <p className="caption">{say('No threshold is applied to this score. Your crew medic and Earth read how it moves over time.', setting)}</p>
+          </div>
+          <div className="card">
+            <h2 className="title">What your record shows</h2>
+            <ul className="plain">
+              {context.length > 0 ? context.map((c) => <li key={c.indicatorId}>{c.flagged ? <strong>{c.text}</strong> : c.text}</li>) : <li>Log a symptom above to see your recent trends here.</li>}
+            </ul>
+            {pathway.background.map((b) => <p key={b.link} className="caption">{b.text} Source: <a href={b.link}>{b.source}</a>.</p>)}
+          </div>
+        </div>
+        <div className="stack">
+          {pack ? (
+            <section className="gap" aria-label="Time until help can answer">
+              <Where setting={setting} onPick={(id) => { ui({ settingId: id }); setStartAt(Date.now()); }} />
+              <span className="kicker">{left > 0 ? setting.gapLabel : setting.nowLabel}</span>
+              <div className="gap-clock" role="timer">{clock(left)}</div>
+              <p>{setting.detail}</p>
+              <p className="gap-advice">{setting.advice}</p>
+              <p className="caption">{setting.basis}</p>
+              {setting.scenarioSynthetic ? <SyntheticTag /> : null}
+            </section>
+          ) : null}
+          {active ? (
+            <div className="card">
+              <div className="card-head"><span className="why-label">{pack ? 'Meanwhile' : 'What to do now'}</span><TierPill tier={active.level as Tier} /></div>
+              <ul className="checks">
+                {meanwhile.map((st) => (
+                  <li key={st}>
+                    <button className="check" role="checkbox" aria-checked={done.includes(st)} onClick={() => commit(togglePathwayStep(state, key, st))}>
+                      <span className="box" aria-hidden="true">{done.includes(st) ? '✓' : ''}</span>
+                      <span>{cap(say(st, setting))}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <p className="caption">{say('Tick each step as you do it. Earth sees what you have done.', setting).replace('. the', '. The')}</p>
+              <span className="placeholder">Placeholder steps, awaiting clinician review</span>
+              {pack ? null : (
+                <>
+                  <p className="gap-advice">{setting.advice}</p>
+                  <div className="btn-row"><button className="btn" onClick={send}>{say('Send case to Earth', setting)}</button></div>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="card">
+              <span className="why-label">What happens next</span>
+              <p>{say('If your answers match the pattern, you get the steps to start now and a case to send to Earth. If they do not, nothing is raised and your log stays private.', setting)}</p>
+            </div>
+          )}
+          {pack && content ? (
+            <div className="card">
+              <div className="card-head"><h2 className="title">Case pack</h2><SyntheticTag /></div>
+              <dl className="pack">
+                <dt>Checked for</dt><dd>{content.pattern.checkedFor} (rule {content.pattern.rule}). Not a diagnosis.</dd>
+                <dt>Assessment</dt><dd>{content.assessment.tier ? TIER_WORD[content.assessment.tier] : 'Symptoms since cleared'}</dd>
+                <dt>Symptoms</dt><dd>{content.symptoms.length > 0 ? content.symptoms.map((x) => `${x.label} (${hhmm(Date.parse(x.at))})`).join(', ') : 'None logged now.'}</dd>
+                <dt>Pain scores</dt><dd>{content.painScores.length > 0 ? content.painScores.map((x) => `${x.score}/10 at ${hhmm(Date.parse(x.at))}`).join(', ') : 'None logged yet.'}</dd>
+                <dt>Recent trends</dt><dd>{content.recentTrends.map((x) => x.summary).join(' ')}</dd>
+                <dt>Other signals</dt><dd>{content.otherSignalsToday.length > 0 ? content.otherSignalsToday.map((x) => `${x.indicator} ${x.value} ${x.unit}`).join('; ') : 'None today.'}</dd>
+                <dt>Done so far</dt><dd>{content.stepsDone.length > 0 ? content.stepsDone.map((x) => cap(say(x, setting))).join(' ') : 'Nothing ticked yet.'}</dd>
+              </dl>
+              <p className="caption">{pack.status === 'queued' ? `Queued on this device at ${hhmm(pack.createdAt)}. It leaves when a link opens, with anything you tick or log before then.` : `Exported at ${hhmm(pack.exportedAt ?? pack.createdAt)}.`}</p>
+              <div className="btn-row"><button className="btn secondary" onClick={() => go('outbox')}>Open outbox</button></div>
+            </div>
+          ) : null}
+          <div className="btn-row"><button className="btn secondary" onClick={() => go('home')}>Back to today</button></div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function Outbox({ state, commit, rules }: Shared & { rules: RuleFile }) {
   const [file, setFile] = useState<string | null>(null);
   const queued = state.outbox.filter((p) => p.status === 'queued');
@@ -671,12 +839,12 @@ function Outbox({ state, commit, rules }: Shared & { rules: RuleFile }) {
         {state.outbox.length === 0 ? <p>No cases yet. A case is queued when you send a result that needs your crew medic or is urgent.</p> : (
           <ul className="rows">
             {[...state.outbox].reverse().map((p) => {
-              const c = casePackContent(state, seed, rules, p.id);
+              const c = caseContent(state, seed, rules, p.id);
               return (
                 <li key={p.id}>
-                  <button className="row" onClick={() => go('gap', p.readingId)}>
-                    <span className="row-name">{c.crew}: {c.reading.indicator.toLowerCase()} <span className="mono">{c.reading.value}</span> {c.reading.unit}</span>
-                    <TierPill tier={c.assessment.tier} />
+                  <button className="row" onClick={() => (c.kind === 'reading' ? go('gap', p.readingId) : go('pathway', c.pattern.rule))}>
+                    {c.kind === 'reading' ? <span className="row-name">{c.crew}: {c.reading.indicator.toLowerCase()} <span className="mono">{c.reading.value}</span> {c.reading.unit}</span> : <span className="row-name">{c.crew}: {c.pattern.region.toLowerCase()} symptoms</span>}
+                    {c.assessment.tier ? <TierPill tier={c.assessment.tier} /> : null}
                     <span className="caption">{p.status === 'queued' ? `Queued ${hhmm(p.createdAt)}` : `Exported ${hhmm(p.exportedAt ?? p.createdAt)}`}</span>
                     <span className="chev" aria-hidden="true">›</span>
                   </button>

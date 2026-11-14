@@ -195,6 +195,10 @@ for cid, name, sex, normal in CREW:
         mission["reaction"][-9] = 259.0
         mission["reaction"][-3] = 271.0
         mission["mood"][-5:] = [4.0, 4.0, 3.0, 4.0, 4.0]
+    if cid == "crew-2":
+        # A second story, for the kidney stone pathway: fluid intake drifts down over the past week.
+        b = statistics.mean(baseline["fluid"])
+        mission["fluid"][-7:] = [round(b - d, 1) for d in (0.3, 0.4, 0.4, 0.5, 0.5, 0.6, 0.6)]
     total, dose = 0.0, []
     for _ in range(DAYS):
         total += max(0.4, rng.gauss(0.66, 0.05))
@@ -263,7 +267,7 @@ seed = {
     "clockOptions": ["06:45", "09:30", "12:10", "21:10"],
     "slipMinutes": 45,
     "radiationDays": event_days,
-    "symptoms": {"status": "Placeholder list, awaiting clinician review (CR-10)", "options": ["Headache", "Tired", "Dizzy on standing", "Nauseous", "Blurred vision", "Rash", "Fever or sore throat", "Cut slow to heal", "Low mood"]},
+    "symptoms": {"status": "Placeholder list, awaiting clinician review (CR-10)", "options": ["Headache", "Tired", "Dizzy on standing", "Nauseous", "Blurred vision", "Rash", "Fever or chills", "Sore throat", "Cut slow to heal", "Low mood", "Pain in side or lower back", "Blood in urine", "Pain passing urine", "Cannot pass urine"]},
     "radiationPrompt": {"status": "Placeholder step, awaiting clinician review (CR-09)", "step": "Log your personal dosimeter reading."},
     "privacy": {
         "status": "Draft policy for the team to confirm (CR-13)",

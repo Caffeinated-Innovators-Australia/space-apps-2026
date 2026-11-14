@@ -73,6 +73,48 @@ prompts:
     confidence: Low
     signed_off_by: placeholder
 
+# Symptom pathways: a pattern of logged symptoms the rules act on. A pathway names a pattern to CHECK FOR
+# and the next steps. It never names a finding. core symptoms open the follow-up questions; core plus
+# min_supporting supporting symptoms is amber; any urgent symptom on top is red.
+# Every symptom, tier and step below is a PLACEHOLDER awaiting clinician review (CR-25 to CR-28).
+pathways:
+  - id: KS-01
+    name: "Possible kidney stone"
+    region: "Kidneys and urine"
+    core: ["Pain in side or lower back"]
+    supporting: ["Blood in urine", "Pain passing urine", "Nauseous"]
+    min_supporting: 1
+    urgent: ["Fever or chills", "Cannot pass urine"]
+    context: [fluid, exercise]
+    check:
+      title: "Pain in your side or lower back: three quick questions"
+      why: "You logged {core}. Pain here has many causes. Three quick questions tell the rules whether your crew medic should check for a kidney stone."
+    titles:
+      amber: "Kidneys and urine: symptoms for your crew medic"
+      red: "Kidneys and urine: needs action now"
+    why:
+      amber: "You logged {symptoms}. Together these match the pattern your crew medic checks for a kidney stone. This is a pattern to check, not a diagnosis."
+      red: "You logged {symptoms}. With {urgent}, the pattern your crew medic checks for a kidney stone needs action now. This is a pattern to check, not a diagnosis."
+    steps:
+      amber:
+        - "Tell your crew medic."
+        - "Log your pain score now, and again whenever it changes."
+        - "Send the case to Earth."
+      red:
+        - "Tell your crew medic now."
+        - "Log your pain score now, and again whenever it changes."
+        - "Send the case to Earth."
+    background:
+      - text: "NASA lists kidney stones as a spaceflight risk: “Exposure to microgravity induces bone atrophy/bone loss which increases circulating calcium”."
+        source: "NASA, Risk of Renal Stone Formation"
+        link: "https://www.nasa.gov/directorates/esdmd/hhp/risk-of-renal-stone-formation/"
+      - text: "NASA's guidance on prevention is fluid and exercise: crew should be “encouraged to drink an adequate amount”, and exercise lowers “the amount of stone forming calcium in urine”. For the crew medic, NASA notes that “ultrasound and limited lab work can detect and help enable stone risk management”."
+        source: "NASA OCHMO Medical Technical Brief MTB-003, Urinary Health, Rev A"
+        link: "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf"
+    source: "Placeholder rule, awaiting clinician review. The symptom pattern follows public guidance (healthdirect Australia, Kidney stones; NIDDK, Kidney stones: symptoms and causes). The risk is NASA's: Risk of Renal Stone Formation."
+    confidence: Low
+    signed_off_by: placeholder
+
 steps:
   green:
     - "Log the reading."

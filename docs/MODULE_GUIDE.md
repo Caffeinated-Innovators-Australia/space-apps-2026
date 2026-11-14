@@ -46,7 +46,13 @@ Also exported: the types `Tier`, `RuleKind`, `RuleDef`, `CombinedRule`, `PromptR
 | `reportNothing` | `state, crewId` | Logs "Nothing to report" as a check-in |
 | `sendCase` | `state, args: { readingId, settingId, at }` | Queues one case per reading for the next link. Sending again returns the same case |
 | `casePackContent` | `state, seed, rules, packId` | The full content of one case, including the other signals flagged that day |
-| `exportOutbox` | `state, seed, rules, at` | The file of queued cases (format `crew-health-case-export/2`), and marks them exported |
+| `pathwayStatuses` | `state, seed, rules, crewId` | The symptom patterns open for one person: level (`check`, `amber` or `red`), title, why, steps, recent trends and pain scores |
+| `logPain` | `state, args: { crewId, pathwayId, score, at }` | Logs a pain score from 0 to 10. No threshold is applied |
+| `togglePathwayStep` | `state, key, step` | Ticks or unticks a pathway step |
+| `sendPathwayCase` | `state, seed, rules, args: { crewId, pathwayId, settingId, at }` | Queues one case per person and pathway, once the pattern is amber or red |
+| `pathwayCaseContent` | `state, seed, rules, packId` | The full content of a pathway case, built when read |
+| `caseContent` | `state, seed, rules, packId` | The content of any case, with `kind` set to `reading` or `symptom-pathway` |
+| `exportOutbox` | `state, seed, rules, at` | The file of queued cases (format `crew-health-case-export/3`), and marks them exported |
 | `demoValue` | `seed, crewId, indicatorId` | The example value for today's demo, or the person's own baseline average; for a running total, the last mission total plus 0.7 |
 
 Also exported: the types `DayItem` and `DaySummary`.

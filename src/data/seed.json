@@ -3333,12 +3333,12 @@
      null,
      3.0,
      2.6,
-     2.8,
-     2.9,
-     2.9,
-     2.4,
      2.5,
-     2.7
+     2.5,
+     2.4,
+     2.4,
+     2.3,
+     2.3
     ],
     "energy": [
      3034.0,
@@ -6774,9 +6774,14 @@
    "Nauseous",
    "Blurred vision",
    "Rash",
-   "Fever or sore throat",
+   "Fever or chills",
+   "Sore throat",
    "Cut slow to heal",
-   "Low mood"
+   "Low mood",
+   "Pain in side or lower back",
+   "Blood in urine",
+   "Pain passing urine",
+   "Cannot pass urine"
   ]
  },
  "radiationPrompt": {

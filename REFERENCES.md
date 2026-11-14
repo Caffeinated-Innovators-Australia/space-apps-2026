@@ -11,6 +11,9 @@ Every third-party resource used, logged as it is added.
 - NASA Human Research Program, Risks of Human Spaceflight (challenge resource). https://www.nasa.gov/hrp/risks/
 - NASA Human Research Program, Ongoing HRP Research in Space (challenge resource). https://www.nasa.gov/hrp/ongoing-hrp-research/
 
+- NASA Human Research Program, Risk of Renal Stone Formation. Quoted on the kidney stone pathway screen as the reason the risk matters in spaceflight. https://www.nasa.gov/directorates/esdmd/hhp/risk-of-renal-stone-formation/ and https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=81
+- NASA Office of the Chief Health and Medical Officer, Medical Technical Brief OCHMO-MTB-003, Urinary Health, Rev A. Quoted on the kidney stone pathway screen for prevention (fluid, exercise) and for ultrasound; the source found for the clinicians' steps (CR-26). https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf
+
 ## Space agency partner data
 - Canadian Space Agency, Monitoring Radiation for Astronaut Health (challenge resource). https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp
 - Canadian Space Agency, Why Do We Conduct Science Experiments in Space? (challenge resource). https://www.asc-csa.gc.ca/eng/iss/science/why-do-we-conduct-science-experiments-in-space.asp
@@ -20,6 +23,9 @@ The NASA Human Research Program hazard pages are linked as hazard chips on every
 ## Other sources
 - The team's challenge brief: the source of the original six indicators and of the draft wording on every explanation card (how to measure, why it matters, what to do). The wording is draft and awaits clinician sign-off (CLINICIAN_REVIEW.md, CR-03).
 - Australian Institute of Health and Welfare, Deaths in Australia: variations by remoteness area (potentially avoidable deaths, 2022 to 2024). https://www.aihw.gov.au/reports/life-expectancy-deaths/deaths-in-australia/contents/variations-between-population-groups/remoteness-area
+
+- healthdirect Australia, Kidney stones (reviewed December 2024). The source for the symptom pattern in the kidney stone pathway and for fever as an urgent sign. Cited, not copied. https://www.healthdirect.gov.au/kidney-stones
+- US National Institute of Diabetes and Digestive and Kidney Diseases (NIDDK), Kidney stones: symptoms and causes. The source for being unable to pass urine as a sign to act on at once. Cited, not copied. https://www.niddk.nih.gov/health-information/urologic-diseases/kidney-stones/symptoms-causes
 
 ## Design criteria
 - NASA-STD-3001 Volume 2, Revision F, section 10 and Appendix F (Display Standard). https://standards.nasa.gov/

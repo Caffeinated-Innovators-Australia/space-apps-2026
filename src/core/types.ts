@@ -106,7 +106,12 @@ export interface CasePack {
   settingId: string;
   status: 'queued' | 'exported';
   exportedAt?: number;
+  /** Set when the case came from a symptom pathway and not from a reading. */
+  pathwayId?: string;
 }
+
+/** One pain score, logged while a symptom pathway is open. No threshold is applied: the trend is for the medic and the flight surgeon. */
+export interface PainEntry { crewId: string; pathwayId: string; score: number; at: number }
 
 /** Everything the device remembers. One small document, saved after every action. */
 export interface State {
@@ -118,6 +123,9 @@ export interface State {
   outbox: CasePack[];
   /** Readings whose alert the crew member has acknowledged. */
   acknowledged?: string[];
+  painLog?: PainEntry[];
+  /** Pathway steps ticked as done, keyed by crew member and pathway. */
+  pathwaySteps?: Record<string, string[]>;
   ui: { crewId: string; settingId: string; theme: string; doseLogged: boolean; clock: string; slipped: boolean };
 }
 

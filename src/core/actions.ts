@@ -3,6 +3,7 @@
 // any agent get identical answers. Rules decide; nothing here calls a language model.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { assess, RANK, type Assessment, type RuleFile, type Tier } from './rules.ts';
+import { pathwayCaseContent } from './pathways.ts';
 import { applySlip, plan, type CheckIn, type PlanItem } from './schedule.ts';
 import type { CasePack, CrewProfile, Indicator, Reading, Seed, Setting, State, Symptom, TimelineBlock } from './types.ts';
 
@@ -307,13 +308,20 @@ export function casePackContent(state: State, seed: Seed, rules: RuleFile, packI
   };
 }
 
+/** The content of any case: one that came from a reading, or one that came from a symptom pathway. */
+export function caseContent(state: State, seed: Seed, rules: RuleFile, packId: string) {
+  const pack = state.outbox.find((p) => p.id === packId);
+  if (!pack) throw new Error(`Unknown case "${packId}".`);
+  return pack.pathwayId ? pathwayCaseContent(state, seed, rules, packId) : { kind: 'reading' as const, ...casePackContent(state, seed, rules, packId) };
+}
+
 /** Build the file that leaves the device when a link opens, and mark those cases as exported. */
-export function exportOutbox(state: State, seed: Seed, rules: RuleFile, at: number): { state: State; file: { exportedAt: string; format: string; cases: ReturnType<typeof casePackContent>[] } } {
+export function exportOutbox(state: State, seed: Seed, rules: RuleFile, at: number): { state: State; file: { exportedAt: string; format: string; cases: ReturnType<typeof caseContent>[] } } {
   const queued = state.outbox.filter((p) => p.status === 'queued');
   const outbox = state.outbox.map((p) => (p.status === 'queued' ? { ...p, status: 'exported' as const, exportedAt: at } : p));
   const next = { ...state, outbox };
-  const cases = queued.map((p) => casePackContent(next, seed, rules, p.id));
-  return { state: next, file: { exportedAt: new Date(at).toISOString(), format: 'crew-health-case-export/2', cases } };
+  const cases = queued.map((p) => caseContent(next, seed, rules, p.id));
+  return { state: next, file: { exportedAt: new Date(at).toISOString(), format: 'crew-health-case-export/3', cases } };
 }
 
 /** An example value for the demo: today's story value where the seed has one, otherwise the person's own average. */

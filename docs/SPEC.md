@@ -72,10 +72,11 @@ Each crew member has a pre-flight baseline and 86 past mission days. Baselines a
 - Six check-ins are due daily: sleep, resting heart rate, mood, exercise plan done, fluid intake and food energy. Each weekly check-in falls due when the mission day modulo 7 equals its `weekDay`: haemoglobin 0, blood pressure 1, near vision 3, grip strength and body mass 5. On day 87 that is near vision. Reaction time is due only when PR-01 fires. Cabin carbon dioxide and radiation dose are read from sensors, which are SYNTHETIC in the demo, and are not scheduled.
 
 ## 5. On-device storage (satisfies: NFR-03)
+- Symptom pathways (`pathways:` in `rules/rules.yaml`, code in `src/core/pathways.ts`): core symptoms open follow-up questions; core plus a supporting symptom is Crew medic; an urgent symptom on top is Urgent. A pathway case holds symptoms, pain scores, recent trends, other signals and ticked steps. The first pathway is a possible kidney stone (KS-01); it names a pattern to check, never a finding.
 - IndexedDB (database `crew-health`) holds one record: readings, symptom logs, "Nothing to report" logs, the case outbox and screen choices. It is saved after every action, and a reload with no network keeps it. If the browser blocks IndexedDB, the app keeps the record in memory.
 - The streak is worked out, not stored: the days in a row with every daily check-in (the six above) logged, counting today once all six are logged. It counts check-ins and never results. "Nothing to report" is a valid one-tap log. Insights unlock at 14 and 30 days of streak.
 - The crew goal is the whole crew's daily check-ins over the past seven days (six past days and today) against the total possible. No one is ranked.
-- The outbox queues one case per reading and exports queued cases as one JSON file (format `crew-health-case-export/2`) when a link opens (store and forward). Each case includes the reading, the past 14 days, the rules that fired, the steps given and ticked, symptoms and the other signals flagged that day.
+- The outbox queues one case per reading and exports queued cases as one JSON file (format `crew-health-case-export/3`) when a link opens (store and forward). Each case includes the reading, the past 14 days, the rules that fired, the steps given and ticked, symptoms and the other signals flagged that day.
 
 ## 6. Interfaces (satisfies: DR-01, FR-10)
 | Interface | Request | Response | Mocked until |
