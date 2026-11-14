@@ -4,7 +4,7 @@ Agreed at kick-off, Sat 14 Nov 2026, by the team (Caffeinated Innovators Austral
 
 ## Concept (team's words, from the team briefing)
 
-A delay-aware health decision-support tool, not a vitals dashboard. It compares readings with each astronaut's own pre-flight baseline and sorts results into three tiers: Self-manage, Crew medic, Urgent. It packages cases for a flight surgeon up to 22 minutes away (one way). Rules decide; AI only explains.
+A delay-aware health decision-support tool, not a vitals dashboard. It compares readings with each astronaut's own pre-flight baseline and sorts results into three tiers (now named Nothing to do, Watch and Act now, D-031). It packages cases for a flight surgeon up to 22 minutes away (one way). Rules decide; AI only explains.
 
 ## Primary user
 
@@ -12,7 +12,7 @@ One astronaut on a Mars-class mission who is not a medical expert, taking a rout
 
 ## Demo story
 
-Day 214 on a Mars base. Jo's sleep has slid for three weeks, although each night stayed inside their own range. Cabin carbon dioxide has crept up and today reads 3.4 mmHg, above NASA's cabin limit of 3 mmHg. The tool flags the sleep trend and the cabin reading, asks for a thirty-second reaction test, and shows the three flagged signals together on one card. Each result explains itself in plain words with its source. Sending the case opens a countdown to Earth's earliest reply, beside the steps to take meanwhile. All crew values are SYNTHETIC.
+Day 214 on a Mars base. Jo's sleep has slid for three weeks, although each night stayed inside their own range. Cabin carbon dioxide has crept up and today reads 3.4 mmHg, above NASA's cabin limit of 3 mmHg. The tool flags the sleep trend and the cabin reading, asks for a reaction check, and shows the three flagged signals together on one card. Each result explains itself in plain words with its source. Sending the case opens a countdown to Earth's earliest reply, beside the steps to take meanwhile. The kidney thread runs the same day: three low-fluid days raise Watch, and pain turns it Act now. That night a fever with low blood pressure or fast breathing raises a possible-sepsis alert that opens emergency mode. Then the same case runs at a Simpson Desert station, 640 km from the nearest hospital. All crew values are SYNTHETIC.
 
 ## In scope
 
@@ -21,7 +21,8 @@ Day 214 on a Mars base. Jo's sleep has slid for three weeks, although each night
 - Four SYNTHETIC crew members and 213 past mission days, made by a script with a fixed seed.
 - Check-ins fitted around a mock crew day, never during a critical operation.
 - A check-in streak and a shared crew goal that count check-ins, never results.
-- Five places to compare: Mars base, In transit, Moon base, Space station and Remote Australia.
+- Five places to compare: Mars base, In transit, Moon base, Space station and Remote Australia, each with its gravity, cabin atmosphere and how far help is.
+- Added from the clinical lead's build pack v3.3 (14 Nov 2026): vital signs with monitor alert rules, a four-result urine test strip, guided ultrasound, a weekly crew check-in, a PVT-style reaction check, and the team's emergency module shown inside the app. Every value from the pack is a placeholder awaiting sign-off.
 - Case packs that queue on the device and leave as one file when a link opens.
 - The same personal-band rule shown on real NASA crew data (NASA OSDR, OSD-569).
 - A "Privacy and limits" screen: who sees what, and what is built, placeholder and still needed.
@@ -32,7 +33,7 @@ Day 214 on a Mars base. Jo's sleep has slid for three weeks, although each night
 
 - Diagnosis, and any clinical accuracy claim.
 - Any clinical threshold not written and signed off by the team's clinicians.
-- Live connections to sensors or devices, voice input, a rover profile, and any calibrated or clinical eye test.
+- Live connections to sensors or devices, voice input on our own screens, a rover profile, and any calibrated or clinical eye test.
 - Rules that change by environment.
 - Accounts or sign-in, a server, and a shared record across devices.
 - A language model at run time.

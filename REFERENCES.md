@@ -13,6 +13,8 @@ Every third-party resource used, logged as it is added.
 
 - NASA Human Research Program, Risk of Renal Stone Formation. Quoted on the kidney stone pathway screen as the reason the risk matters in spaceflight. https://www.nasa.gov/directorates/esdmd/hhp/risk-of-renal-stone-formation/ and https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=81
 - NASA Office of the Chief Health and Medical Officer, Medical Technical Brief OCHMO-MTB-003, Urinary Health, Rev A. Quoted on the kidney stone pathway screen for prevention (fluid, exercise) and for ultrasound; the source found for the clinicians' steps (CR-26). https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf
+- NASA Medical Checklist, JSC-48031 (Generic Rev K, PCN-4, 2008). The source behind the emergency module's checklists: its sixteen pathways are adapted from it. Cited by the emergency module.
+- NASA exploration atmosphere reports, NTRS 20240003211 and NTRS 20220015741. On NASA's proposed exploration atmosphere; our location profiles use the 56.5 kPa, 34% oxygen habitat figure as given in the clinical lead's build pack. Cited by the emergency module; not opened or verified by the build lead. https://ntrs.nasa.gov/citations/20240003211 and https://ntrs.nasa.gov/citations/20220015741
 
 ## Space agency partner data
 - Canadian Space Agency, Monitoring Radiation for Astronaut Health (challenge resource). https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp
@@ -32,6 +34,10 @@ The NASA Human Research Program hazard pages are linked as hazard chips on every
 
 - Australian Institute of Health and Welfare, Rural and remote health (updated 20 November 2025). The source for the share of Australians living in rural, remote and very remote areas, shown on the Earth card. https://www.aihw.gov.au/reports/rural-remote-australians/rural-and-remote-health
 
+- A 2020 space medicine society guideline on cardiopulmonary resuscitation in microgravity (PMC7607644). Cited by the emergency module's gravity-aware resuscitation notes. Cited by the emergency module; not opened or verified by the build lead. https://pmc.ncbi.nlm.nih.gov/articles/PMC7607644
+- A 2021 simulation study of cardiopulmonary resuscitation in hypogravity (PubMed 33468291). Cited by the emergency module's gravity-aware resuscitation notes. Cited by the emergency module; not opened or verified by the build lead. https://www.pubmed.gov/33468291/
+- The team's clinical lead's build pack v3.3 (14 Nov 2026). A private team document. The source of the placeholder values for the monitor alerts, display bands, lapse time, adapting period, crew check-in items, urine strip note and pathway and ultrasound step wording. Each awaits sign-off (CLINICIAN_REVIEW.md, CR-36 to CR-50).
+
 ## Design criteria
 - NASA-STD-3001 Volume 2, Revision F, section 10 and Appendix F (Display Standard). https://standards.nasa.gov/
 - Human Integration Design Handbook, NASA/SP-2010-3407, Revision 1, chapter 10.
@@ -39,6 +45,9 @@ The NASA Human Research Program hazard pages are linked as hazard chips on every
 - How each criterion is applied: docs/DESIGN_CRITERIA.md.
 
 - ISS Display and Graphics Commonality Standard, SSP 50313 (baseline, 2001). The source for the 12 point minimum text size. https://everyspec.com/NASA/NASA-JSC/NASA-SSP-PUBS/SSP_50313_3473/
+
+## Team-written modules
+- The emergency module (ASTRA v0.4), a separate prototype written by the team's emergency module owner. Shipped as one offline file in `public/astra/` and shown inside the app in a frame. A prototype, not for clinical use. Its licence under Apache 2.0 is to be confirmed by its owner.
 
 ## Code libraries (all open source)
 | Library | Licence | Use |

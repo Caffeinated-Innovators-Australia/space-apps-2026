@@ -34,7 +34,7 @@ It uses one real photograph of the Simpson Desert by Ian Cochrane (CC BY 2.0, cr
 | 0:05.4 to 0:07.8 | "1 needs you" and the tile "Kidneys and urine, low fluid for 3 days" | "Three low-fluid days." |
 | 0:07.8 to 0:10.9 | The early warning card, marked SYNTHETIC and "Not a diagnosis" | "The app flags kidney stone risk before I feel it." |
 | 0:10.9 to 0:12.9 | "Pain in side or lower back" is selected, then "Fever or chills"; the status turns Urgent | "Pain, then fever." |
-| 0:12.9 to 0:16 | "What to do now", then the urine test strip with "Blood seen" selected | "It guides my ultrasound, checks my urine, and starts emergency mode." |
+| 0:12.9 to 0:16 | "What to do now", then the urine test strip with blood marked "Present" | "It guides my ultrasound, checks my urine, and starts emergency mode." |
 | 0:16 to 0:19.4 | The countdown from 36:00 | "I'm not alone." then a pause |
 | 0:19.4 to 0:24 | The same sand pulls back to sky, trees and a desert track sign. "THIS ISN'T MARS", then "Remote Australia. 640 km from the nearest doctor." | "At a Simpson Desert station, the hospital is 640 kilometres away." |
 | 0:24 to 0:27 | The same case at the remote station, marked SYNTHETIC: retrieval countdown, aircraft grounded by dust | "My one tool when help is far away." |

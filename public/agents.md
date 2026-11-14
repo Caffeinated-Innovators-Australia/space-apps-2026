@@ -16,7 +16,7 @@ cd space-apps-2026
 npm install
 ```
 
-Commands (all print JSON; errors print `{"error": "..."}` and exit 1). Crew ids: `crew-1` to `crew-4`. Indicator ids, by group: Mind and sleep `sleep`, `mood`, `reaction`; Heart `resting-hr`, `bp-sys`, `bp-dia`; Eyes `vision` (lines read, worse eye); Muscle and bone `exercise`, `grip`, `body-mass`; Food and fluid `fluid`, `energy`; Blood `haemoglobin`; Cabin and radiation `cabin-co2`, `radiation` (mission total). `indicators` lists each one's group, unit, cadence, limit and whether it is a running total. Place ids for `--setting`: `mars-base`, `transit`, `moon`, `station`, `earth` (Remote Australia).
+Commands (all print JSON; errors print `{"error": "..."}` and exit 1). Crew ids: `crew-1` to `crew-4`. Indicator ids, by group: Mind and sleep `sleep`, `mood`, `reaction`; Heart `resting-hr`, `bp-sys`, `bp-dia`; Eyes `vision` (lines read, worse eye); Muscle and bone `exercise`, `grip`, `body-mass`; Food and fluid `fluid`, `energy`; Blood `haemoglobin`; Cabin and radiation `cabin-co2`, `radiation` (mission total). `indicators` lists each one's group, unit, cadence, limit and whether it is a running total. Place ids for `--setting`: `mars-18` (the default, 18 min one way), `mars-base` (22 min), `transit`, `moon`, `station`, `earth` (Remote Australia).
 
 | Command | What it does |
 |---|---|
@@ -61,9 +61,9 @@ npm run crew-health -- send-pathway --crew crew-4 --pathway KS-01
 
 `READING_ID` is the `reading.id` that `record` prints. Grip strength 24.4 kg for `crew-1` is below 80% of their own baseline, the NASA strength standard (NASA-STD-3001 Volume 1), so it comes back `red`. A radiation total lower than the last reading is refused with an error, because a running total cannot go down. `assess`, `demo`, `day`, `plan`, `history`, `streak` and `outbox` save nothing. `record`, `send` and `export` change a local state file (`.crew-health-state.json`, or the path given with `--state FILE`). Nothing is sent over a network. `export` writes a file in the format `crew-health-case-export/3`; each case has a `kind` (`reading` or `symptom-pathway`) and includes the other signals flagged that day.
 
-The crew member in the story is Jo (`crew-1`). With no symptom logged, `pathways --crew crew-1` already returns an early warning at level `early` (rule `KS-00`): fluid has been low for three logged days. It names a risk to act on early, not a finding, and no case can be sent for it. The app also has screens that have no command yet: the one-screen check-in, the Earth inbox and replies, the crew medic overview, the Emergency steps, and the radiation and healing screens. Their logic is in `src/core/` as pure functions.
+The crew member in the story is Jo (`crew-1`). With no symptom logged, `pathways --crew crew-1` already returns an early warning at level `early` (rule `KS-00`): fluid has been low for three logged days. It names a risk to act on early, not a finding, and no case can be sent for it. The app also has screens that have no command yet: the one-screen check-in, the Earth inbox and replies, the crew medic overview, the Emergency steps, the radiation and healing screens, vital signs and their monitor alerts, guided ultrasound, the weekly crew check-in, Location and the emergency module. Their logic is in `src/core/` as pure functions.
 
-Symptoms that form a pattern open a pathway. The first is a possible kidney stone (rule `KS-01`). `symptom` logs or clears one symptom and prints the pathways now open. A pathway has a `level`: `check` (the app is asking follow-up questions, no alert), `amber` (Crew medic) or `red` (Urgent). `send-pathway` works once the level is amber or red. A pathway names a pattern to check, never a finding: do not tell a person they have a kidney stone. `symptom`, `pain` and `send-pathway` change the state file.
+Symptoms that form a pattern open a pathway. The first is a possible kidney stone (rule `KS-01`). `symptom` logs or clears one symptom and prints the pathways now open. A pathway has a `level`: `check` (the app is asking follow-up questions, no alert), `early` (the early warning, Watch), `amber` (a matched pattern, Act now) or `red` (a matched pattern with a red-flag symptom, Act now with emergency mode offered). `send-pathway` works once the level is amber or red. A pathway names a pattern to check, never a finding: do not tell a person they have a kidney stone. `symptom`, `pain` and `send-pathway` change the state file.
 
 ## What an assessment contains
 
@@ -86,7 +86,10 @@ Symptoms that form a pattern open a pathway. The first is a possible kidney ston
 - Do not invent thresholds or advice. Rules live in `rules/rules.yaml` and are changed only by the team's clinicians.
 - Crew values are synthetic and come from `scripts/make_mission_data.py`. The real inputs are NASA OSDR OSD-569 (haemoglobin variation and laboratory ranges, and the pre-flight and post-flight blood counts), NASA DONKI (space weather and radiation prompt days) NASA's cabin carbon dioxide limit (NASA-STD-3001 Volume 2), in `src/data/`, and two limits from NASA-STD-3001 Volume 1 held in the indicator definitions: strength at or above 80% of baseline, and the 600 mSv career radiation limit. These standards are programme requirements, not clinical alert thresholds.
 - The near-vision check (`vision`) is not a calibrated eye chart and not a test for any eye condition. Say so whenever you report it.
-- Not built: voice input, sensor connections, a rover profile, rules that change by environment, any calibrated or clinical eye test (for example retinal imaging), and any direct bone measurement.
+- Monitor alerts (SEP-01 possible sepsis, SHK-01 possible shock, under `monitor_alerts` in the rules file) read one set of vital signs. Their thresholds are the clinical lead's placeholders. Report one as "a pattern to act on now", never as a diagnosis. Oxygen saturation never raises an alert on its own.
+- Never report a weekly crew check-in answer or an average. Only a count of who has completed it is exposed.
+- The emergency module (`public/astra/`) is a separate team prototype, not for clinical use. Do not relay its medicine names or doses as advice; they await clinical review.
+- Not built: voice input on our own screens, sensor connections, a rover profile, rules that change by environment, any calibrated or clinical eye test (for example retinal imaging), and any direct bone measurement.
 
 ## Where things are
 

@@ -7,9 +7,15 @@ This is a hackathon prototype. It is built the way a real crew tool would have t
 - Runs with no network once loaded, in tablet, laptop and phone browsers, and can be installed to the home screen.
 - The Day 214 Mars base story, inside a wider check-in: fifteen indicators in seven groups (Mind and sleep, Heart, Eyes, Muscle and bone, Food and fluid, Blood, Cabin and radiation). Most are compared with that person's own baseline. Six are daily; the weekly ones each fall due on their own day of the mission week.
 - A near-vision self-check inside the app: one eye at a time, eight lines of letters, the worse eye kept and compared with the person's own earlier results. It says on screen that it is not a calibrated eye chart.
-- Sourced limits that depend on the person: grip strength below 80% of their own baseline (NASA-STD-3001 Volume 1) is Urgent when it is also below their own range. Radiation dose is a running total shown as a share of NASA's career limit of 600 mSv (NASA-STD-3001 Volume 1), and a lower total is refused.
+- Sourced limits that depend on the person: grip strength below 80% of their own baseline (NASA-STD-3001 Volume 1) is Act now when it is also below their own range. Radiation dose is a running total shown as a share of NASA's career limit of 600 mSv (NASA-STD-3001 Volume 1), and a lower total is refused.
 - Six rule kinds in one rules engine: level, trend, sustained, limit, combined and prompt. A slow sleep trend is flagged even when every night is inside the band, and two or more flagged signals are shown together on one card.
-- A reaction tap test inside the app (five rounds, about thirty seconds).
+- A PVT-style reaction check inside the app: the median and lapses over 500 ms, with a 30 second demo length. It says it is not NASA's Cognition battery.
+- Three tiers, each a colour, a shape and a word: Nothing to do, Watch and Act now. Emergency is a mode opened from an Act now alert. Fluid intake and mood can raise Watch, never Act now, by themselves.
+- Vital signs, with monitor alert rules for possible sepsis and possible shock (never from oxygen saturation alone). An alert lists the readings that raised it and opens emergency mode.
+- In the kidney pathway: a four-result urine test strip and a guided ultrasound (four step cards, no image kept, "look for" only). Both go into the case.
+- The team's emergency module, a separate team prototype, shown inside the app and fed our place and readings. It is labelled not for clinical use. Its medicine names and doses never appear on our own screens. Its pathway percentage ranks which checklist to open; it is not a diagnosis.
+- A weekly crew check-in that only the flight psychologist sees; the app shows only a completion count.
+- Location profiles: gravity, cabin atmosphere, how far help is and what changes at each place.
 - An explanation card on every indicator, with NASA hazard links (draft wording, awaiting clinician sign-off).
 - A prompt scheduler on a mock crew timeline that never prompts during a critical operation (the demo EVA, 08:00 to 12:00) and re-plans when it runs 45 minutes late.
 - An honest-reporting loop: a streak that counts check-ins and never results, a shared crew goal with no ranking, and insights that unlock at 14 and 30 days of streak.
@@ -28,10 +34,12 @@ This is a hackathon prototype. It is built the way a real crew tool would have t
 - Which indicators a crew would really measure in flight, and how.
 - All crew values, the cabin carbon dioxide readings and the radiation dose totals. They are SYNTHETIC.
 - Using the strength floor and the career radiation limit as prompts. They are programme requirements, not clinical alert thresholds.
+- Every value from the clinical lead's build pack v3.3: the monitor alert thresholds and first steps, the display bands, the lapse time, the 14 day adapting period, the crew check-in items, the urine strip note, and the pathway and ultrasound step wording (CR-36 to CR-50).
 
 ## Not built
 
-- Voice input.
+- Voice input on our own screens. The emergency module has optional voice input, off until tapped. It uses the browser's own speech recognition, which in some browsers needs the internet and sends audio to the browser maker. The module works by touch offline.
+- Capping drift to Watch while adapting to new gravity, and re-baselining after it. That is a clinician decision.
 - Connections to real sensors or devices.
 - A rover profile.
 - Any calibrated or clinical eye test (for example retinal imaging).
@@ -44,4 +52,5 @@ This is a hackathon prototype. It is built the way a real crew tool would have t
 - Links to the measuring devices, the cabin sensor and the personal dosimeters a crew carries, instead of typed or simulated values.
 - One shared record across crew devices on the spacecraft's own network, with crew privacy controls. The action layer is written so that a shared store can replace the on-device one without changing the screens.
 - A ground system that receives case files and returns replies.
+- Clinical review of the emergency module's content, and its owner's confirmation of its Apache 2.0 licence.
 - A space agency's own safety, security and hardware approval.

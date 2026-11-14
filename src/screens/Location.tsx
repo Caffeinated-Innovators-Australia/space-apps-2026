@@ -80,7 +80,7 @@ export function Location({ state, setting, seed, onChange }: LocationProps) {
             <AdvisoryPill />
           </div>
           <p>
-            Adapting to new gravity: <span className="mono">{adapt.daysLeft}</span> {adapt.daysLeft === 1 ? 'day' : 'days'} left. Drift from your old baseline can raise Watch only.
+            Adapting to new gravity: <span className="mono">{adapt.daysLeft}</span> {adapt.daysLeft === 1 ? 'day' : 'days'} left. Your readings may drift from your old baseline in this period.
           </p>
           <p className="caption">Moved from {BAND_WORDS[adapt.from] ?? adapt.from}.</p>
           <span className="placeholder">{PLACEHOLDER}: the length of this period</span>

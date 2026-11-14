@@ -1,6 +1,6 @@
 # Technical spec: astronaut health decision support (working title)
 
-Version: v0.6 · Satisfies: docs/REQUIREMENTS.md v0.6 · Owner: Build lead
+Version: v0.7 · Satisfies: docs/REQUIREMENTS.md v1.1 · Owner: Build lead
 
 ## 1. Architecture (satisfies: NFR-01, PR-01)
 - Stack: a static single-page web app (Vite, React, TypeScript). No server, no accounts, no network calls on the demo path. Chosen because it deploys as plain files, works offline and suits a 48-hour build.
@@ -9,6 +9,7 @@ Version: v0.6 · Satisfies: docs/REQUIREMENTS.md v0.6 · Owner: Build lead
 - Action layer: `src/core/` holds pure functions (state in, new state out) for every read and change. The screens, the command-line tool (`cli/crew-health.ts`) and agents all call it. See docs/MODULE_GUIDE.md.
 - Offline: a small service worker, written at build time, caches the built files; data and fonts are bundled.
 - Data generator: `scripts/make_mission_data.py` writes `src/data/seed.json` with a fixed seed (satisfies FR-24).
+- Emergency module (satisfies FR-44): the team's separate prototype (ASTRA v0.4) is one offline file, `public/astra/index.html`, shown in a frame by `src/screens/Astra.tsx`. The message bridge (`src/core/astra.ts`, schema `astra/1`) sends the place, the person's vital signs and health-log values, and a pathway to open; the module reports its own alerts back, which are recorded and never set a tier. The service worker caches the module's page for offline use.
 
 ```mermaid
 flowchart LR
@@ -29,7 +30,10 @@ flowchart LR
 | Crew profiles (`src/data/seed.json`) | crew id, name, sex (to pick the laboratory range), baseline series per indicator, mission series per indicator (213 days, with gaps for missed check-ins) | Made by us | SYNTHETIC |
 | Today (`src/data/seed.json`) | crew 1's readings for day 214 | Made by us | SYNTHETIC |
 | Indicators (`src/data/seed.json`) | id, group (body system), name, unit, valid range, input kind (number, scale, test, vision or sensor), direction that matters (low, high or both), cadence (daily, weekly, prompted or sensor), day of the mission week for weekly ones (`weekDay`), `mode: cumulative` for a running total, optional sourced limit (a fixed `high` or `low`, or `lowFraction` of the person's own baseline), optional laboratory range by sex, hazards, explanation card (how, why, what, status, sources), optional `cardNote` saying what the check is not | Haemoglobin variation and ranges: NASA OSDR, OSD-569. Carbon dioxide limit: NASA-STD-3001 Volume 2. Strength floor and career radiation limit: NASA-STD-3001 Volume 1. Card wording: the team's challenge brief | Real inputs, draft wording |
-| Environment profiles (`src/data/seed.json`) | id (`mars-base`, `transit`, `moon`, `station`, `earth`), label, reply delay in seconds, countdown wording, dominant risks, guidance line, word swaps for Remote Australia | Light-time arithmetic; wording written for the build | Delays arithmetic; remote Australia scenario SYNTHETIC |
+| Environment profiles (`src/data/seed.json`) | id (`mars-18`, the default, `mars-base`, `transit`, `moon`, `station`, `earth`), label, reply delay in seconds, countdown wording, dominant risks, guidance line, status strip, word swaps for Remote Australia, gravity (`g`), cabin pressure and oxygen (`cabinKPa`, `o2Pct`), gravity band, how far help is (`away`) | Light-time arithmetic; gravity and atmosphere from the clinical lead's build pack v3.3; wording written for the build | Delays arithmetic; remote Australia scenario SYNTHETIC |
+| Vital signs demo sets (`demoVitals` in `src/data/seed.json`) | label, temperature (°C), pulse (a minute), blood pressure upper and lower (mmHg), breathing rate (a minute), oxygen saturation (%) | Made by us | SYNTHETIC |
+| Crew check-in (`crewCheck` in `src/data/seed.json`) | label, scale, who sees it, five statements | Clinical lead's build pack v3.3, modelled on NASA's APEX team constructs | Placeholder items |
+| Ultrasound steps (`src/data/ultrasound.json`) | four steps: title, instruction, what to look for, side | Clinical lead's build pack v3.3 for steps 2 and 3 | Placeholder wording |
 | Crew timeline (`src/data/seed.json`) | start, end, label, critical flag; the slip in minutes | Made by us | SYNTHETIC |
 | Privacy table (`src/data/seed.json`) | what, you, crew medic, flight surgeon, rest of crew | Team design choice | Draft policy |
 | Device record (IndexedDB) | readings (with tier, rules fired and steps ticked), symptom logs, "Nothing to report" logs, queued and exported cases, and screen choices (crew member, place, theme, clock, slip, dosimeter tick) | Entered on the device | SYNTHETIC in the demo |
@@ -37,7 +41,7 @@ flowchart LR
 
 The demo mission is day 214. There are fifteen indicators in seven groups, in this order: Mind and sleep (sleep, mood, reaction time); Heart (resting heart rate, blood pressure upper and lower); Eyes (near vision); Muscle and bone (exercise plan done, grip strength, body mass); Food and fluid (fluid intake, food energy); Blood (haemoglobin); Cabin and radiation (cabin carbon dioxide, radiation dose).
 
-Each crew member has a pre-flight baseline and 213 past mission days. Baselines are 14 days for the daily indicators and reaction time; 4 readings for blood pressure, grip strength and body mass; 4 near-vision results; 3 draws for haemoglobin; the first two mission weeks for cabin carbon dioxide; none for radiation dose, which is a running total. Weekly indicators have a mission value only on their own day of the mission week. Today's demo values for Jo are sleep 6.2 h, resting heart rate 59 bpm, mood 3, reaction time 318 ms, cabin carbon dioxide 3.4 mmHg, haemoglobin 13.1 g/dL, near vision 7 lines, exercise plan done 90%, fluid intake 2.3 L, food energy 2300 kcal, blood pressure 113 over 71 mmHg, grip strength 30.6 kg and body mass 61.7 kg. The demo radiation value is the last mission total plus 0.7 mSv.
+Each crew member has a pre-flight baseline and 213 past mission days. Baselines are 14 days for the daily indicators and reaction time; 4 readings for blood pressure, grip strength and body mass; 4 near-vision results; 3 draws for haemoglobin; the first two mission weeks for cabin carbon dioxide; none for radiation dose, which is a running total. Weekly indicators have a mission value only on their own day of the mission week. Today's demo values for Jo are sleep 6.2 h, resting heart rate 59 bpm, mood 4, reaction time 318 ms, cabin carbon dioxide 3.4 mmHg, haemoglobin 13.1 g/dL, near vision 7 lines, exercise plan done 90%, fluid intake 1.4 L (after 1.3, 1.2 and 1.1 L on days 211 to 213), food energy 2300 kcal, blood pressure 113 over 71 mmHg, grip strength 30.6 kg and body mass 61.7 kg. The demo radiation value is the last mission total plus 0.7 mSv.
 
 ## 3. Rules engine contract (satisfies: SR-01, FR-03, FR-04, FR-05, FR-18, FR-26)
 - Rules live in `rules/rules.yaml`, not in code and not in a model prompt.
@@ -61,6 +65,8 @@ Each crew member has a pre-flight baseline and 213 past mission days. Baselines 
 - When more than one rule fires, the result takes the highest tier and lists every rule that fired (for example "LM-01 + SU-01 + TR-01").
 - A raised result is marked confirmed when the reading before it today was also outside the band.
 - Input checks refuse impossible readings before any rule runs, using each indicator's input range (for example sleep 0 to 24 h, resting heart rate 20 to 250 bpm) (satisfies NFR-05).
+- An indicator can carry `maxTier: amber`: by itself it can raise Watch, never Act now. Fluid intake and mood carry it; reaction time and near vision are capped because they are experimental.
+- Monitor alerts (`monitor_alerts`, code in `src/core/vitals.ts`) read only the latest set of vital signs. SEP-01 (possible sepsis) and SHK-01 (possible shock) fire when any of their `when` groups matches; a group matches when all its comparisons hold, and a missing value never matches. A match is Act now and offers emergency mode. The loader refuses a group that compares oxygen saturation alone. Every threshold is the clinical lead's placeholder.
 - No language model runs in the app. Explanations are the rule's own text with its values filled in.
 - The rules do not change by environment (CR-17).
 
@@ -74,7 +80,7 @@ Each crew member has a pre-flight baseline and 213 past mission days. Baselines 
 ## 5. On-device storage (satisfies: NFR-03)
 - Habitat readings: an indicator marked `environment` (cabin carbon dioxide) is worded as the cabin's one-hour average against the cabin's usual range. The same rules apply; only the wording changes, and the result says it is an environment alert first.
 - Times on screen are mission time: the chosen mission clock, running forward from when it was set. Exported cases keep real timestamps.
-- Symptom pathways (`pathways:` in `rules/rules.yaml`, code in `src/core/pathways.ts`): core symptoms open follow-up questions; core plus a supporting symptom is Crew medic; an urgent symptom on top is Urgent. A pathway case holds symptoms, pain scores, recent trends, other signals and ticked steps. The first pathway is a possible kidney stone (KS-01); it names a pattern to check, never a finding.
+- Symptom pathways (`pathways:` in `rules/rules.yaml`, code in `src/core/pathways.ts`): core symptoms open follow-up questions; core plus a supporting symptom is Act now; a red-flag symptom on top is Act now and offers emergency mode. The early warning KS-00 is Watch. The pathway's urine test strip (four results) and guided ultrasound steps are logged with the case and never change a tier. A pathway case holds symptoms, pain scores, recent trends, other signals and ticked steps. The first pathway is a possible kidney stone (KS-01); it names a pattern to check, never a finding.
 - IndexedDB (database `crew-health`) holds one record: readings, symptom logs, "Nothing to report" logs, the case outbox and screen choices. It is saved after every action, and a reload with no network keeps it. If the browser blocks IndexedDB, the app keeps the record in memory.
 - The streak is worked out, not stored: the days in a row with every daily check-in (the six above) logged, counting today once all six are logged. It counts check-ins and never results. "Nothing to report" is a valid one-tap log. Insights unlock at 14 and 30 days of streak.
 - The crew goal is the whole crew's daily check-ins over the past seven days (six past days and today) against the total possible. No one is ranked.
@@ -101,6 +107,11 @@ Each crew member has a pre-flight baseline and 213 past mission days. Baselines 
 | Outbox | Astronaut | Queued and exported cases; export as one file | FR-15 | 6 |
 | Real crew data | Astronaut, judge | OSD-569 crew baselines and return points through the same band rule | DR-01 | 7 |
 | Privacy and limits | Astronaut, judge | The "Who sees what" table (draft policy); what is built, placeholder and needed | FR-17, FR-23 | not in demo |
+| Vital signs (`vitals`) | Astronaut, crew medic | Six values with units, demo sets, and any monitor alert with the readings that raised it, its first steps and "Open emergency mode" | FR-38, FR-39 | 8 |
+| Guided ultrasound (`ultrasound`) | Crew medic | Four step cards with a drawn torso and probe position; no image kept; not on the Earth twin | FR-41 | 7 |
+| Emergency module (`astra`) | Crew medic | The team's emergency module in a frame, fed our place and readings, marked not for clinical use | FR-44 | 8 |
+| Weekly crew check-in (`crewcheck`) | Astronaut | Five statements, 1 to 5; only a completion count shown | FR-45 | not in demo |
+| Location (`location`) | Astronaut, judge | Gravity, cabin atmosphere, how far help is, what changes there, body mass from a scale, the adapting advisory | FR-48 | not in demo |
 
 Look and voice follow the team design system: tier as colour plus shape plus word, SYNTHETIC label on every synthetic card and chart, IBM Plex type self-hosted.
 
