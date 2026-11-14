@@ -12,7 +12,7 @@ One astronaut on a Mars-class mission who is not a medical expert, taking a rout
 
 ## Demo story
 
-Day 87 on a Mars base. Crew member 1's sleep has slid for three weeks, although each night stayed inside their own range. Cabin carbon dioxide has crept up and today reads 3.4 mmHg, above NASA's cabin limit of 3 mmHg. The tool flags the sleep trend and the cabin reading, asks for a thirty-second reaction test, and shows the three flagged signals together on one card. Each result explains itself in plain words with its source. Sending the case opens a countdown to Earth's earliest reply, beside the steps to take meanwhile. All crew values are SYNTHETIC.
+Day 87 on a Mars base. Jo's sleep has slid for three weeks, although each night stayed inside their own range. Cabin carbon dioxide has crept up and today reads 3.4 mmHg, above NASA's cabin limit of 3 mmHg. The tool flags the sleep trend and the cabin reading, asks for a thirty-second reaction test, and shows the three flagged signals together on one card. Each result explains itself in plain words with its source. Sending the case opens a countdown to Earth's earliest reply, beside the steps to take meanwhile. All crew values are SYNTHETIC.
 
 ## In scope
 

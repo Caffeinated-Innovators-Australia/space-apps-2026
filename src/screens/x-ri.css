@@ -1,0 +1,26 @@
+/* Styles for the Radiation and the Infections and healing screens. Every class starts x-ri-.
+   AI assistance: drafted with Claude Code (see AI_USE.md). */
+.x-ri-total { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.x-ri-unit { font-family: var(--font-mono); font-size: 20px; color: var(--ink); }
+.x-ri-meter { position: relative; height: 20px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface-200); overflow: hidden; }
+.x-ri-meter-fill { height: 100%; background: var(--ink-muted); }
+.x-ri-meter-scale { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 16px; color: var(--ink-muted); }
+.x-ri-chart .x-ri-bar { fill: var(--ink-muted); }
+.x-ri-chart .x-ri-event { fill: var(--advisory); }
+.x-ri-chart .x-ri-axis { stroke: var(--line-strong); stroke-width: 1; }
+.x-ri-chart text { font-family: var(--font-sans); font-size: 16px; fill: var(--ink-muted); }
+.x-ri-chart text.x-ri-event-text { fill: var(--advisory); font-weight: 500; }
+.x-ri-key { display: inline-flex; align-items: center; gap: 6px; color: var(--advisory); font-weight: 500; }
+.x-ri-key svg { fill: var(--advisory); }
+.x-ri-list { margin: 0; padding-left: 20px; font-size: 16px; }
+.x-ri-list summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+.x-ri-wounds { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.x-ri-wound { border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 12px; background: var(--surface-200); }
+.x-ri-wound-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.x-ri-wound .seg button { min-height: 44px; min-width: 88px; }
+.x-ri-checks { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 16px; }
+.x-ri-checks li { display: inline-flex; align-items: center; gap: 6px; }
+.x-ri-glyph { font-family: var(--font-mono); font-weight: 700; font-size: 18px; color: var(--ink); min-width: 14px; text-align: center; }
+.x-ri-stale { color: var(--stale); display: inline-flex; align-items: center; gap: 6px; font-size: 16px; }
+.x-ri-quote { margin: 0; padding-left: 12px; border-left: 3px solid var(--line-strong); font-size: 18px; }
+.x-ri-swatch { display: inline-block; width: 12px; height: 16px; background: var(--ink-muted); border-radius: 2px; }

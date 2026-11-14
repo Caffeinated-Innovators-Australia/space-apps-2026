@@ -6723,7 +6723,8 @@
     "pre-flight": "usual",
     "Before launch": "Before this season",
     "This mission": "This season",
-    "cabin": "room"
+    "cabin": "room",
+    "flight surgeon": "on-call doctor"
    },
    "tierWords": {
     "amber": "Remote nurse"

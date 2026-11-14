@@ -1,0 +1,11 @@
+/* Styles for the crew medic overview and the menu screens. Every class carries the x-mo- prefix. */
+/* AI assistance: drafted with Claude Code (see AI_USE.md). */
+.x-mo-static { cursor: default; }
+.x-mo-section { margin: 24px 0 12px; }
+.x-mo-lines { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.x-mo-line { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.x-mo-line:last-child { border-bottom: 0; padding-bottom: 0; }
+.x-mo-id { font-family: var(--font-mono); min-width: 64px; }
+.x-mo-what { flex: 1 1 180px; font-weight: 500; }
+.x-mo-full { flex-basis: 100%; overflow-wrap: anywhere; }
+.x-mo-confirm { display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--line-strong); border-radius: 8px; padding: 12px; background: var(--surface-200); }

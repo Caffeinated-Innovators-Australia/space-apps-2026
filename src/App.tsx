@@ -20,6 +20,17 @@ import {
 } from './core/index.ts';
 import osd from './data/osd569_cbc.json';
 import seedJson from './data/seed.json';
+import { HandoverCard, LinkBanner, ReplyCard } from './components/Handover';
+import { acceptReply, linkStatus, repliesFor, type CasePack } from './core/index.ts';
+import { EmergencyButton } from './components/EmergencyButton';
+import { CheckIn } from './screens/CheckIn';
+import { Emergency } from './screens/Emergency';
+import { EarthInbox } from './screens/EarthInbox';
+import { MedicOverview } from './screens/MedicOverview';
+import { Menu } from './screens/Menu';
+import { FeelingOff } from './screens/FeelingOff';
+import { Immune } from './screens/Immune';
+import { Radiation } from './screens/Radiation';
 import { CrewData, SpaceWeather } from './screens/RealData';
 import { deviceStore } from './store/indexeddb.ts';
 
@@ -54,13 +65,14 @@ function clock(totalSeconds: number): string {
 }
 const shown = (i: Indicator, v: number) => (i.input.kind === 'scale' ? `${v.toFixed(0)}` : v.toFixed(i.dp));
 
-interface Route { name: 'home' | 'reading' | 'result' | 'gap' | 'pathway' | 'crew' | 'outbox' | 'about'; arg?: string }
+const ROUTES = ['reading', 'result', 'gap', 'pathway', 'crew', 'outbox', 'about', 'checkin', 'feeling', 'inbox', 'medic', 'menu', 'emergency', 'radiation', 'immune'] as const;
+interface Route { name: 'home' | (typeof ROUTES)[number]; arg?: string }
 function readRoute(): Route {
   const [name, arg] = window.location.hash.replace(/^#\/?/, '').split('/');
-  const ok = ['reading', 'result', 'gap', 'pathway', 'crew', 'outbox', 'about'].includes(name);
+  const ok = (ROUTES as readonly string[]).includes(name);
   return ok ? { name: name as Route['name'], arg } : { name: 'home' };
 }
-function go(name: Route['name'], arg?: string) {
+function go(name: Route['name'] | string, arg?: string) {
   window.location.hash = name === 'home' ? '/' : `/${name}${arg ? `/${arg}` : ''}`;
 }
 
@@ -90,6 +102,7 @@ export function App() {
   const rules = loaded.rules;
   const reading = route.arg ? state.readings.find((r) => r.id === route.arg) : undefined;
   const shared = { state, commit, ui, setting, crewId: crew.id };
+  const extra = { seed: seed as Seed, go, say, hhmm };
 
   return (
     <TierWords.Provider value={tierWords}>
@@ -97,11 +110,12 @@ export function App() {
         <header className="top">
           <button className="brand" onClick={() => go('home')}>Crew health check</button>
           <nav className="nav" aria-label="Main">
-            <button aria-current={['home', 'reading', 'result', 'gap', 'pathway'].includes(route.name) ? 'page' : undefined} onClick={() => go('home')}>Today</button>
-            <button aria-current={route.name === 'crew' ? 'page' : undefined} onClick={() => go('crew')}>Real crew data</button>
+            <button aria-current={['home', 'reading', 'result', 'gap', 'pathway', 'checkin', 'feeling', 'radiation', 'immune'].includes(route.name) ? 'page' : undefined} onClick={() => go('home')}>Today</button>
             <button aria-current={route.name === 'outbox' ? 'page' : undefined} onClick={() => go('outbox')}>Outbox{queued ? ` (${queued})` : ''}</button>
-            <button aria-current={route.name === 'about' ? 'page' : undefined} onClick={() => go('about')}>Privacy and limits</button>
+            <button aria-current={route.name === 'inbox' ? 'page' : undefined} onClick={() => go('inbox')}>{say('Earth inbox', setting)}</button>
+            <button aria-current={['menu', 'medic', 'about', 'crew'].includes(route.name) ? 'page' : undefined} onClick={() => go('menu')}>Menu</button>
           </nav>
+          {route.name === 'emergency' ? null : <EmergencyButton go={go} />}
           <button className="ghost" onClick={() => ui({ theme: state.ui.theme === 'cabin' ? 'day' : 'cabin' })}>{state.ui.theme === 'cabin' ? 'Day theme' : 'Cabin theme'}</button>
         </header>
         {rules ? <StatusBar state={state} commit={commit} rules={rules} crewId={crew.id} /> : null}
@@ -123,6 +137,22 @@ export function App() {
             <ReadingScreen {...shared} rules={rules} indicatorId={seed.indicators.some((i) => i.id === route.arg) ? route.arg! : seed.indicators[0].id} />
           ) : route.name === 'result' && reading ? (
             <Result {...shared} rules={rules} reading={reading} />
+          ) : route.name === 'inbox' ? (
+            <EarthInbox {...shared} {...extra} rules={rules} caseId={route.arg} />
+          ) : route.name === 'emergency' ? (
+            <Emergency {...shared} {...extra} rules={rules} />
+          ) : route.name === 'radiation' ? (
+            <Radiation {...shared} {...extra} rules={rules} />
+          ) : route.name === 'immune' ? (
+            <Immune {...shared} {...extra} rules={rules} />
+          ) : route.name === 'medic' ? (
+            <MedicOverview {...shared} {...extra} rules={rules} />
+          ) : route.name === 'menu' ? (
+            <Menu {...shared} {...extra} rules={rules} />
+          ) : route.name === 'checkin' ? (
+            <CheckIn {...shared} {...extra} rules={rules} />
+          ) : route.name === 'feeling' ? (
+            <FeelingOff {...shared} {...extra} rules={rules} />
           ) : route.name === 'pathway' && rules.pathways.some((w) => w.id === route.arg) ? (
             <PathwayScreen {...shared} rules={rules} pathwayId={route.arg!} />
           ) : route.name === 'gap' && reading ? (
@@ -147,7 +177,7 @@ function StatusBar({ state, commit, rules, crewId }: { state: State; commit: (s:
   const day = daySummary(state, seed, rules, crewId);
   const flagged = [
     ...day.flagged.map((x) => ({ id: x.reading!.id, tier: x.assessment!.tier, name: x.indicator.name, open: () => go('result', x.reading!.id) })),
-    ...pathwayAlerts(state, seed, rules, crewId).map((p) => ({ id: p.key, tier: p.tier, name: `${p.name} symptoms`, open: () => go('pathway', p.pathwayId) })),
+    ...pathwayAlerts(state, seed, rules, crewId).map((p) => ({ id: p.key, tier: p.tier, name: p.name, open: () => go('pathway', p.pathwayId) })),
   ].sort((x, y) => RANK[y.tier] - RANK[x.tier]);
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -229,9 +259,13 @@ function CombinedCard({ day, setting, onOpen }: { day: DaySummary; setting: Sett
 }
 
 function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: RuleFile }) {
+  const [showAll, setShowAll] = useState(false);
   const mine = state.symptoms.filter((s) => s.crewId === crewId);
   const nothing = state.nothingToReport.includes(crewId);
   const day = daySummary(state, seed, rules, crewId);
+  // Quiet by default: a signal shows only if it is flagged, or due today and not yet logged.
+  const needsYou = (x: (typeof day.items)[number]) => Boolean((x.assessment && x.assessment.tier !== 'green') || (x.due && !x.reading && x.indicator.cadence !== 'sensor'));
+  const visible = day.items.filter((x) => showAll || needsYou(x));
   const plan = dayPlan(state, seed, rules, crewId);
   const days = streak(state, seed, crewId);
   const goal = crewGoal(state, seed);
@@ -278,7 +312,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
           <h2 className="title">Real NASA data in today's results</h2>
           <ul className="rows">
             <li><button className="row" onClick={() => open('cabin-co2')}><span className="row-name">Cabin air limit of {co2.limit?.high?.toFixed(0)} {co2.unit}, one-hour average<br /><span className="caption">Limits: NASA-STD-3001 Volume 2. It decides when cabin air is Urgent.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
-            <li><button className="row" onClick={() => open('radiation')}><span className="row-name">Radiation checks on mission days {seed.radiationDays.join(', ')}<br /><span className="caption">Data: NASA DONKI. Real solar particle events set the days the crew logs a dose.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
+            <li><button className="row" onClick={() => go('radiation')}><span className="row-name">Radiation checks on mission days {seed.radiationDays.join(', ')}<br /><span className="caption">Data: NASA DONKI. Real solar particle events set the days the crew logs a dose.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
             <li><button className="row" onClick={() => go('crew')}><span className="row-name">How far a blood count may move<br /><span className="caption">{osd.credit}. Real crew blood counts set the width of the haemoglobin range.</span></span><span className="chev" aria-hidden="true">›</span></button></li>
           </ul>
           <p className="caption">Every crew value in this demo is SYNTHETIC. These three inputs are real.</p>
@@ -309,6 +343,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
               </div>
               <button className="chip chip-toggle" aria-pressed={state.ui.slipped} onClick={() => ui({ slipped: !state.ui.slipped })}>EVA runs {seed.slipMinutes} min late</button>
             </div>
+            {day.items.some((x) => x.indicator.cadence === 'daily' && !x.reading) ? <div className="btn-row"><button className="btn" onClick={() => go('checkin')}>Do today's check-in on one screen</button></div> : null}
             {next ? <p><strong>Next:</strong> {next.label.toLowerCase()}, due now. It takes under a minute.</p> : <p className="muted">Nothing is due right now. Check-ins never interrupt a critical operation.</p>}
             <Timeline blocks={plan.blocks} items={plan.items} now={state.ui.clock} onOpen={open} />
           </div>
@@ -331,11 +366,16 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
               <SyntheticTag />
             </div>
             <BodyFigure onOpen={open} tiers={tiers} />
-            {groups.map((g) => (
+            <div className="btn-row">
+              <span>{day.flagged.length} outside range, {day.items.filter((x) => x.due && !x.reading && x.indicator.cadence !== 'sensor').length} due today, {day.items.length - day.items.filter(needsYou).length} quiet.</span>
+              <button className="btn secondary" aria-pressed={showAll} onClick={() => setShowAll(!showAll)}>{showAll ? 'Show only what needs you' : `Show all ${day.items.length} signals`}</button>
+            </div>
+            {visible.length === 0 ? <p className="muted">Nothing needs you right now. Every signal is within range or not due.</p> : null}
+            {groups.filter((g) => visible.some((x) => x.indicator.group === g)).map((g) => (
               <div key={g} className="group">
                 <span className="group-name">{g}</span>
                 <ul className="rows">
-                  {day.items.filter((x) => x.indicator.group === g).map(({ indicator: i, reading: r, assessment: a, prompted, due }) => {
+                  {visible.filter((x) => x.indicator.group === g).map(({ indicator: i, reading: r, assessment: a, prompted, due }) => {
                     const series = crew.mission[i.id] ?? [];
                     let lastDay = series.length;
                     while (lastDay > 0 && series[lastDay - 1] === null) lastDay -= 1;
@@ -389,6 +429,7 @@ function Home({ state, commit, ui, setting, crewId, rules }: Shared & { rules: R
             ) : (
               <p className="muted">Nothing logged today. One tap is enough.</p>
             )}
+            <div className="btn-row"><button className="btn secondary" onClick={() => go('feeling')}>Show where it is, step by step</button><button className="btn secondary" onClick={() => go('immune')}>Infections and healing</button></div>
             <p className="caption">Only you see this unless you send it. <button className="link" onClick={() => go('about')}>Who sees what</button></p>
             <span className="placeholder">{seed.symptoms.status}</span>
           </div>
@@ -574,6 +615,7 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
               </ul>
             ) : null}
             {ind.environment && raw.tier !== 'green' ? <p className="confirm" role="note">{say('This is a reading of the shared cabin, not of one person. The air system is checked first. It becomes a health matter for you if you also have symptoms or a slower reaction time.', setting)}</p> : null}
+            {ind.evidence ? <p className="caption">Evidence for this signal, as measured here: {ind.evidence}.{ind.evidence === 'experimental' ? ' An experimental signal can raise Crew medic but never Urgent by itself.' : ''} {seed.evidenceStatus}</p> : null}
             {raw.findings.length > 0 ? <p className="caption">Rules that fired: {raw.findings.map((f) => f.ruleId).join(', ')}.</p> : null}
             {conf.status === 'unconfirmed' ? <p className="confirm" role="status">{ind.environment ? 'One sensor so far. A second sensor or a second hour that agrees will mark this as confirmed.' : 'One reading so far. A second reading that agrees will mark this as confirmed.'}</p> : null}
             {conf.status === 'confirmed' ? <p className="confirm ok" role="status">Confirmed by a second reading (the one at {hhmm(conf.previousAt!)} was also outside {ind.environment ? 'the usual range' : 'your range'}).</p> : null}
@@ -643,6 +685,7 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
           <span className="placeholder">{seed.settingStatus}</span>
         </section>
         <div className="stack">
+          <EarthLoop state={state} commit={commit} setting={setting} rules={rules} pack={pack} />
           <div className="card">
             <div className="card-head">
               <span className="why-label">Meanwhile</span>
@@ -682,6 +725,25 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
           </div>
         </div>
       </div>
+    </>
+  );
+}
+
+/** The Earth end of a sent case, as the crew sees it: where the case is, the handover as sent, and any reply. */
+function EarthLoop({ state, commit, setting, rules, pack }: { state: State; commit: (s: State) => void; setting: Setting; rules: RuleFile; pack: CasePack }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  const link = linkStatus(state, pack, setting, now);
+  const replies = repliesFor(state, pack.id);
+  return (
+    <>
+      <LinkBanner status={link.status} secondsLeft={link.secondsLeft} setting={setting} say={say} />
+      {replies.length > 0 ? <ReplyCard replies={replies} onAccept={(id) => commit(acceptReply(state, id, Date.now()))} hhmm={hhmm} say={say} setting={setting} /> : null}
+      <HandoverCard content={caseContent(state, seed, rules, pack.id)} hhmm={hhmm} setting={setting} say={say} />
+      <div className="btn-row"><button className="btn secondary" onClick={() => go('inbox', pack.id)}>{say('See this case at the Earth end', setting)}</button></div>
     </>
   );
 }
@@ -807,6 +869,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
               {setting.scenarioSynthetic ? <SyntheticTag /> : null}
             </section>
           ) : null}
+          {pack ? <EarthLoop state={state} commit={commit} setting={setting} rules={rules} pack={pack} /> : null}
           {active ? (
             <div className="card">
               <div className="card-head"><span className="why-label">{pack ? 'Meanwhile' : 'What to do now'}</span><TierPill tier={pathwayTier(active)!} /></div>

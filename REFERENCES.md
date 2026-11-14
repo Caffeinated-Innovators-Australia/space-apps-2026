@@ -27,6 +27,9 @@ The NASA Human Research Program hazard pages are linked as hazard chips on every
 - healthdirect Australia, Kidney stones (reviewed December 2024). The source for the symptom pattern in the kidney stone pathway and for fever as an urgent sign. Cited, not copied. https://www.healthdirect.gov.au/kidney-stones
 - US National Institute of Diabetes and Digestive and Kidney Diseases (NIDDK), Kidney stones: symptoms and causes. The source for being unable to pass urine as a sign to act on at once. Cited, not copied. https://www.niddk.nih.gov/health-information/urologic-diseases/kidney-stones/symptoms-causes
 
+- Australian and New Zealand Committee on Resuscitation (ANZCOR), Guideline 8, Cardiopulmonary Resuscitation (approved April 2021), and the Basic Life Support flowchart (reviewed August 2023). The source for the seven steps, the 30 to 2 ratio and the 100 to 120 a minute rate on the Emergency screen. Cited, not copied: the wording is ours. https://www.anzcor.org/
+- NASA Human Research Program, Evidence Report: Risk of Renal Stone Formation (2017). The source for dehydration and low urine output as reasons for the risk, used by the early warning (rule KS-00). https://humanresearchroadmap.nasa.gov/evidence/reports/Renal.pdf
+
 ## Design criteria
 - NASA-STD-3001 Volume 2, Revision F, section 10 and Appendix F (Display Standard). https://standards.nasa.gov/
 - Human Integration Design Handbook, NASA/SP-2010-3407, Revision 1, chapter 10.

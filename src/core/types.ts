@@ -77,6 +77,8 @@ export interface Seed {
   synthetic: boolean;
   note: string;
   missionDay: number;
+  /** The calendar date of mission day 1, used to place real solar events on mission days. */
+  missionStart?: string;
   hazards: Record<string, string>;
   indicators: Indicator[];
   crew: CrewProfile[];
@@ -89,6 +91,7 @@ export interface Seed {
   radiationDays: number[];
   symptoms: { status: string; options: string[] };
   /** Symptoms grouped by where on the body they are felt, for the "Feeling off?" flow. */
+  privacy?: { status: string; rows: { what: string; you: string; medic: string; surgeon: string; crew: string }[] };
   symptomZones?: { status: string; zones: { id: string; label: string; symptoms: string[] }[] };
   evidenceStatus?: string;
 }

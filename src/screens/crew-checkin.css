@@ -1,0 +1,18 @@
+/* Styles for the one-screen daily check-in and the "Feeling off?" screen. Every class starts with x-ci-. */
+/* AI assistance: drafted with Claude Code (see AI_USE.md). */
+.x-ci-row { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid var(--line); }
+.x-ci-row:first-of-type { border-top: 0; padding-top: 0; }
+.x-ci-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.x-ci-name { font-weight: 600; font-size: 18px; }
+.x-ci-stepper { display: flex; align-items: stretch; gap: 12px; }
+.x-ci-step { min-width: 48px; min-height: 48px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface-200); color: var(--ink); font-family: var(--font-mono); font-size: 24px; cursor: pointer; }
+.x-ci-field { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; background: var(--surface-200); border: 1px solid var(--line-strong); border-radius: 8px; padding: 0 12px; min-height: 48px; }
+.x-ci-field:focus-within { box-shadow: var(--focus-ring); }
+.x-ci-field input { flex: 1; min-width: 0; width: 100%; background: none; border: 0; color: var(--ink); font-family: var(--font-mono); font-size: 22px; font-weight: 500; padding: 8px 0; }
+.x-ci-field input:focus, .x-ci-field input:focus-visible { outline: none; box-shadow: none; }
+.x-ci-unit { color: var(--ink-muted); font-size: 16px; }
+.x-ci-error { font-size: 16px; color: var(--ink); border-left: 4px solid var(--line-strong); padding-left: 8px; }
+.x-ci-zones { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.x-ci-zone { min-height: 64px; border-radius: 12px; border: 1px solid var(--line-strong); background: var(--surface-200); color: var(--ink); font-size: 18px; font-weight: 600; padding: 12px; cursor: pointer; text-align: left; }
+.x-ci-zone[aria-pressed='true'] { background: var(--action); color: var(--on-action); border-color: var(--focus); box-shadow: inset 0 0 0 2px var(--focus); }
+.x-ci-steps { font-size: 16px; color: var(--ink-muted); font-weight: 600; }

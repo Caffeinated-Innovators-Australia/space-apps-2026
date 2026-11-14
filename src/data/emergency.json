@@ -1,0 +1,29 @@
+{
+  "id": "bls-drsabcd",
+  "title": "Basic life support steps",
+  "source": {
+    "name": "ANZCOR Guideline 8, Cardiopulmonary Resuscitation (approved April 2021), section 3.0, and the ANZCOR Basic Life Support flowchart (reviewed August 2023)",
+    "url": "https://www.anzcor.org/",
+    "read": "2026-11-14"
+  },
+  "status": "Placeholder wording, awaiting clinician review",
+  "continueUntil": {
+    "say": "Keep CPR going until the person responds or breathes normally.",
+    "source": "ANZCOR Basic Life Support flowchart (reviewed August 2023), bottom panel"
+  },
+  "steps": [
+    { "id": "D", "letter": "D", "name": "Danger", "say": "Check the area is safe for you, others and the person.", "detail": "Deal with any risk before you go closer." },
+    { "id": "R", "letter": "R", "name": "Response", "say": "Check whether the person responds to you.", "detail": "If they do not respond, go on to the next step." },
+    { "id": "S", "letter": "S", "name": "Send for help", "say": "Call for help now.", "detail": "If someone else is there, one calls while another fetches the defibrillator." },
+    { "id": "A", "letter": "A", "name": "Airway", "say": "Open the person's airway.", "detail": "How to open it: placeholder, awaiting clinician review." },
+    { "id": "B", "letter": "B", "name": "Breathing", "say": "Check whether the person is breathing normally.", "detail": "Not breathing, or only an odd gasp: go on and start CPR." },
+    {
+      "id": "C", "letter": "C", "name": "CPR",
+      "say": "Start CPR: 30 compressions, then 2 breaths.",
+      "detail": "Push at about 100 to 120 a minute. Keep pauses short.",
+      "ratio": { "compressions": 30, "breaths": 2, "source": "ANZCOR Guideline 8, section 3.0 step 6 and section 2.0; Basic Life Support flowchart, box C" },
+      "pace": { "perMinute": 110, "range": [100, 120], "source": "ANZCOR Guideline 8, section 3.1 and Recommendation 5: about 100 to 120 a minute. The marker beats at 110, the middle of that range (the app's choice)." }
+    },
+    { "id": "D2", "letter": "D", "name": "Defibrillation", "say": "Attach the defibrillator as soon as it arrives.", "detail": "Then do what its prompts tell you." }
+  ]
+}

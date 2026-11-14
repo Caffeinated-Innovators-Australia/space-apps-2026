@@ -263,7 +263,7 @@ seed = {
          "basis": "SYNTHETIC scenario for a remote desert station: 640 km from the nearest doctor, with an aeromedical retrieval one hour away.",
          "advice": "A doctor can talk you through this by phone now. Hands-on help is an hour away. Start the steps.", "scenarioSynthetic": True,
          "risks": "Distance from care, heat, isolation", "twist": "A doctor by phone now; hands-on help an hour away",
-         "words": {"your crew medic": "your remote area nurse", "the commander": "the station manager", "Earth": "the on-call doctor", "pre-flight": "usual", "Before launch": "Before this season", "This mission": "This season", "cabin": "room"},
+         "words": {"your crew medic": "your remote area nurse", "the commander": "the station manager", "Earth": "the on-call doctor", "pre-flight": "usual", "Before launch": "Before this season", "This mission": "This season", "cabin": "room", "flight surgeon": "on-call doctor"},
          "tierWords": {"amber": "Remote nurse"}},
     ],
     "settingStatus": "Draft guidance lines, environment profiles and Earth-mode wording, awaiting clinician review (CR-11). The rules do not yet change by environment; that is a clinician decision.",

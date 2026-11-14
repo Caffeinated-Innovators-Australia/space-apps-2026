@@ -52,6 +52,12 @@ Also exported: the types `Tier`, `RuleKind`, `RuleDef`, `CombinedRule`, `PromptR
 | `sendPathwayCase` | `state, seed, rules, args: { crewId, pathwayId, settingId, at }` | Queues one case per person and pathway, once the pattern is amber or red |
 | `pathwayCaseContent` | `state, seed, rules, packId` | The full content of a pathway case, built when read |
 | `caseContent` | `state, seed, rules, packId` | The content of any case, with `kind` set to `reading` or `symptom-pathway` |
+| `earlyWarning`, `logPathwayTest` | see `src/core/pathways.ts` | The early warning before any symptom, and a simple test result logged with a case |
+| `isbar`, `replyToCase`, `acceptReply`, `repliesFor`, `linkStatus` | see `src/core/handover.ts` | The handover in ISBAR order, the remote doctor's replies and the four link states |
+| `crewOverview`, `rulesAwaitingSignOff` | see `src/core/medic.ts` | What the crew medic may see, and the rules still awaiting sign-off |
+| `startEmergency`, `reachStep`, `endEmergency`, `emergencySummary` | see `src/core/emergency.ts` | One run of the Emergency screen and its summary |
+| `doseSummary`, `eventDays` | see `src/core/radiation.ts` | The radiation total, the past 14 days and days to the limit at the recent rate |
+| `startWound`, `checkWound`, `woundSummary` | see `src/core/wounds.ts` | The healing tracker |
 | `exportOutbox` | `state, seed, rules, at` | The file of queued cases (format `crew-health-case-export/3`), and marks them exported |
 | `demoValue` | `seed, crewId, indicatorId` | The example value for today's demo, or the person's own baseline average; for a running total, the last mission total plus 0.7 |
 

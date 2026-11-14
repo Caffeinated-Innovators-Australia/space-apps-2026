@@ -51,14 +51,16 @@ npm run crew-health -- demo    --crew crew-1 --indicator reaction
 npm run crew-health -- assess  --crew crew-1 --indicator grip --value 24.4
 npm run crew-health -- demo    --crew crew-1 --indicator radiation
 npm run crew-health -- symptoms
-npm run crew-health -- symptom --crew crew-2 --label "Pain in side or lower back"
-npm run crew-health -- symptom --crew crew-2 --label "Blood in urine"
-npm run crew-health -- pathways --crew crew-2
-npm run crew-health -- pain    --crew crew-2 --pathway KS-01 --score 7
-npm run crew-health -- send-pathway --crew crew-2 --pathway KS-01
+npm run crew-health -- symptom --crew crew-4 --label "Pain in side or lower back"
+npm run crew-health -- symptom --crew crew-4 --label "Blood in urine"
+npm run crew-health -- pathways --crew crew-4
+npm run crew-health -- pain    --crew crew-4 --pathway KS-01 --score 7
+npm run crew-health -- send-pathway --crew crew-4 --pathway KS-01
 ```
 
 `READING_ID` is the `reading.id` that `record` prints. Grip strength 24.4 kg for `crew-1` is below 80% of their own baseline, the NASA strength standard (NASA-STD-3001 Volume 1), so it comes back `red`. A radiation total lower than the last reading is refused with an error, because a running total cannot go down. `assess`, `demo`, `day`, `plan`, `history`, `streak` and `outbox` save nothing. `record`, `send` and `export` change a local state file (`.crew-health-state.json`, or the path given with `--state FILE`). Nothing is sent over a network. `export` writes a file in the format `crew-health-case-export/3`; each case has a `kind` (`reading` or `symptom-pathway`) and includes the other signals flagged that day.
+
+The crew member in the story is Jo (`crew-1`). With no symptom logged, `pathways --crew crew-1` already returns an early warning at level `early` (rule `KS-00`): fluid has been low for three logged days. It names a risk to act on early, not a finding, and no case can be sent for it. The app also has screens that have no command yet: the one-screen check-in, the Earth inbox and replies, the crew medic overview, the Emergency steps, and the radiation and healing screens. Their logic is in `src/core/` as pure functions.
 
 Symptoms that form a pattern open a pathway. The first is a possible kidney stone (rule `KS-01`). `symptom` logs or clears one symptom and prints the pathways now open. A pathway has a `level`: `check` (the app is asking follow-up questions, no alert), `amber` (Crew medic) or `red` (Urgent). `send-pathway` works once the level is amber or red. A pathway names a pattern to check, never a finding: do not tell a person they have a kidney stone. `symptom`, `pain` and `send-pathway` change the state file.
 
