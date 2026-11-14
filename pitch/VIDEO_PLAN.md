@@ -24,19 +24,23 @@ The story, set by the team lead on 14 November 2026: **the first 20 seconds are 
 
 ## The trailer (chosen cut)
 
-`trailer-draft.mp4` is built from the team's own trailer script: 29.5 seconds, 1920 by 1080, no sound. This second version follows the team lead's review of the first: slower shots, soft dissolves, and one message per shot. A shot carries either a title or the app screen, never a caption on top that repeats it. The app is shown large, one element at a time. The voice-over lines are listed here for a team member to record; they are not burned in.
+`trailer-draft.mp4`, third version: 29.6 seconds, 1920 by 1080. The copy in this repository has no sound. The picture is cut to the team's recorded voice-over, phrase by phrase, so each screen holds for as long as its words take. The team lead set the day to 214 to match the voice. The app's own mission clock, which reads day 87, is hidden in these captures; nothing else on the app screens is changed. App screens are stills of the live app, shown large, one element per shot.
 
-It uses one real photograph of the Simpson Desert by Ian Cochrane (CC BY 2.0, cropped and colour graded, credited on the end card) and screen capture of the live app. No image is AI-generated.
+It uses one real photograph of the Simpson Desert by Ian Cochrane (CC BY 2.0, cropped and colour graded, credited on the end card). No image is AI-generated.
 
-| Time | On screen | Voice-over line (to record) |
+| Time | On screen | Voice-over |
 |---|---|---|
-| 0:00 to 0:04 | Red sand, slow push in. Title: "DAY 87" | "Day 87. Nothing but red sand." |
-| 0:04 to 0:08 | The app, large: "1 needs you", then the tile "Kidneys and urine, low fluid for 3 days" | "Three days of low fluid." |
-| 0:08 to 0:13.5 | Two taps: "Pain in side or lower back", then "Fever or chills". The status turns Urgent | "Then pain. Then fever." |
-| 0:13.5 to 0:17 | The countdown: "Earth reply possible in 36:00" | "And no answer for thirty-six minutes." |
-| 0:17 to 0:22.5 | The same sand pulls back to sky, trees and a desert track sign. Title: "THIS ISN'T MARS", then "Remote Australia. 640 km from the nearest doctor." | Silence, then "Except this isn't Mars." |
-| 0:22.5 to 0:26.5 | The same case at the remote station, marked SYNTHETIC: "Retrieval team can reach you in 59:59. Dust has grounded the aircraft." | "On Mars, it's the distance. Out here, it's the dust." |
-| 0:26.5 to 0:29.5 | End card: "Built for Mars. Needed here.", project and team, sources, photo credit and limits | none |
+| 0:00 to 0:05.4 | Red sand, slow push in. Title: "DAY 214" | "Day 214. I'm on Mars. Earth is 18 minutes away." |
+| 0:05.4 to 0:07.8 | "1 needs you" and the tile "Kidneys and urine, low fluid for 3 days" | "Three low-fluid days." |
+| 0:07.8 to 0:10.9 | The early warning card, marked SYNTHETIC and "Not a diagnosis" | "The app flags kidney stone risk before I feel it." |
+| 0:10.9 to 0:12.9 | "Pain in side or lower back" is selected, then "Fever or chills"; the status turns Urgent | "Pain, then fever." |
+| 0:12.9 to 0:16 | "What to do now", then the urine test strip with "Blood seen" selected | "It guides my ultrasound, checks my urine, and starts emergency mode." |
+| 0:16 to 0:19.4 | The countdown from 36:00 | "I'm not alone." then a pause |
+| 0:19.4 to 0:24 | The same sand pulls back to sky, trees and a desert track sign. "THIS ISN'T MARS", then "Remote Australia. 640 km from the nearest doctor." | "At a Simpson Desert station, the hospital is 640 kilometres away." |
+| 0:24 to 0:27 | The same case at the remote station, marked SYNTHETIC: retrieval countdown, aircraft grounded by dust | "My one tool when help is far away." |
+| 0:27 to 0:29.6 | End card: "Built for Mars. Needed here.", project and team, sources, photo credit and limits | none |
+
+Open points for the team: the voice says "guides my ultrasound" and "starts emergency mode", and the app shows neither in this pathway; the voice says "hospital" where the screen says "doctor".
 
 ## What the final cut still needs from the team
 
