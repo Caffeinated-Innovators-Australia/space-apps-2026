@@ -52,3 +52,5 @@
 .x-em-banner .glyph { fill: var(--tier-red); flex: none; }
 .x-em-banner-text { display: flex; flex-direction: column; flex: 1 1 240px; min-width: 0; font-size: 16px; }
 .x-em-banner-text strong { font-size: 20px; }
+.x-em-other { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 16px; margin: 0; }
+.x-em-banner-actions { display: flex; gap: 8px; flex-wrap: wrap; }

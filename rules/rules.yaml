@@ -218,6 +218,10 @@ emergency_symptoms:
   id: EMS-01
   title: "Press Emergency now"
   symptoms: ["Chest pain", "Short of breath", "Collapse"]
+  # Which checklist in the emergency module each symptom opens. A symptom with none opens the built-in Emergency steps.
+  checklists:
+    "Chest pain": { construct: 5, label: "Open chest pain checklist" }
+    "Short of breath": { construct: 2, label: "Open breathing checklist" }
   why: "Chest pain, shortness of breath and collapse are treated as an emergency until a clinician says otherwise."
   source: "Placeholder list from the team's clinicians (review of the build, 15 Nov 2026), awaiting sign-off."
   confidence: Low

@@ -249,6 +249,7 @@ export function Emergency({ state, commit, crewId, go, hhmm }: EmergencyProps) {
   return (
     <section className="x-em" aria-labelledby="x-em-h">
       {notice}
+      <p className="x-em-other">Not a collapse? <button type="button" className="btn secondary" onClick={() => go('astra')}>Open the emergency checklists</button></p>
       <h1 id="x-em-h" className="title">Emergency: step {index + 1} of {steps.length}</h1>
       <ol className="x-em-rail" aria-label="Basic life support steps">
         {steps.map((s, i) => {

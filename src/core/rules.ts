@@ -64,6 +64,8 @@ export interface EmergencySymptomRule extends Signed {
   id: string;
   title: string;
   symptoms: string[];
+  /** The emergency module's pathway number for a symptom, and the wording on the button that opens it. */
+  checklists?: Record<string, { construct: number; label: string }>;
   why: string;
 }
 
@@ -182,6 +184,10 @@ export function parseRules(text: string): RuleFile {
     signed(e, e.id ?? 'emergency symptoms');
     if (!e.id || !e.title || !e.why) throw new Error('Emergency symptoms: needs an id, a title and the why wording.');
     if (!Array.isArray(e.symptoms) || e.symptoms.length === 0) throw new Error('Emergency symptoms: needs at least one symptom.');
+    for (const [s, c] of Object.entries(e.checklists ?? {})) {
+      if (!e.symptoms.includes(s)) throw new Error(`Emergency symptoms: the checklist for "${s}" names a symptom that is not on the list.`);
+      if (!Number.isInteger(c?.construct) || !c?.label) throw new Error(`Emergency symptoms: the checklist for "${s}" needs a pathway number as construct and a label.`);
+    }
   }
   f.monitor_alerts = f.monitor_alerts ?? [];
   if (!Array.isArray(f.monitor_alerts)) throw new Error('monitor_alerts must be a list of rules.');

@@ -15,7 +15,7 @@ import { AdvisoryPill, AlertCard, LimitArrow, More, ReadingTile, Ring, Synthetic
 import {
   acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
   fromMin, initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
-  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, emergencySymptoms, toMin,
+  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, lifeThreats, toMin,
   type Assessment, type DaySummary, type Indicator, type PathwayStatus, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
 import osd from './data/osd569_cbc.json';
@@ -181,7 +181,7 @@ export function App() {
         {rules ? (
           <div className="sticky-top">
             <StatusBar state={state} commit={commit} rules={rules} crewId={crew.id} setting={setting} />
-            {route.name === 'emergency' || route.name === 'astra' ? null : <EmergencyBanner alert={emergencySymptoms(state, rules, crew.id)} go={go} />}
+            {route.name === 'emergency' || route.name === 'astra' ? null : <EmergencyBanner threats={lifeThreats(state, seed as Seed, rules, crew.id)} go={go} />}
           </div>
         ) : null}
 
