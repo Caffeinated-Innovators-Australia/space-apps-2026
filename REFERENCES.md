@@ -55,4 +55,5 @@ The NASA Human Research Program hazard pages are linked as hazard chips on every
 ## Other
 - Apache License 2.0 text. https://www.apache.org/licenses/LICENSE-2.0
 - The draft demo video (`pitch/demo-draft.mp4`) is a screen capture of our own app with text cards set in IBM Plex. No third-party footage, music or images.
-- The body figure, icons and charts are drawn in code by the team (AI-assisted, see AI_USE.md). No third-party images are used.
+- The draft trailer (`pitch/trailer-draft.mp4`) uses one photograph: "Simpson DSC02956 SA" by Ian Cochrane, Simpson Desert, South Australia. Licence: Creative Commons Attribution 2.0 (CC BY 2.0), https://creativecommons.org/licenses/by/2.0/ . Source: https://commons.wikimedia.org/wiki/File:Simpson_DSC02956_SA_(38195747046).jpg . Changes: cropped and colour graded. The credit is shown on the trailer's end card.
+- The body figure, icons and charts are drawn in code by the team (AI-assisted, see AI_USE.md). No other third-party images are used.
