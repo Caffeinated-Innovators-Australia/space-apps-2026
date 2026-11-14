@@ -12,7 +12,7 @@ On the way to Mars, a question to Earth's doctors can take up to 45 minutes to c
 
 ## Link to project demo
 
-Draft cut (28.6 seconds, no sound, captioned; it follows the official suggested outline and shows the Day 87 story on the live app): https://github.com/Caffeinated-Innovators-Australia/space-apps-2026/blob/main/pitch/demo-draft.mp4
+Draft cut (28.9 seconds, no sound, captioned): the first 20 seconds follow a kidney stone on Mars, from an early warning to a reply from Earth; the last 9 seconds show the same gap at a remote outback station. https://github.com/Caffeinated-Innovators-Australia/space-apps-2026/blob/main/pitch/demo-draft.mp4
 
 [Team: replace with the final hosted video, 30 seconds or less, with our doctor's voice. See pitch/VIDEO_PLAN.md.]
 
