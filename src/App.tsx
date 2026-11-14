@@ -94,7 +94,9 @@ function feelingSeed(setting: Setting): Seed {
 }
 /** Change place, and note it when the gravity changes, so the adapting period can start. */
 function place(st: State, id: string, at: number): State {
-  return noteGravityChange(changePlace(st, id, at), settingById(seed, st.ui.settingId), settingById(seed, id), at);
+  const next = noteGravityChange(changePlace(st, id, at), settingById(seed, st.ui.settingId), settingById(seed, id), at);
+  // The place normally comes from mission data, not from the crew. The demo switchers stand in for that feed.
+  return { ...next, ui: { ...next.ui, locationManual: false } };
 }
 /** Where an Act now alert that is a life threat sends the crew: the emergency module's pathway. */
 const emergencyFor = (construct: number) => go('astra', String(construct));
@@ -180,7 +182,7 @@ export function App() {
           ) : route.name === 'crewcheck' ? (
             <CrewCheckIn {...shared} {...extra} rules={rules} />
           ) : route.name === 'location' ? (
-            <Location {...shared} {...extra} rules={rules} onChange={(id) => commit(place(state, id, nowMs()))} />
+            <Location {...shared} {...extra} rules={rules} onChange={(id) => { const next = place(state, id, nowMs()); commit({ ...next, ui: { ...next.ui, locationManual: true } }); }} />
           ) : route.name === 'astra' ? (
             <Astra {...shared} {...extra} rules={rules} arg={route.arg} />
           ) : route.name === 'checkin' ? (

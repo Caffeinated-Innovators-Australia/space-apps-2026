@@ -1,7 +1,7 @@
 // Location screen: one setting says where the crew is; gravity and cabin atmosphere change how things are shown.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { useState } from 'react';
-import { AdvisoryPill, SyntheticTag } from '../components/ui';
+import { AdvisoryPill, More, SyntheticTag } from '../components/ui';
 import type { RuleFile, Seed, Setting, State } from '../core/index.ts';
 import { adapting, displayBands, massFromScale, profileFacts, whatChanges } from '../core/profiles.ts';
 import './x-lp.css';
@@ -87,9 +87,16 @@ export function Location({ state, setting, seed, onChange }: LocationProps) {
         </section>
       ) : null}
 
+      <section className="card" aria-labelledby="x-lp-auto">
+        <div className="card-head"><h2 className="title" id="x-lp-auto">Where the crew is: {setting.label}</h2>{state.ui.locationManual ? <AdvisoryPill>Set by hand</AdvisoryPill> : null}</div>
+        <p>{state.ui.locationManual ? 'Set by hand. It returns to automatic as soon as mission data is back.' : 'Set automatically from mission data. You do not need to enter it.'}</p>
+        <p className="caption">In this demo the mission data feed is simulated.</p>
+      </section>
+
+      <More label="Location lost? Set it by hand">
       <fieldset className="card x-lp-places">
-        <legend className="title x-lp-legend">Where the crew is</legend>
-        <p className="caption">Set by mission control. You can change it here for the demo.</p>
+        <legend className="title x-lp-legend">Set the place by hand</legend>
+        <p className="caption">Only for when the automatic location is lost, for example when the mission data system is offline.</p>
         <ul className="x-lp-list">
           {seed.settings.map((s) => {
             const facts = profileFacts(s).map((f) => f.value).join(' · ');
@@ -108,6 +115,7 @@ export function Location({ state, setting, seed, onChange }: LocationProps) {
           })}
         </ul>
       </fieldset>
+      </More>
 
       <section className="card" aria-labelledby="x-lp-changes">
         <div className="card-head">
