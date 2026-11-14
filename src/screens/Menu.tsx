@@ -30,6 +30,8 @@ const INPUT_WORDS: Record<Indicator['input']['kind'], string> = {
 };
 const EVIDENCE_WORDS: Record<NonNullable<Indicator['evidence']>, string> = { established: 'Established', emerging: 'Emerging', experimental: 'Experimental' };
 
+import { changePlace } from '../core/handover.ts';
+
 export function Menu({ state, commit, ui, setting, seed, go, say }: MenuProps) {
   const [confirmReset, setConfirmReset] = useState(false);
   const privacy = (seed as WithPrivacy).privacy;
@@ -102,7 +104,7 @@ export function Menu({ state, commit, ui, setting, seed, go, say }: MenuProps) {
         <h2 className="title">For the demo</h2>
         <p className="caption">These controls exist only to show the app. A real mission would not have them.</p>
         <div className="seg" role="group" aria-label="Where are you?">
-          {seed.settings.map((c) => <button key={c.id} aria-pressed={c.id === setting.id} onClick={() => ui({ settingId: c.id })}>{c.label}</button>)}
+          {seed.settings.map((c) => <button key={c.id} aria-pressed={c.id === setting.id} onClick={() => commit(changePlace(state, c.id, Date.now()))}>{c.label}</button>)}
         </div>
         <div className="btn-row x-mo-section">
           <button className="chip chip-toggle" aria-pressed={!!state.ui.linkDown} onClick={() => ui({ linkDown: !state.ui.linkDown })}>{say('No link to Earth', setting)}</button>

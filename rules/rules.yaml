@@ -59,7 +59,7 @@ combined:
   id: CM-01
   min_flags: 2
   title: "Several signals have moved together"
-  why: "{count} of today's check-ins are outside their usual range: {list}. Signals that move together matter more than any one alone."
+  why: "{count} of today's check-ins are outside their usual range: {list}. They are shown together so that none is read alone."
   source: "Placeholder rule, awaiting clinician review."
   confidence: Low
   signed_off_by: placeholder

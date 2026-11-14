@@ -21,7 +21,7 @@ import {
 import osd from './data/osd569_cbc.json';
 import seedJson from './data/seed.json';
 import { HandoverCard, LinkBanner, ReplyCard } from './components/Handover';
-import { acceptReply, arrivedReplies, linkStatus, type CasePack } from './core/index.ts';
+import { acceptReply, arrivedReplies, changePlace, linkStatus, type CasePack } from './core/index.ts';
 import { EmergencyButton } from './components/EmergencyButton';
 import { CheckIn } from './screens/CheckIn';
 import { Emergency } from './screens/Emergency';
@@ -123,7 +123,7 @@ export function App() {
           {route.name === 'emergency' ? null : <EmergencyButton go={go} />}
           <button className="ghost" onClick={() => ui({ theme: state.ui.theme === 'cabin' ? 'day' : 'cabin' })}>{state.ui.theme === 'cabin' ? 'Day theme' : 'Cabin theme'}</button>
         </header>
-        {rules ? <StatusBar state={state} commit={commit} rules={rules} crewId={crew.id} /> : null}
+        {rules ? <StatusBar state={state} commit={commit} rules={rules} crewId={crew.id} setting={setting} /> : null}
 
         <main className="stack">
           {!rules ? (
@@ -177,10 +177,11 @@ export function App() {
 }
 
 /** Always on screen: mission time and the alert that most needs attention (NASA display standard, Appendix F.4.2 and F.6.1). */
-function StatusBar({ state, commit, rules, crewId }: { state: State; commit: (s: State) => void; rules: RuleFile; crewId: string }) {
+function StatusBar({ state, commit, rules, crewId, setting }: { state: State; commit: (s: State) => void; rules: RuleFile; crewId: string; setting: Setting }) {
   const day = daySummary(state, seed, rules, crewId);
+  const noCabin = setting.habitat === false;
   const flagged = [
-    ...day.flagged.map((x) => ({ id: x.reading!.id, tier: x.assessment!.tier, name: x.indicator.name, open: () => go('result', x.reading!.id) })),
+    ...day.flagged.filter((x) => !(noCabin && x.indicator.environment)).map((x) => ({ id: x.reading!.id, tier: x.assessment!.tier, name: x.indicator.name, open: () => go('result', x.reading!.id) })),
     ...pathwayAlerts(state, seed, rules, crewId).map((p) => ({ id: p.key, tier: p.tier, name: p.name, open: () => go('pathway', p.pathwayId) })),
   ].sort((x, y) => RANK[y.tier] - RANK[x.tier]);
   const [now, setNow] = useState(nowMs());
@@ -193,7 +194,7 @@ function StatusBar({ state, commit, rules, crewId }: { state: State; commit: (s:
   const top = open[0];
   return (
     <div className="statusbar" role="status" aria-label="Mission time and alerts">
-      <span>Mission time <span className="time">{String(seed.missionDay).padStart(4, '0')}/{hhmmss(now)}</span></span>
+      <span>{noCabin ? 'Time' : 'Mission time'} <span className="time">{noCabin ? hhmmss(now) : `${String(seed.missionDay).padStart(4, '0')}/${hhmmss(now)}`}</span></span>
       <span className="alertline">
         {top ? (
           <>
@@ -431,7 +432,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
             <p className="muted">A crew far from Earth and a family hours from a hospital need the same thing: care that starts before the expert arrives.</p>
             <p className="caption">Source: <a href={seed.earthBenefit.link}>{seed.earthBenefit.source}</a>.</p>
             <p>{seed.reach.earth.text} <span className="caption">Source: <a href={seed.reach.earth.link}>{seed.reach.earth.source}</a>.</span></p>
-            <div><button className="btn secondary" onClick={() => ui({ settingId: setting.id === 'earth' ? seed.settings[0].id : 'earth' })}>{setting.id === 'earth' ? 'Back to the Mars base' : 'See it in remote Australia'}</button></div>
+            <div><button className="btn secondary" onClick={() => commit(changePlace(state, setting.id === 'earth' ? seed.settings[0].id : 'earth', nowMs()))}>{setting.id === 'earth' ? 'Back to the Mars base' : 'See it in remote Australia'}</button></div>
           </div>
           <div className="card">
             <h2 className="title">The same idea, on real crew data</h2>
@@ -447,7 +448,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
   }
   // Today: a picture of where things stand. What is fine stays quiet; what needs the crew member is one tap from its detail.
   const issues = [
-    ...day.flagged.map((x) => ({ key: x.reading!.id, tier: x.assessment!.tier as Tier | 'advisory', name: x.indicator.name, sub: x.indicator.environment ? 'Cabin reading' : x.assessment!.deltaText, val: `${shown(x.indicator, x.reading!.value)} ${x.indicator.unit}`, arrow: <LimitArrow tier={x.assessment!.tier} delta={x.assessment!.delta} />, go: () => go('result', x.reading!.id) })),
+    ...day.flagged.filter((x) => !(setting.habitat === false && x.indicator.environment)).map((x) => ({ key: x.reading!.id, tier: x.assessment!.tier as Tier | 'advisory', name: x.indicator.name, sub: x.indicator.environment ? 'Cabin reading' : x.assessment!.deltaText, val: `${shown(x.indicator, x.reading!.value)} ${x.indicator.unit}`, arrow: <LimitArrow tier={x.assessment!.tier} delta={x.assessment!.delta} />, go: () => go('result', x.reading!.id) })),
     ...pathways.map((p) => ({ key: p.key, tier: (pathwayTier(p) ?? 'advisory') as Tier | 'advisory', name: p.pathway.region, sub: p.level === 'check' ? '3 quick questions' : p.title.includes(': ') ? cap(p.title.split(': ')[1]) : p.title, val: '', arrow: null, go: () => go('pathway', p.pathway.id) })),
     ...(promptOpen ? [{ key: 'prompt', tier: 'advisory' as const, name: indicatorById(seed, day.prompt!.indicatorId).name, sub: 'Asked for today', val: '', arrow: null, go: () => go('reading', day.prompt!.indicatorId) }] : []),
   ].sort((a, b) => (b.tier === 'advisory' ? -1 : RANK[b.tier]) - (a.tier === 'advisory' ? -1 : RANK[a.tier]));
@@ -502,7 +503,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
             {seed.crew.map((c) => <button key={c.id} aria-pressed={c.id === crewId} onClick={() => ui({ crewId: c.id })}>{c.name.replace('Crew member', 'Crew')}</button>)}
           </div>
         </div>
-        <Where setting={setting} onPick={(id) => ui({ settingId: id })} />
+        <Where setting={setting} onPick={(id) => commit(changePlace(state, id, nowMs()))} />
       </div>
 
           </More>
@@ -743,7 +744,7 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
             <span className="placeholder">{seed.settingStatus}</span>
           </More>
           <More label={`Demo: ${setting.label}`}>
-            <Where setting={setting} onPick={(id) => { ui({ settingId: id }); setStartAt(nowMs()); }} />
+            <Where setting={setting} onPick={(id) => { const t = nowMs(); commit(changePlace(state, id, t)); setStartAt(t); }} />
           </More>
         </section>
         <div className="stack">
@@ -800,12 +801,13 @@ function EarthLoop({ state, commit, setting, rules, pack }: { state: State; comm
   const replies = arrivedReplies(state, pack, setting, now);
   return (
     <>
-      <LinkBanner status={link.status} secondsLeft={link.secondsLeft} setting={setting} say={say} />
+      {doctor && link.status !== 'reply-in' && link.status !== 'no-link' ? null : <LinkBanner status={link.status} secondsLeft={link.secondsLeft} setting={setting} say={say} />}
+      {replies.length > 0 && state.symptoms.some((x) => x.crewId === pack.crewId && x.at > replies[replies.length - 1].at) ? <p className="confirm" role="status">This reply was written before your latest symptom was logged.</p> : null}
       {replies.length > 0 ? <ReplyCard replies={replies} onAccept={(id) => commit(acceptReply(state, id, nowMs()))} hhmm={hhmm} say={say} setting={setting} /> : null}
       <More label="Handover sent"><HandoverCard content={caseContent(state, seed, rules, pack.id)} hhmm={hhmm} setting={setting} say={say} /></More>
       <div className="btn-row">
         <button className="btn secondary" onClick={() => go('inbox', pack.id)}>{doctor ? 'See this case as the doctor sees it' : 'See this case as Earth sees it'}</button>
-        {link.status === 'waiting' ? <button className="btn secondary" onClick={() => commit({ ...state, ui: { ...state.ui, skipMs: (state.ui.skipMs ?? 0) + Math.ceil(link.secondsLeft) * 1000 } })}>Demo: skip ahead {Math.ceil(link.secondsLeft / 60)} min</button> : null}
+        {link.status === 'waiting' && !doctor ? <button className="btn secondary" onClick={() => commit({ ...state, ui: { ...state.ui, skipMs: (state.ui.skipMs ?? 0) + Math.ceil(link.secondsLeft) * 1000 } })}>Demo: skip ahead {Math.ceil(link.secondsLeft / 60)} min</button> : null}
       </div>
     </>
   );
@@ -927,7 +929,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
               <p className="gap-advice">{left > 0 ? setting.advice : say(setting.id === 'earth' ? 'Help can reach you from now. Keep going with the steps until it does.' : 'The wait is over: a reply from Earth can arrive from now. Keep going with the steps until it does.', setting)}</p>
               {setting.scenarioSynthetic ? <SyntheticTag /> : null}
               <More label="How this is worked out"><p>{setting.detail}</p><p className="caption">{setting.basis}</p></More>
-              <More label={`Demo: ${setting.label}`}><Where setting={setting} onPick={(id) => { ui({ settingId: id }); setStartAt(nowMs()); }} /></More>
+              <More label={`Demo: ${setting.label}`}><Where setting={setting} onPick={(id) => { const t = nowMs(); commit(changePlace(state, id, t)); setStartAt(t); }} /></More>
             </section>
           ) : null}
           {pack ? <EarthLoop state={state} commit={commit} setting={setting} rules={rules} pack={pack} /> : null}

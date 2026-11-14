@@ -131,7 +131,7 @@ export type LinkState = 'no-link' | 'queued' | 'waiting' | 'reply-in';
  * and the reply takes one more leg to come back. Nothing beats the signal delay.
  */
 export function replyArrival(reply: EarthReply, pack: CasePack, setting: Setting): number {
-  const leg = (setting.replySeconds / 2) * 1000;
+  const leg = ((setting.adviceSeconds ?? setting.replySeconds) / 2) * 1000;
   return Math.max(reply.at, pack.createdAt + leg) + leg;
 }
 
@@ -143,7 +143,21 @@ export function arrivedReplies(state: State, pack: CasePack, setting: Setting, n
 export function linkStatus(state: State, pack: CasePack, setting: Setting, now: number): { status: LinkState; secondsLeft: number } {
   if (arrivedReplies(state, pack, setting, now).length) return { status: 'reply-in', secondsLeft: 0 };
   if (state.ui.linkDown) return { status: 'no-link', secondsLeft: 0 };
-  const left = setting.replySeconds - (now - pack.createdAt) / 1000;
+  const left = (setting.adviceSeconds ?? setting.replySeconds) - (now - pack.createdAt) / 1000;
   if (left > 0) return { status: 'waiting', secondsLeft: left };
   return { status: 'queued', secondsLeft: 0 };
+}
+
+/**
+ * Change the place. Any case still waiting is run again from that place: it is stamped as sent now, from there,
+ * and replies written for the old place are dropped. One place, one clock: nothing from the old place carries over.
+ */
+export function changePlace(state: State, settingId: string, at: number): State {
+  const waiting = state.outbox.filter((p) => p.status === 'queued').map((p) => p.id);
+  return {
+    ...state,
+    ui: { ...state.ui, settingId },
+    outbox: state.outbox.map((p) => (p.status === 'queued' ? { ...p, createdAt: at, settingId } : p)),
+    replies: (state.replies ?? []).filter((r) => !waiting.includes(r.caseId)),
+  };
 }

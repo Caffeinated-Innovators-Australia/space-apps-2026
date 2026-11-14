@@ -2,7 +2,7 @@
 
 One test per requirement. Each runs on the live app in under 2 minutes: https://caffeinated-innovators-australia.github.io/space-apps-2026/
 
-All tests follow the Day 87 story for Jo at the Mars base. Navigation changed on 14 November (D-025): Today now shows only what needs the crew member. The timeline is under "Schedule", the full list under "All signals", and data sources under "Sources". The crew and place switchers are under "Demo" on Today. Start each run from Today, choose "Jo" and "Mars base", and press "Reset the demo" if it shows. Every crew value is SYNTHETIC. The demo values below are the ones the reading screen offers as a chip ("Demo value for today" or "Sensor value").
+All tests follow the Day 87 story for Jo at the Mars base. Navigation changed on 14 November (D-025): Today now shows only what needs the crew member. The timeline is under "Schedule", the full list under "All signals", and data sources under "Sources". The crew and place switchers are under "Demo" on Today. Start each run from Today, choose "Jo" and "Mars, 22 min" (both under "Demo" on Today), and press "Reset the demo" if it shows. Every crew value is SYNTHETIC. The demo values below are the ones the reading screen offers as a chip ("Demo value for today" or "Sensor value").
 
 ## Must requirements
 

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import seedJson from '../data/seed.json';
 import { caseContent, demoValue, initialState, recordReading, sendCase, settingById, toggleStep, toggleSymptom } from './actions.ts';
-import { acceptReply, isbar, linkStatus, NOT_A_DIAGNOSIS, REQUEST_LINE, replyToCase, repliesFor } from './handover.ts';
+import { acceptReply, changePlace, isbar, linkStatus, NOT_A_DIAGNOSIS, REQUEST_LINE, replyToCase, repliesFor } from './handover.ts';
 import { logPain, sendPathwayCase } from './pathways.ts';
 import { parseRules } from './rules.ts';
 import type { Seed, State } from './types.ts';
@@ -126,5 +126,28 @@ describe('linkStatus', () => {
     // A reply written at once still cannot reach the crew before the signal has gone there and back.
     expect(linkStatus(replied, pack, setting, pack.createdAt).status).not.toBe('reply-in');
     expect(linkStatus(replied, pack, setting, pack.createdAt + setting.replySeconds * 1000)).toEqual({ status: 'reply-in', secondsLeft: 0 });
+  });
+});
+
+describe('changing place', () => {
+  it('re-runs a waiting case from the new place: one clock, no replies from the old place', () => {
+    let s = recordReading(initialState(seed), seed, rules, { crewId: 'crew-1', indicatorId: 'sleep', value: 6.2, at: 1000 }).state;
+    const sent = sendCase(s, { readingId: s.readings[0].id, settingId: 'mars-18', at: 2000 });
+    s = replyToCase(sent.state, { caseId: sent.pack.id, decision: 'agree', note: 'Seen.', at: 3000 }).state;
+    const moved = changePlace(s, 'earth', 9000);
+    expect(moved.ui.settingId).toBe('earth');
+    expect(moved.outbox[0]).toMatchObject({ createdAt: 9000, settingId: 'earth' });
+    expect(repliesFor(moved, sent.pack.id)).toEqual([]);
+  });
+  it('on Earth advice comes by phone at once, and cabin readings are left out of the case', () => {
+    const earth = seed.settings.find((x) => x.id === 'earth')!;
+    let s = recordReading(initialState(seed), seed, rules, { crewId: 'crew-1', indicatorId: 'cabin-co2', value: 3.4, at: 1000 }).state;
+    s = recordReading(s, seed, rules, { crewId: 'crew-1', indicatorId: 'sleep', value: 6.2, at: 1100 }).state;
+    const sleep = s.readings.find((r) => r.indicatorId === 'sleep')!;
+    const sent = sendCase(s, { readingId: sleep.id, settingId: 'earth', at: 2000 });
+    const c = caseContent(sent.state, seed, rules, sent.pack.id);
+    expect(JSON.stringify(c.otherSignalsToday)).not.toContain('Cabin');
+    const replied = replyToCase(sent.state, { caseId: sent.pack.id, decision: 'agree', note: 'Seen.', at: 2500 }).state;
+    expect(linkStatus(replied, sent.pack, earth, 2600).status).toBe('reply-in');
   });
 });

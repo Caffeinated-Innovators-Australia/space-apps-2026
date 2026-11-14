@@ -186,7 +186,7 @@ export function pathwayCaseContent(state: State, seed: Seed, rules: RuleFile, pa
     tests: pathway.tests.map((t) => ({ test: t.label, result: state.pathwayTests?.[key]?.[t.id] ?? 'Not recorded' })),
     painScores: (state.painLog ?? []).filter((p) => p.crewId === pack.crewId && p.pathwayId === pathway.id).map((p) => ({ score: p.score, outOf: 10, at: iso(p.at) })),
     recentTrends: pathwayContext(state, seed, rules, pack.crewId, pathway).map((c) => ({ indicator: c.name, summary: c.text, drifted: c.flagged })),
-    otherSignalsToday: day.flagged.map((x) => ({ indicator: x.indicator.name, value: x.reading!.value, unit: x.indicator.unit, tier: x.assessment!.tier, why: x.assessment!.why })),
+    otherSignalsToday: day.flagged.filter((x) => !(x.indicator.environment && settingById(seed, pack.settingId).habitat === false)).map((x) => ({ indicator: x.indicator.name, value: x.reading!.value, unit: x.indicator.unit, tier: x.assessment!.tier, why: x.assessment!.why })),
     stepsGiven: status?.steps ?? [],
     stepsDone: state.pathwaySteps?.[key] ?? [],
     note: 'Assessment and next steps only. Not a diagnosis. The pattern names what to check for, not what was found.',

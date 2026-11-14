@@ -66,6 +66,10 @@ export interface Setting {
   twist: string;
   words?: Record<string, string>;
   tierWords?: Partial<Record<Tier, string>>;
+  /** False where there is no shared cabin to read, such as on Earth. Cabin and other habitat readings are left out there. */
+  habitat?: boolean;
+  /** Seconds for advice to go there and back, where that differs from when hands-on help can arrive. On Earth a doctor is on the phone at once. */
+  adviceSeconds?: number;
   /** How far away help is, in words: the one-way delay to Earth, or the distance to the nearest doctor. */
   away?: string;
 }

@@ -308,7 +308,7 @@ export function casePackContent(state: State, seed: Seed, rules: RuleFile, packI
     reading: { indicator: ind.name, value: reading.value, unit: ind.unit, takenAt: new Date(reading.at).toISOString(), changeFromBaseline: a.deltaText },
     trend: { baselineMean: Number(a.band.mean.toFixed(ind.dp + 1)), ownRange: [Number(a.band.low.toFixed(ind.dp)), Number(a.band.high.toFixed(ind.dp))], last14Days: h.mission.slice(-14), today: h.recorded.map((r) => r.value) },
     assessment: { tier: a.tier, rules: a.findings.map((f) => ({ id: f.ruleId, why: f.why, source: f.source, confidence: f.confidence, placeholder: f.placeholder })), reviewedBy: a.reviewedBy, confirmedByRepeatReading: confirmation(state, reading).status === 'confirmed' },
-    otherSignalsToday: day.flagged.filter((x) => x.indicator.id !== ind.id).map((x) => ({ indicator: x.indicator.name, value: x.reading!.value, unit: x.indicator.unit, tier: x.assessment!.tier, why: x.assessment!.why })),
+    otherSignalsToday: day.flagged.filter((x) => x.indicator.id !== ind.id && !(x.indicator.environment && settingById(seed, pack.settingId).habitat === false)).map((x) => ({ indicator: x.indicator.name, value: x.reading!.value, unit: x.indicator.unit, tier: x.assessment!.tier, why: x.assessment!.why })),
     stepsGiven: a.steps,
     stepsDone: reading.stepsDone,
     symptoms: state.symptoms.filter((s) => s.crewId === pack.crewId).map((s) => ({ label: s.label, at: new Date(s.at).toISOString() })),
