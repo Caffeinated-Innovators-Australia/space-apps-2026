@@ -11,7 +11,7 @@ import { ScaleInput } from './components/ScaleInput';
 import { StreakCard } from './components/StreakCard';
 import { Timeline } from './components/Timeline';
 import { VisionTest } from './components/VisionTest';
-import { AdvisoryPill, AlertCard, LimitArrow, More, ReadingTile, Ring, SyntheticTag, TierPill, TierShape, TIER_WORD, TierWords } from './components/ui';
+import { AdvisoryPill, AlertCard, LimitArrow, More, ReadingTile, Ring, SyntheticTag, TierPill, TierShape, TIER_WORD, TierWords, statusClass } from './components/ui';
 import {
   acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
   fromMin, initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
@@ -23,6 +23,9 @@ import seedJson from './data/seed.json';
 import { doctorSay, HandoverCard, LinkBanner, ReplyCard } from './components/Handover';
 import { acceptReply, arrivedReplies, changePlace, linkStatus, type CasePack } from './core/index.ts';
 import { EmergencyBanner } from './components/EmergencyBanner.tsx';
+import { AiConnections } from './screens/AiConnections.tsx';
+import { loadAi } from './core/ai.ts';
+import { Assistant } from './screens/Assistant.tsx';
 import { StormAlarm, useTick as useStormTick } from './components/StormAlarm.tsx';
 import { EmergencyButton } from './components/EmergencyButton';
 import { CheckIn } from './screens/CheckIn';
@@ -80,7 +83,7 @@ function clock(totalSeconds: number): string {
 }
 const shown = (i: Indicator, v: number) => (i.input.kind === 'scale' ? `${v.toFixed(0)}` : v.toFixed(i.dp));
 
-const ROUTES = ['reading', 'result', 'gap', 'pathway', 'crew', 'outbox', 'about', 'checkin', 'feeling', 'inbox', 'medic', 'menu', 'emergency', 'radiation', 'immune', 'schedule', 'signals', 'sources', 'vitals', 'ultrasound', 'crewcheck', 'location', 'astra', 'area', 'replies', 'devices'] as const;
+const ROUTES = ['reading', 'result', 'gap', 'pathway', 'crew', 'outbox', 'about', 'checkin', 'feeling', 'inbox', 'medic', 'menu', 'emergency', 'radiation', 'immune', 'schedule', 'signals', 'sources', 'vitals', 'ultrasound', 'crewcheck', 'location', 'astra', 'area', 'replies', 'devices', 'ai', 'assistant'] as const;
 interface Route { name: 'home' | (typeof ROUTES)[number]; arg?: string }
 function readRoute(): Route {
   const [name, arg] = window.location.hash.replace(/^#\/?/, '').split('/');
@@ -219,6 +222,10 @@ export function App() {
             <Menu {...shared} {...extra} rules={rules} />
           ) : route.name === 'devices' ? (
             <Devices {...shared} {...extra} />
+          ) : route.name === 'ai' ? (
+            <AiConnections setting={setting} go={go} />
+          ) : route.name === 'assistant' ? (
+            <Assistant state={state} seed={seed} setting={setting} crewId={crew.id} go={go} />
           ) : route.name === 'vitals' ? (
             <Vitals {...shared} {...extra} rules={rules} onSend={pathwayStatuses(state, seed, rules, crew.id).some((x) => x.pathway.id === 'KS-01' && (x.level === 'amber' || x.level === 'red')) ? () => { if (!state.outbox.some((k) => k.pathwayId === 'KS-01' && k.crewId === crew.id && k.status === 'queued')) commit(sendPathwayCase(state, seed, rules, { crewId: crew.id, pathwayId: 'KS-01', settingId: setting.id, at: nowMs() }).state); go('pathway', 'KS-01'); } : undefined} />
           ) : route.name === 'ultrasound' ? (
@@ -268,6 +275,12 @@ function VitalsPromptNote({ state, rules, crewId }: { state: State; rules: RuleF
       {p.placeholder ? <> <span className="placeholder">Placeholder wording, awaiting clinician sign-off</span></> : null}
     </p>
   );
+}
+
+/** While waiting for Earth: a way to the AI clinical assistant, shown only when it has been turned on (FR-62). */
+function AskAssistant() {
+  const on = (() => { try { return loadAi(window.localStorage).assistant !== 'off'; } catch { return false; } })();
+  return on ? <button type="button" className="btn secondary" onClick={() => go('assistant')}>Ask the AI clinical assistant meanwhile</button> : null;
 }
 
 /** The solar radiation storm alarm over every screen (CR-09). */
@@ -442,7 +455,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
               <dt>What changes</dt><dd>{setting.twist}</dd>
               <dt>If you need help</dt><dd>{setting.advice}</dd>
             </dl>
-            <span className="placeholder">{seed.settingStatus}</span>
+            <span className={statusClass(seed.settingStatus)}>{seed.settingStatus}</span>
           </div>
             {back}
           </div>
@@ -908,12 +921,13 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
           <span className="kicker">{left > 0 ? setting.gapLabel : setting.nowLabel}</span>
           <div className="gap-clock" role="timer">{clock(left)}</div>
           <p className="gap-advice">{left > 0 ? setting.advice : say(setting.id === 'earth' ? 'Help can reach you from now. Keep going with the steps until it does.' : 'The wait is over: a reply from Earth can arrive from now. Keep going with the steps until it does.', setting)}</p>
+          <AskAssistant />
           {setting.scenarioSynthetic ? <SyntheticTag /> : null}
           <More label="How this is worked out">
             <p>{setting.detail}</p>
             <p className="caption">{setting.basis}</p>
             <p className="gap-problem">{problem.text} <span className="caption">Source: <a href={problem.link}>{problem.source}</a>.</span></p>
-            <span className="placeholder">{seed.settingStatus}</span>
+            <span className={statusClass(seed.settingStatus)}>{seed.settingStatus}</span>
           </More>
           <More label={`Demo: ${setting.label}`}>
             <Where setting={setting} onPick={(id) => { const t = nowMs(); commit(place(state, id, t)); setStartAt(t); }} />
@@ -1188,6 +1202,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
               <span className="kicker">{left > 0 ? setting.gapLabel : setting.nowLabel}</span>
               <div className="gap-clock" role="timer">{clock(left)}</div>
               <p className="gap-advice">{left > 0 ? setting.advice : say(setting.id === 'earth' ? 'Help can reach you from now. Keep going with the steps until it does.' : 'The wait is over: a reply from Earth can arrive from now. Keep going with the steps until it does.', setting)}</p>
+              <AskAssistant />
               {setting.scenarioSynthetic ? <SyntheticTag /> : null}
               <More label="How this is worked out"><p>{setting.detail}</p><p className="caption">{setting.basis}</p></More>
               <More label={`Demo: ${setting.label}`}><Where setting={setting} onPick={(id) => { const t = nowMs(); commit(place(state, id, t)); setStartAt(t); }} /></More>

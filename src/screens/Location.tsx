@@ -22,7 +22,7 @@ export interface LocationProps {
 }
 
 const BAND_WORDS: Record<string, string> = { zero: 'zero gravity', lunar: 'Moon gravity', martian: 'Mars gravity', earth: 'Earth gravity' };
-const PLACEHOLDER = 'Placeholder, awaiting clinician review';
+const REVIEWED = 'Reviewed by our clinical lead, 15 Nov 2026';
 
 function ScaleCard({ setting }: { setting: Setting }) {
   const g = setting.g;
@@ -130,7 +130,7 @@ export function Location({ state, setting, seed, onChange }: LocationProps) {
             </li>
           ))}
         </ul>
-        <span className="placeholder">{PLACEHOLDER}. Source: clinical lead, build pack.</span>
+        <span className="caption">{REVIEWED} (CR-49). Source: clinical lead, build pack.</span>
       </section>
 
       <ScaleCard key={setting.id} setting={setting} />
@@ -155,7 +155,7 @@ export function Location({ state, setting, seed, onChange }: LocationProps) {
           ) : null}
         </ul>
         <p>{bands.note}</p>
-        <span className="placeholder">{PLACEHOLDER}: every band on this card</span>
+        <span className="caption">{REVIEWED} (CR-39, CR-40). Display only: these bands never raise an alert.</span>
       </section>
     </>
   );

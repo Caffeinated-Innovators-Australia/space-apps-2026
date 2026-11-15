@@ -43,14 +43,16 @@ export function Devices({ seed, go, crewId }: DevicesProps) {
               <li>Hear what you say and take down the numbers.</li>
               <li>Ask each question aloud and read every value back.</li>
               <li>Read an alert and its first steps aloud.</li>
+              <li>Only if you turn it on in AI connections: a small language model fills several answers from one sentence and suggests which emergency checklist fits.</li>
+              <li>Only if you turn it on: the AI clinical assistant suggests what to check and do next when Earth cannot be reached, and, if allowed, generic medicines for the crew medic to check.</li>
             </ul>
           </div>
           <div>
             <p className="why-label">The AI never does</p>
             <ul>
               <li>Set a tier or raise an alert. Rules do that.</li>
-              <li>Name a condition or suggest a treatment.</li>
-              <li>Change a rule, or send anything without you.</li>
+              <li>Name a condition as a fact. The assistant's replies are marked as AI suggestions.</li>
+              <li>Change a rule, open a checklist, or send anything without you.</li>
             </ul>
           </div>
         </div>
@@ -58,6 +60,7 @@ export function Devices({ seed, go, crewId }: DevicesProps) {
         <div className="btn-row">
           <button type="button" className="btn" onClick={() => go('vitals')}>Vital signs by voice or device</button>
           <button type="button" className="btn secondary" onClick={() => go('checkin')}>Daily check-in by voice</button>
+          <button type="button" className="btn secondary" onClick={() => go('ai')}>AI connections</button>
         </div>
       </div>
 

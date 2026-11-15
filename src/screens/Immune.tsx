@@ -1,6 +1,6 @@
 // Infections and healing screen: one-tap symptoms that belong to the immune system, and a daily healing tracker.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
-import { SyntheticTag } from '../components/ui';
+import { SyntheticTag, statusClass } from '../components/ui';
 import { toggleSymptom, type RuleFile, type Seed, type Setting, type State } from '../core/index.ts';
 import { checkWound, startWound, WOUND_LABELS, WOUND_STATUSES, woundsFor, woundSummary, type WoundStatus } from '../core/wounds.ts';
 import './x-ri.css';
@@ -59,7 +59,7 @@ export function Immune({ state, commit, setting, crewId, seed, go, say, hhmm }: 
             <p className="muted" aria-live="polite">Nothing logged here today. One tap is enough.</p>
           )}
           <p className="caption">Only you see this unless you send it. <button className="link" onClick={() => go('about')}>Who sees what</button></p>
-          <span className="placeholder">{seed.symptoms.status}</span>
+          <span className={statusClass(seed.symptoms.status)}>{seed.symptoms.status}</span>
         </div>
       ) : null}
 

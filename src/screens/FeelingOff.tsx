@@ -1,10 +1,12 @@
 // "Feeling off?": log a symptom the moment it happens, in three steps (where, what it is like, what the rules make of it).
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { useEffect, useRef, useState } from 'react';
-import { AdvisoryPill, SyntheticTag, TierPill } from '../components/ui';
+import { AdvisoryPill, SyntheticTag, TierPill, statusClass } from '../components/ui';
 import { crewById, pathwayStatuses, pathwayTier, toggleSymptom, type PathwayStatus, type RuleFile, type Seed, type Setting, type State } from '../core/index.ts';
 import { VoiceTalk, type VoiceValues } from '../components/VoiceTalk.tsx';
 import { spokenSymptoms } from '../core/speech.ts';
+import { aiUnderstand, ChecklistSuggestion } from '../components/aiVoice.tsx';
+import type { Interpretation } from '../core/ai.ts';
 import './crew-checkin.css';
 
 export interface FeelingOffProps {
@@ -48,6 +50,7 @@ export function FeelingOff({ state, commit, setting, crewId, seed, rules, go, sa
   // Talk (CR-10): say symptoms instead of tapping them. The voice mode only matches words to the app's own list and
   // logs them; the rules then decide, exactly as for a tap. It never adds a symptom that is not on the list.
   const SYM = 'symptoms';
+  const [suggested, setSuggested] = useState<Interpretation['checklist']>(null);
   const voiceQuestions = [{ id: SYM, ask: 'How are you feeling? Say any symptoms you have. You can say several, or say nothing to report.' }];
   const voiceUnderstand = (said: string): VoiceValues | string | undefined => {
     const found = spokenSymptoms(said, seed.symptoms.options);
@@ -72,7 +75,8 @@ export function FeelingOff({ state, commit, setting, crewId, seed, rules, go, sa
       </div>
       <p className="x-ci-steps" aria-live="polite">Step {step} of 3</p>
       <h1 className="display" ref={heading} tabIndex={-1}>{title}</h1>
-      {step === 1 ? <VoiceTalk what="symptoms" questions={voiceQuestions} understand={voiceUnderstand} readBack={(_, v) => (v === 'nothing' ? 'Nothing to report.' : `${v}.`)} onFill={voiceFill} onFinish={voiceFinish} example="For example: headache and nauseous." /> : null}
+      <ChecklistSuggestion checklist={suggested} onOpen={(c) => go('astra', String(c))} />
+      {step === 1 ? <VoiceTalk what="symptoms" questions={voiceQuestions} understand={aiUnderstand(voiceUnderstand, { fields: [], symptoms: seed.symptoms.options }, (i): VoiceValues => (i.symptoms.length ? { [SYM]: i.symptoms.join(', ') } : {}), setSuggested)} readBack={(_, v) => (v === 'nothing' ? 'Nothing to report.' : `${v}.`)} onFill={voiceFill} onFinish={voiceFinish} example="For example: headache and nauseous." /> : null}
 
       {step === 1 ? (
         <section className="card">
@@ -82,7 +86,7 @@ export function FeelingOff({ state, commit, setting, crewId, seed, rules, go, sa
               <button key={z.id} type="button" className="x-ci-zone" aria-pressed={z.id === zoneId} onClick={() => { setZoneId(z.id); setStep(2); }}>{z.label}</button>
             ))}
           </div>
-          <span className="placeholder">{status}</span>
+          <span className={statusClass(status)}>{status}</span>
         </section>
       ) : null}
 

@@ -24,10 +24,10 @@ export interface UltrasoundProps {
 }
 
 /** A plain torso from the front, no face or detail, with the probe position for this step. */
-function Torso({ side }: { side?: 'left' | 'right' | 'chest' }) {
+function Torso({ side }: { side?: 'left' | 'right' | 'chest' | 'subxiphoid' }) {
   // Drawn from the front, so the person's left side is on the viewer's right.
-  const mark = side === 'left' ? { x: 166, y: 158 } : side === 'right' ? { x: 74, y: 158 } : side === 'chest' ? { x: 134, y: 96 } : undefined;
-  const label = side === 'chest' ? 'Body outline from the front. The probe goes just to the left of the breastbone, about the middle of the chest.' : side ? `Body outline from the front. The probe goes on the ${side} side, just below the ribs.` : 'Body outline from the front.';
+  const mark = side === 'left' ? { x: 166, y: 158 } : side === 'right' ? { x: 74, y: 158 } : side === 'chest' ? { x: 134, y: 86 } : side === 'subxiphoid' ? { x: 120, y: 122 } : undefined;
+  const label = side === 'chest' ? 'Body outline from the front. The probe goes just to the left of the breastbone, at about nipple level.' : side === 'subxiphoid' ? 'Body outline from the front. The probe goes flat, just under the tip of the breastbone.' : side ? `Body outline from the front. The probe goes on the ${side} side, just below the ribs.` : 'Body outline from the front.';
   return (
     <svg className="x-us-figure" viewBox="0 0 240 270" role="img" aria-label={label}>
       <path className="x-us-body" d="M104 14 h32 v18 l44 12 q14 4 16 20 l4 70 q0 10 -10 10 l-10 -2 l-4 50 q-2 30 8 64 h-128 q10 -34 8 -64 l-4 -50 l-10 2 q-10 0 -10 -10 l4 -70 q2 -16 16 -20 l44 -12 z" />
@@ -92,6 +92,46 @@ function KidneyPanel({ grade }: { grade: KidneyGrade }) {
         </g>
       ) : null}
     </svg>
+  );
+}
+
+/** A normal heart view drawn as simple shapes, labelled in plain words, so the crew member knows what a good view looks like (CR-53). Blood is dark, muscle grey. */
+function HeartExample({ view }: { view: 'heart-psla' | 'heart-subxiphoid' }) {
+  const fan = <path d="M44 4 L76 4 L116 32 Q120 70 114 96 L6 96 Q0 70 4 32 Z" fill="#d6d6d6" />;
+  const t = (x: number, y: number, s: string) => <text x={x} y={y} fontSize="7" fill="#1c1c1c" fontFamily="sans-serif" textAnchor="middle">{s}</text>;
+  if (view === 'heart-psla') {
+    return (
+      <figure className="x-us-examples">
+        <figcaption className="x-us-name">A good view beside the breastbone (drawing, not a real scan)</figcaption>
+        <svg viewBox="0 0 120 100" className="x-us-kidney x-us-heart" role="img" aria-label="Drawing of the long view beside the breastbone: right heart at the top, the left heart below it, the main artery on the right and the left upper chamber below that.">
+          {fan}
+          <path d="M18 34 Q60 22 104 34 L104 44 Q60 34 18 44 Z" fill="#6e6e6e" />
+          <path d="M20 30 Q60 18 100 30 L100 34 Q60 24 20 34 Z" fill="#000" />
+          <ellipse cx="44" cy="58" rx="24" ry="11" fill="#000" stroke="#6e6e6e" strokeWidth="4" />
+          <rect x="74" y="46" width="30" height="9" rx="4" fill="#000" stroke="#6e6e6e" strokeWidth="3" />
+          <circle cx="88" cy="70" r="10" fill="#000" stroke="#6e6e6e" strokeWidth="3" />
+          {t(60, 16, 'Right heart')}{t(44, 80, 'Left heart')}{t(89, 64, 'Artery')}{t(88, 92, 'Left upper')}
+        </svg>
+        <p className="caption">Right heart at the top, the left heart below it. Dark is blood, grey is heart muscle.</p>
+      </figure>
+    );
+  }
+  return (
+    <figure className="x-us-examples">
+      <figcaption className="x-us-name">A good view below the breastbone (drawing, not a real scan)</figcaption>
+      <svg viewBox="0 0 120 100" className="x-us-kidney x-us-heart" role="img" aria-label="Drawing of the view below the breastbone: the liver at the top of the screen, then the four chambers of the heart, right heart nearest the top.">
+        {fan}
+        <path d="M30 8 L90 8 L104 26 Q60 40 14 26 Z" fill="#8a8a8a" />
+        <g fill="#000" stroke="#6e6e6e" strokeWidth="4">
+          <ellipse cx="46" cy="50" rx="16" ry="10" />
+          <ellipse cx="78" cy="50" rx="14" ry="9" />
+          <ellipse cx="46" cy="76" rx="14" ry="10" />
+          <ellipse cx="78" cy="76" rx="16" ry="11" />
+        </g>
+        {t(60, 22, 'Liver')}{t(46, 95, 'Right heart')}{t(80, 95, 'Left heart')}
+      </svg>
+      <p className="caption">The liver at the top, then four dark chambers: the right heart is nearest the top. Dark is blood, grey is heart muscle.</p>
+    </figure>
   );
 }
 
@@ -173,6 +213,7 @@ export function Ultrasound({ state, commit, setting, crewId, go, hhmm, returnTo,
         {step.lookFor ? <p className="x-us-look">{step.lookFor}</p> : null}
         {step.note ? <p className="x-us-note">{step.note}</p> : null}
         {step.example === 'kidney' ? <KidneyExamples /> : null}
+        {step.example === 'heart-psla' || step.example === 'heart-subxiphoid' ? <HeartExample view={step.example} /> : null}
         {step.side ? <div className="x-us-image" role="note">{proc.imageNote}</div> : null}
         <p><span className={proc.status.startsWith('Placeholder') ? 'placeholder' : 'source'}>{proc.status}</span></p>
         <p className="source">Source: {proc.source}</p>

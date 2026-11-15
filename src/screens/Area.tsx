@@ -2,7 +2,7 @@
 // Asked for by the team's clinicians. Record-only results raise no alert and set no result until a clinician writes a rule.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { useState } from 'react';
-import { SyntheticTag, TierPill } from '../components/ui';
+import { SyntheticTag, TierPill, statusClass } from '../components/ui';
 import {
   addRecord, bodyArea, crewById, daySummary, demoValue, plausible, recordKind, recordLine, recordReading, recordsFor, recordsStatus, toggleSymptom, ultrasoundAvailable,
   type Indicator, type RecordKind, type RuleFile, type Seed, type Setting, type State,
@@ -213,7 +213,7 @@ export function Area({ state, commit, setting, crewId, seed, rules, go, say, hhm
               </div>
               {mine.some((x) => symptoms.includes(x.label)) ? <p aria-live="polite">Logged: {mine.filter((x) => symptoms.includes(x.label)).map((x) => `${x.label.toLowerCase()} at ${hhmm(x.at)}`).join(', ')}.</p> : null}
               <p className="caption">{say('Logged for you, and sent with any case you send. Most of these raise no alert yet: no rule is written for them. If you feel seriously unwell, tell your crew medic or press Emergency.', setting)}</p>
-              <span className="placeholder">{seed.symptoms.status}</span>
+              <span className={statusClass(seed.symptoms.status)}>{seed.symptoms.status}</span>
             </section>
           ) : null}
         </div>
@@ -222,7 +222,7 @@ export function Area({ state, commit, setting, crewId, seed, rules, go, say, hhm
           {area.records.length > 0 ? (
             <div className="card">
               <p>{status.note}</p>
-              <span className="placeholder">{status.status}</span>
+              <span className={statusClass(status.status)}>{status.status}</span>
             </div>
           ) : null}
           <div className="quiet-links">

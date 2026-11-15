@@ -38,3 +38,4 @@
 .x-us-nav { display: flex; gap: 12px; align-items: stretch; flex-wrap: wrap; }
 .x-us-nav .btn { min-height: 56px; }
 .x-us-next { flex: 1 1 200px; font-size: 22px; }
+.x-us-heart { max-width: 260px; align-self: center; }

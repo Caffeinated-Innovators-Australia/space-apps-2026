@@ -126,3 +126,6 @@ export function AlertCard({ a, synthetic, actions, children }: { a: Assessment; 
     </section>
   );
 }
+
+/** The style for a status line: quiet once signed off ("Reviewed…" or "Approved…"), the placeholder style otherwise. */
+export const statusClass = (status: string) => (/^(Reviewed|Approved)/.test(status) ? 'source' : 'placeholder');

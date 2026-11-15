@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { activeEmergency, answerStep, emergencySummary, endEmergency, gravityLine, linesFor, reachStep, startEmergency, type EmergencyProtocol } from '../core/emergency.ts';
 import { lifeThreats } from '../core/threats.ts';
+import { EmergencyVoice } from '../components/EmergencyVoice.tsx';
 import type { RuleFile, Seed, Setting, State } from '../core/index.ts';
 import protocolJson from '../data/emergency.json';
 import './emergency.css';
@@ -288,6 +289,7 @@ export function Emergency({ state, commit, crewId, go, hhmm, setting, seed, rule
     <section className="x-em" aria-labelledby="x-em-h">
       {notice}
       <p className="x-em-other">Not a collapse? <button type="button" className="btn secondary" onClick={() => go('astra')}>Open the emergency checklists</button></p>
+      <EmergencyVoice symptoms={seed.symptoms.options} onOpen={(c) => { record('voice-checklist', `Checklist ${c} opened from what was said`); go('astra', String(c)); }} />
       <h1 id="x-em-h" className="title">Emergency: step {index + 1} of {steps.length}</h1>
       <ol className="x-em-rail" aria-label="Basic life support steps">
         {steps.map((s, i) => {

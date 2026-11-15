@@ -7,6 +7,8 @@ import { More, SyntheticTag, TierPill } from '../components/ui.tsx';
 import { alertSpeech, parseVitalsUtterance, VITAL_QUESTIONS, vitalReadBack, vitalSpokenProblem } from '../core/speech.ts';
 import { DEVICE_KIT, simulatedKitReading } from '../core/devices.ts';
 import { VoiceTalk, type VoiceValues } from '../components/VoiceTalk.tsx';
+import { aiUnderstand, ChecklistSuggestion } from '../components/aiVoice.tsx';
+import type { Interpretation } from '../core/ai.ts';
 import { canSpeak, speak } from '../components/voice.ts';
 import { bluetoothAvailable, readBluetooth } from '../components/bluetooth.ts';
 import './x-vt.css';
@@ -152,6 +154,7 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
       setBtNote(`Read from ${r.name}.`);
     } catch (e) { setBtNote(`Nothing was read. ${(e as Error).message}`); }
   };
+  const [suggested, setSuggested] = useState<Interpretation['checklist']>(null);
   const understand = (text: string, currentId: string): VoiceValues | string | undefined => {
     const got = parseVitalsUtterance(text, currentId as VitalField);
     for (const f of VITAL_FIELDS) { const v = got[f.id]; if (v !== undefined) { const bad = vitalSpokenProblem(f.id, v); if (bad) return bad; } }
@@ -182,7 +185,8 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
 
   return (
     <section className="stack x-vt" aria-labelledby="x-vt-h">
-      <VoiceTalk what="vital signs" questions={VITAL_QUESTIONS} understand={understand} readBack={(id, v) => vitalReadBack(id as VitalField, Number(v))}
+      <ChecklistSuggestion checklist={suggested} onOpen={(c) => go('astra', String(c))} />
+      <VoiceTalk what="vital signs" questions={VITAL_QUESTIONS} understand={aiUnderstand(understand, { fields: VITAL_FIELDS.map((f) => ({ id: f.id, name: f.label, unit: f.unit, min: f.min, max: f.max })), symptoms: [] }, (i) => i.values, setSuggested)} readBack={(id, v) => vitalReadBack(id as VitalField, Number(v))}
         onFill={(v) => fill(v as VitalSigns, 'voice')} onFinish={save} example="Temperature 38.6, pulse 118, blood pressure 94 over 56" />
       <div className="card">
         <div className="card-head">
@@ -245,7 +249,7 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
                 {f.id === 'spo2' ? (
                   <div className="x-vt-note" id="x-vt-spo2-note">
                     <p>Readings run lower and are less reliable at low cabin pressure, so oxygen saturation never raises an alert by itself.{setting.cabinKPa ? <> Cabin pressure here: <span className="mono">{setting.cabinKPa}</span> kPa.</> : null}</p>
-                    <p className="source">Source: the team's clinical lead, build pack v3.3. <span className="placeholder">Placeholder wording, awaiting sign-off</span></p>
+                    <p className="source">Source: the team's clinical lead, build pack v3.3. Reviewed by our clinical lead, 15 Nov 2026 (CR-39).</p>
                   </div>
                 ) : null}
               </div>

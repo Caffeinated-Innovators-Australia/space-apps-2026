@@ -1,5 +1,6 @@
 // Menu: settings people rarely change, as cards of standard list rows. Privacy, thresholds, inputs, accessibility, sources and demo controls.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
+import { statusClass } from '../components/ui.tsx';
 import { useState } from 'react';
 import { PrivacyTable } from '../components/PrivacyTable';
 import { initialState, type Indicator, type RuleFile, type Seed, type Setting, type State } from '../core/index.ts';
@@ -48,7 +49,7 @@ export function Menu({ state, commit, ui, setting, seed, go, say }: MenuProps) {
       <div className="card">
         <h2 className="title">More checks and settings</h2>
         <ul className="rows">
-          {[['astra', 'Emergency checklists', 'Sixteen emergency checklists, by touch or voice. A separate team prototype'], ['devices', 'Devices and AI', 'Voice, connected devices, and what the AI does and never does'], ['vitals', 'Vital signs', 'By voice, from a device, or typed'], ['crewcheck', 'Weekly crew check-in', 'Five questions, seen by the flight psychologist only'], ['location', 'Location', 'Gravity, cabin atmosphere and what changes']].map(([route, name, sub]) => (
+          {[['astra', 'Emergency checklists', 'Sixteen emergency checklists, by touch or voice. A separate team prototype'], ['devices', 'Devices and AI', 'Voice, connected devices, and what the AI does and never does'], ['ai', 'AI connections', 'A small language model for voice, and the AI clinical assistant. Off unless turned on'], ['assistant', 'AI clinical assistant', 'For when Earth or the flight surgeon cannot be reached'], ['vitals', 'Vital signs', 'By voice, from a device, or typed'], ['crewcheck', 'Weekly crew check-in', 'Five questions, seen by the flight psychologist only'], ['location', 'Location', 'Gravity, cabin atmosphere and what changes']].map(([route, name, sub]) => (
             <li key={route}>
               <button className="row" onClick={() => go(route)}>
                 <span className="row-name">{say(name, setting)}<br /><span className="caption">{say(sub, setting)}</span></span>
@@ -108,7 +109,7 @@ export function Menu({ state, commit, ui, setting, seed, go, say }: MenuProps) {
             </li>
           ))}
         </ul>
-        {seed.evidenceStatus ? <span className="placeholder">{seed.evidenceStatus}</span> : null}
+        {seed.evidenceStatus ? <span className={statusClass(seed.evidenceStatus)}>{seed.evidenceStatus}</span> : null}
         <div className="btn-row">
           <button className="btn secondary" onClick={() => go('crew')}>Real crew data</button>
           <button className="btn secondary" onClick={() => go('about')}>Limits of this app</button>

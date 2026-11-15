@@ -411,9 +411,9 @@ radiation_storm:
     - "Wear your personal dosimeter."
   acknowledge: "I have read this"
   banner: "Solar radiation storm: stay in the storm shelter until the all-clear."
-  source: "Wording and behaviour approved by the clinical lead on 15 Nov 2026 (CR-09). The trigger level S3 is where the NOAA Space Weather Prediction Center solar radiation storm scale advises radiation hazard avoidance for astronauts on EVA; awaiting the clinical lead's confirmation of the level."
+  source: "Wording and behaviour approved by the clinical lead on 15 Nov 2026 (CR-09). The trigger level S3 is where the NOAA Space Weather Prediction Center solar radiation storm scale advises radiation hazard avoidance for astronauts on EVA; confirmed by the clinical lead on 15 Nov 2026."
   confidence: Low
-  signed_off_by: placeholder
+  signed_off_by: clinical lead
 
 # Symptoms that ask for a set of vital signs when logged with no set taken since (CR-58), so the monitor alerts
 # (such as SEP-01) can run on measured values. Shown on Today and on the pathway screen until a set is recorded.

@@ -1,5 +1,5 @@
 {
- "status": "Placeholder lists and record types, awaiting clinician review (CR-52)",
+ "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-52)",
  "note": "Record only. Nothing here raises an alert or sets a result until a clinician writes a rule for it.",
  "areas": [
   { "id": "mind", "label": "Mind and sleep", "short": "Mind and sleep", "group": "Mind and sleep", "symptoms": ["Low mood", "Tired", "Headache", "Confused", "Anxious or panicky", "Cannot sleep", "Feeling hopeless", "Hearing or seeing things others do not", "Thoughts of suicide", "Thoughts of harming myself", "Have harmed myself", "Thoughts of harming someone else"], "records": [] },
