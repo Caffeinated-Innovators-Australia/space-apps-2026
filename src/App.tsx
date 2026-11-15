@@ -475,7 +475,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
                           <span className="row-name">{i.name}{prompted && !r ? ' · asked for today' : ''}{i.standout && setting.gravityBand && i.standout.gravity.includes(setting.gravityBand) ? <strong>{` · ${i.standout.short}`}</strong> : null}</span>
                           <span className="row-val">{r || past !== undefined ? <><span className="mono">{shown(i, r ? r.value : past!)}</span> {i.unit}</> : null}{a ? <LimitArrow tier={a.tier} delta={a.delta} /> : null}</span>
                           {a ? <TierPill tier={a.tier} /> : (
-                            <span className="stale">{past !== undefined ? `From day ${lastDay}. ` : 'No reading yet. '}{i.cadence === 'prompted' && !prompted ? 'Taken when asked' : due ? 'Due today' : i.cadence === 'weekly' ? 'Weekly' : 'Not logged today'}</span>
+                            <span className="stale">{past !== undefined ? `From day ${lastDay}. ` : 'No reading yet. '}{i.cadence === 'prompted' && !prompted && !due ? (i.weekDay !== undefined ? 'Weekly, and when asked' : 'Taken when asked') : due ? 'Due today' : i.cadence === 'weekly' ? 'Weekly' : 'Not logged today'}</span>
                           )}
                           <span className="chev" aria-hidden="true">›</span>
                         </button>
@@ -671,6 +671,7 @@ function TargetLine({ target, unit }: { target: NonNullable<Indicator['target']>
           <span className="caption">adds {target.perEvaHour} {unit} per EVA hour</span>
         </div>
       ) : null}
+      {target.note ? <p className="caption">{target.note}</p> : null}
       <More label="Source"><p className="caption">{target.source}</p></More>
     </div>
   );
@@ -838,7 +839,7 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
               </ul>
             ) : null}
             {ind.environment && raw.tier !== 'green' ? <p className="confirm" role="note">{say('This is a reading of the shared cabin, not of one person. The air system is checked first. It becomes a health matter for you if you also have symptoms or a slower reaction time.', setting)}</p> : null}
-            {ind.evidence ? <p className="caption">Two different labels. How the signal is measured: {ind.evidence === 'established' ? 'a standard instrument reading (established)' : ind.evidence === 'emerging' ? 'your own log (emerging)' : 'an uncalibrated check in this app (experimental)'}.{ind.evidence === 'experimental' ? ' An experimental signal can raise Watch but never Act now by itself.' : ''} How sure the rule is: {raw.confidence.toLowerCase()}{raw.placeholder ? ', until a clinician signs it' : ''}. {seed.evidenceStatus}</p> : null}
+            {ind.evidence ? <p className="caption">Two different labels. How the signal is measured: {ind.evidence === 'established' ? 'a standard instrument reading (established)' : ind.evidence === 'emerging' ? 'your own log (emerging)' : 'an uncalibrated check in this app (experimental)'}. How sure the rule is: {raw.confidence.toLowerCase()}{raw.placeholder ? ', until a clinician signs it' : ''}. {seed.evidenceStatus}</p> : null}
             {raw.findings.length > 0 ? <p className="caption">Rules that fired: {raw.findings.map((f) => f.ruleId).join(', ')}.</p> : null}
           </AlertCard>
           {askAfter ? (

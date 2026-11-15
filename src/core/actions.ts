@@ -140,13 +140,8 @@ export function assessValue(seed: Seed, rules: RuleFile, crewId: string, indicat
     limitLabel: lim.label,
     environment: ind.environment,
   });
-  // An experimental signal can raise amber but never red by itself.
-  if (ind.evidence === 'experimental' && a.tier === 'red') {
-    a.tier = 'amber';
-    a.title = rules.titles.amber.replace('{region}', ind.region);
-    a.steps = rules.steps.amber;
-    a.why = `${a.why} This check is experimental, so by itself it is never rated Act now.`;
-  }
+  // An experimental signal may raise Act now (CR-30): a sudden change in reaction time or eyesight can come from hypoxia,
+  // shock or another neurological emergency. The evidence label stays on the card.
   // A signal the clinicians have capped can ask the crew to watch, never to act now, on its own.
   if (ind.maxTier === 'amber' && a.tier === 'red') {
     a.tier = 'amber';
@@ -229,7 +224,8 @@ export function daySummary(state: State, seed: Seed, rules: RuleFile, crewId: st
     const reading = latestReading(state, crewId, indicator.id);
     return {
       indicator,
-      due: indicator.cadence === 'daily' || indicator.cadence === 'sensor' || (indicator.cadence === 'weekly' && seed.missionDay % 7 === (indicator.weekDay ?? 0)),
+      // A prompted check with a week day is also due weekly, to keep its baseline up to date (reaction time, CR-24).
+      due: indicator.cadence === 'daily' || indicator.cadence === 'sensor' || ((indicator.cadence === 'weekly' || (indicator.cadence === 'prompted' && indicator.weekDay !== undefined)) && seed.missionDay % 7 === (indicator.weekDay ?? 0)),
       prompted: false,
       reading,
       assessment: reading ? assessReading(state, seed, rules, reading) : undefined,

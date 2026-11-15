@@ -97,7 +97,7 @@ export function Menu({ state, commit, ui, setting, seed, go, say }: MenuProps) {
 
       <div className="card">
         <h2 className="title">Sources and evidence</h2>
-        <p>An experimental signal can raise Watch but never Act now by itself.</p>
+        <p>Any signal can raise Act now. An experimental check still says so on its card.</p>
         <ul className="rows">
           {seed.indicators.map((i) => (
             <li key={i.id}>

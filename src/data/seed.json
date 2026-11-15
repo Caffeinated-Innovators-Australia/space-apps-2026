@@ -67,7 +67,7 @@
     "labels": [
      "Very low",
      "Low",
-     "OK",
+     "Neutral",
      "Good",
      "Very good"
     ]
@@ -104,6 +104,7 @@
    "dp": 0,
    "watch": "high",
    "cadence": "prompted",
+   "weekDay": 3,
    "slot": "any",
    "input": {
     "kind": "test",
@@ -430,6 +431,7 @@
     "low": 2.2,
     "high": 2.5,
     "perEvaHour": 0.24,
+    "note": "In heat, with hard exercise or in dry air: drink to thirst.",
     "label": "Target: 2.2 to 2.5 L a day",
     "source": "Set by the clinical lead on 15 Nov 2026 (CR-45), from NASA OCHMO-TB-027 Water (Rev C, 29 Nov 2023): NASA-STD-3001 sets at least 2.5 L a day for drinking and rehydrating food, plus 0.24 L for each EVA hour; average intake on Shuttle and ISS missions was about 2.0 to 2.3 L a day. https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-027-water.pdf"
    },

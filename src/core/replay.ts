@@ -56,7 +56,7 @@ export function replay(seed: Seed, rules: RuleFile): ReplayResult {
         });
         history.push(value);
         readings += 1;
-        const tier: Tier = (ind.evidence === 'experimental' || ind.maxTier === 'amber') && a.tier === 'red' ? 'amber' : a.tier;
+        const tier: Tier = ind.maxTier === 'amber' && a.tier === 'red' ? 'amber' : a.tier;
         const who = cabin ? 'cabin' : crew.id;
         if (isPlanted(who, ind.id, day)) {
           const f = found.find((p) => p.crewId === who && p.indicatorId === ind.id);

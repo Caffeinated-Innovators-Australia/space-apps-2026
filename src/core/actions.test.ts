@@ -232,3 +232,25 @@ describe('clinical lead decisions, 15 Nov 2026 (CR-17, CR-35, CR-44)', () => {
     expect(assessValue(seed, rulesFile, 'crew-3', 'fluid', 1.2, [0.9, 0.7]).ruleId).not.toBe('FL-01');
   });
 });
+
+describe('clinical lead decisions, 15 Nov 2026, batch 3 (CR-15, CR-24, CR-30, CR-45)', () => {
+  const rulesFile = parseRules(readFileSync(new URL('../../rules/rules.yaml', import.meta.url), 'utf8'));
+  it('asks for reaction time weekly on its own day as well as when asked (CR-24)', () => {
+    const r = indicatorById(seed, 'reaction');
+    expect(r.cadence).toBe('prompted');
+    expect(r.weekDay).toBe(3);
+    const onDay = { ...seed, missionDay: 213 } as Seed;
+    expect(daySummary(initialState(onDay), onDay, rulesFile, 'crew-1').items.find((x) => x.indicator.id === 'reaction')?.due).toBe(true);
+    const offDay = { ...seed, missionDay: 214 } as Seed;
+    expect(daySummary(initialState(offDay), offDay, rulesFile, 'crew-1').items.find((x) => x.indicator.id === 'reaction')?.due).toBe(false);
+  });
+  it('lets an experimental check raise Act now (CR-30)', () => {
+    const a = assessValue(seed, rulesFile, 'crew-1', 'reaction', 900, [900, 900]);
+    expect(a.tier).toBe('red');
+    expect(a.why).not.toContain('never rated Act now');
+  });
+  it('calls a mood of 3 Neutral (CR-15), and says drink to thirst beside the fluid target (CR-45)', () => {
+    expect(indicatorById(seed, 'mood').input.labels).toEqual(['Very low', 'Low', 'Neutral', 'Good', 'Very good']);
+    expect(indicatorById(seed, 'fluid').target?.note).toBe('In heat, with hard exercise or in dry air: drink to thirst.');
+  });
+});

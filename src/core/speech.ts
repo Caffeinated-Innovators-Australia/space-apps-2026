@@ -75,6 +75,9 @@ export type SpokenIntent = 'yes' | 'no' | 'skip' | 'back' | 'stop' | 'repeat';
 /** A command word in what was said, or undefined when it reads as an answer. */
 export function spokenIntent(text: string): SpokenIntent | undefined {
   const t = ` ${text.toLowerCase().replace(/[^a-z' ]+/g, ' ').replace(/\s+/g, ' ').trim()} `;
+  // A command is a short reply on its own. In a longer answer the same words are content: "pain in my lower back",
+  // "cannot pass urine", "no symptoms". Numbers count as words, so "pulse 70, no" is still an answer.
+  if (text.trim().split(/\s+/).length > 4) return undefined;
   if (/ (stop|cancel|quit) /.test(t)) return 'stop';
   if (/ (go back|back|previous) /.test(t)) return 'back';
   if (/ (repeat|say that again|say again|pardon) /.test(t)) return 'repeat';
