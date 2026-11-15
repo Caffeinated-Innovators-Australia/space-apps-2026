@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { ScaleInput } from '../components/ScaleInput';
 import { VoiceTalk, type VoiceValues } from '../components/VoiceTalk.tsx';
+import { aiUnderstand, ChecklistSuggestion } from '../components/aiVoice.tsx';
+import type { Interpretation } from '../core/ai.ts';
 import { spokenNumber, spokenSymptoms } from '../core/speech.ts';
 import { AdvisoryPill, SyntheticTag, TierPill, statusClass } from '../components/ui';
 import {
@@ -70,6 +72,7 @@ export function CheckIn({ state, commit, setting, crewId, seed, rules, go, say, 
 
   // Talk: the same form, filled by voice. The spoken answers go through the same checks as typed ones.
   const SYMPTOMS = '__symptoms';
+  const [suggested, setSuggested] = useState<Interpretation['checklist']>(null);
   const questions = [...rows.map((ind) => ({ id: ind.id, ask: (ind.input.prompt && ind.input.prompt.toLowerCase() !== ind.name.toLowerCase() ? `${ind.name}. ${ind.input.prompt}?` : `${ind.name}, in ${ind.unit}?`).replace(/\?\?$/, '?') })), { id: SYMPTOMS, ask: 'Anything else today? Say a symptom from the list, or say nothing to report.' }];
   const understand = (said: string, id: string): VoiceValues | string | undefined => {
     if (id === SYMPTOMS) {
@@ -120,7 +123,8 @@ export function CheckIn({ state, commit, setting, crewId, seed, rules, go, say, 
     <>
       {context}
       <h1 className="display">Daily check-in</h1>
-      <VoiceTalk what="daily check-in" questions={questions} understand={understand} readBack={readBack} onFill={voiceFill} onFinish={finish} />
+      <ChecklistSuggestion checklist={suggested} onOpen={(c) => go('astra', String(c))} />
+      <VoiceTalk what="daily check-in" questions={questions} understand={aiUnderstand(understand, { fields: rows.map((r) => ({ id: r.id, name: r.name, unit: r.unit, min: r.input.min, max: r.input.max })), symptoms: seed.symptoms.options }, (i) => ({ ...i.values, ...(i.symptoms.length ? { [SYMPTOMS]: i.symptoms.join(', ') } : {}) }), setSuggested)} readBack={readBack} onFill={voiceFill} onFinish={finish} />
       <form className="stack" onSubmit={(e) => { e.preventDefault(); finish(); }} noValidate>
         <section className="card" aria-labelledby="x-ci-rows">
           <div className="card-head"><h2 className="title" id="x-ci-rows">Today's numbers</h2><SyntheticTag /></div>

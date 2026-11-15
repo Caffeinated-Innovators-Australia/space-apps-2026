@@ -14,7 +14,8 @@ export interface VoiceTalkProps {
   what: string;
   questions: VoiceQuestion[];
   /** Turn what was said into values, keyed by question. A string is a problem to say back. Undefined means nothing was understood. */
-  understand: (text: string, currentId: string) => VoiceValues | string | undefined;
+  /** May answer at once (built-in matching) or later (a small language model, FR-60). */
+  understand: (text: string, currentId: string) => VoiceValues | string | undefined | Promise<VoiceValues | string | undefined>;
   readBack: (id: string, value: number | string) => string;
   /** Put the values into the form. */
   onFill: (values: VoiceValues) => void;
@@ -106,7 +107,7 @@ export function VoiceTalk(props: VoiceTalkProps) {
     if (line) add('app', line);
   };
 
-  function hear(text: string) {
+  async function hear(text: string) {
     add('you', text);
     if (phaseRef.current === 'off') return;
     const intent = spokenIntent(text);
@@ -124,7 +125,10 @@ export function VoiceTalk(props: VoiceTalkProps) {
     if (intent === 'repeat') { void say(current().ask); return; }
     if (intent === 'back') { idx.current = Math.max(0, idx.current - 1); delete answers.current[current().id]; skipped.current.delete(current().id); void say(current().ask); return; }
     if (intent === 'skip') { skipped.current.add(current().id); advance('Left out.'); return; }
-    const got = p.current.understand(text, current().id);
+    const asked = current().id;
+    const got = await p.current.understand(text, asked);
+    // The conversation may have been stopped or restarted while a model was thinking.
+    if (phaseRef.current !== 'asking' || current()?.id !== asked) return;
     if (typeof got === 'string') { void say(`${got} ${current().ask}`); return; }
     if (!got || Object.keys(got).length === 0) { void say(`I did not catch that. ${current().ask}`); return; }
     Object.assign(answers.current, got);
