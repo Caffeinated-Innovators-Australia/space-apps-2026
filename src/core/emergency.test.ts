@@ -2,17 +2,17 @@
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { activeEmergency, emergencySummary, endEmergency, reachStep, startEmergency, type EmergencyProtocol } from './emergency.ts';
+import { activeEmergency, emergencySummary, endEmergency, gravityLine, reachStep, startEmergency, type EmergencyProtocol } from './emergency.ts';
 import type { State } from './types.ts';
 
 const protocol = JSON.parse(readFileSync('src/data/emergency.json', 'utf8')) as EmergencyProtocol;
 const blank = (): State => ({ version: 2, readings: [], symptoms: [], nothingToReport: [], outbox: [], ui: { crewId: 'crew-1', settingId: 'mars', theme: 'day', doseLogged: false, clock: '08:00', slipped: false } });
 
 describe('protocol data', () => {
-  it('has the seven DRSABCD steps in order, each with short wording and marked as a placeholder', () => {
+  it('has the seven DRSABCD steps in order, each with short wording, reviewed by the clinical lead (CR-32)', () => {
     expect(protocol.steps.map((s) => s.letter).join('')).toBe('DRSABCD');
     expect(new Set(protocol.steps.map((s) => s.id)).size).toBe(7);
-    expect(protocol.status).toBe('Placeholder wording, awaiting clinician review');
+    expect(protocol.status).toBe('Reviewed by our clinical lead, 15 Nov 2026');
     for (const s of protocol.steps) expect(s.say.split(/\s+/).length).toBeLessThan(14);
   });
   it('every number carries its source', () => {
@@ -65,5 +65,14 @@ describe('emergency runs', () => {
     let { state, run } = startEmergency(blank(), { crewId: 'crew-1', at: 0 });
     state = reachStep(state, run.id, 'D', 3000);
     expect(emergencySummary(activeEmergency(state)!, protocol).durationMs).toBe(3000);
+  });
+});
+
+describe('the CPR step at 0 g (CR-32)', () => {
+  it('asks for the person to be strapped down at 0 g only', () => {
+    const c = protocol.steps.find((x) => x.id === 'C')!;
+    expect(gravityLine(c, 'zero')).toBe('Strap the person down before you start CPR.');
+    for (const band of ['lunar', 'martian', 'earth', undefined] as const) expect(gravityLine(c, band)).toBeUndefined();
+    expect(protocol.steps.filter((x) => x.gravity).map((x) => x.id)).toEqual(['C']);
   });
 });

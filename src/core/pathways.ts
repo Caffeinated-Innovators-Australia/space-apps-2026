@@ -2,7 +2,7 @@
 // A pathway names a pattern to check and the next steps. It never names a finding: that is for the clinicians.
 // Pure functions, like the rest of the action layer. Rules decide; nothing here calls a language model.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
-import { latestVitals, vitalsLine } from './vitals.ts';
+import { groupHolds, latestVitals, reasonsFor, vitalsLine } from './vitals.ts';
 import { ultrasoundSummary } from './ultrasound.ts';
 import { recordsSummary } from './records.ts';
 import { crewById, daySummary, indicatorById, latestReading, settingById } from './actions.ts';
@@ -30,6 +30,8 @@ export interface PathwayStatus {
   source: string;
   confidence: string;
   tests: Record<string, string>;
+  /** Symptoms counted from the latest vital signs rather than logged (CR-58), each with the reading behind it. */
+  fromVitals: { symptom: string; reading: string }[];
   /** An early warning that fired before this pattern matched. It still counts: the pattern is added to it, not put in its place. */
   earlier?: { title: string; ruleId: string };
 }
@@ -71,10 +73,24 @@ export function pathwayContext(state: State, seed: Seed, rules: RuleFile, crewId
 }
 
 /** The pathways open for one person now, most serious first. */
+/** Supporting or red-flag symptoms the latest vital signs count as, for one pathway, that were not logged as symptoms. */
+export function vitalsSymptoms(state: State, pathway: PathwayRule, crewId: string, logged: Set<string>): { symptom: string; reading: string }[] {
+  const entry = latestVitals(state, crewId);
+  if (!entry) return [];
+  const out: { symptom: string; reading: string }[] = [];
+  for (const [symptom, group] of Object.entries(pathway.vitalsGroups ?? {})) {
+    if (logged.has(symptom) || !groupHolds(group, entry.values)) continue;
+    out.push({ symptom, reading: reasonsFor(new Set(group.map((c) => c.field)), entry.values).join(', ') });
+  }
+  return out;
+}
+
 export function pathwayStatuses(state: State, seed: Seed, rules: RuleFile, crewId: string): PathwayStatus[] {
-  const mine = new Set(state.symptoms.filter((s) => s.crewId === crewId).map((s) => s.label));
+  const logged = new Set(state.symptoms.filter((s) => s.crewId === crewId).map((s) => s.label));
   const out: PathwayStatus[] = [];
   for (const pathway of rules.pathways) {
+    const fromVitals = vitalsSymptoms(state, pathway, crewId, logged);
+    const mine = new Set([...logged, ...fromVitals.map((v) => v.symptom)]);
     const matched = {
       core: pathway.core.filter((x) => mine.has(x)),
       supporting: pathway.supporting.filter((x) => mine.has(x)),
@@ -89,7 +105,7 @@ export function pathwayStatuses(state: State, seed: Seed, rules: RuleFile, crewI
           pathway, key: key0, level: 'early', title: e.title, why: e.why, matched, steps: pathway.early!.steps,
           stepsDone: state.pathwaySteps?.[key0] ?? [], context: pathwayContext(state, seed, rules, crewId, pathway),
           pain: [], placeholder: pathway.early!.signed_off_by.trim().toLowerCase() === 'placeholder',
-          ruleId: pathway.early!.id, source: pathway.early!.source, confidence: pathway.early!.confidence, tests,
+          ruleId: pathway.early!.id, source: pathway.early!.source, confidence: pathway.early!.confidence, tests, fromVitals,
         });
       }
       continue;
@@ -105,7 +121,7 @@ export function pathwayStatuses(state: State, seed: Seed, rules: RuleFile, crewI
         stepsDone: state.pathwaySteps?.[key] ?? [], context: pathwayContext(state, seed, rules, crewId, pathway),
         pain: (state.painLog ?? []).filter((p) => p.crewId === crewId && p.pathwayId === pathway.id),
         placeholder: pathway.early!.signed_off_by.trim().toLowerCase() === 'placeholder',
-        ruleId: pathway.early!.id, source: pathway.early!.source, confidence: pathway.early!.confidence, tests,
+        ruleId: pathway.early!.id, source: pathway.early!.source, confidence: pathway.early!.confidence, tests, fromVitals,
       });
       continue;
     }
@@ -114,14 +130,14 @@ export function pathwayStatuses(state: State, seed: Seed, rules: RuleFile, crewI
     out.push({
       pathway, key, level,
       title: level === 'check' ? fill(pathway.check.title) : pathway.titles[level],
-      why: fill(level === 'check' ? pathway.check.why : pathway.why[level]),
+      why: fill(level === 'check' ? pathway.check.why : pathway.why[level]) + fromVitals.map((v) => ` ${v.symptom} is counted from your latest vital signs (${v.reading}).`).join(''),
       matched,
       steps: level === 'check' ? [] : pathway.steps[level],
       stepsDone: state.pathwaySteps?.[key] ?? [],
       context: pathwayContext(state, seed, rules, crewId, pathway),
       pain: (state.painLog ?? []).filter((p) => p.crewId === crewId && p.pathwayId === pathway.id),
       placeholder: pathway.signed_off_by.trim().toLowerCase() === 'placeholder',
-      ruleId: pathway.id, source: pathway.source, confidence: pathway.confidence, tests,
+      ruleId: pathway.id, source: pathway.source, confidence: pathway.confidence, tests, fromVitals,
       ...(before && level !== 'check' ? { earlier: { title: before.title, ruleId: pathway.early!.id } } : {}),
     });
   }
@@ -240,4 +256,18 @@ export function emergencySymptoms(state: State, rules: RuleFile, crewId: string)
   const logged = state.symptoms.filter((s) => s.crewId === crewId && rule.symptoms.includes(s.label));
   if (logged.length === 0) return null;
   return { ruleId: rule.id, title: rule.title, why: rule.why, source: rule.source, confidence: rule.confidence, placeholder: rule.signed_off_by.trim().toLowerCase() === 'placeholder', symptoms: logged.map((s) => s.label), since: Math.min(...logged.map((s) => s.at)) };
+}
+
+/**
+ * Asks for a set of vital signs when a listed symptom (such as fever or chills) is logged and no set has been
+ * taken since (CR-58), so the monitor alerts can run on measured values. Null when nothing is asked.
+ */
+export function vitalsPrompt(state: State, rules: RuleFile, crewId: string) {
+  const rule = rules.vitals_prompt;
+  if (!rule) return null;
+  const last = latestVitals(state, crewId)?.at ?? -Infinity;
+  const due = state.symptoms.filter((s) => s.crewId === crewId && rule.symptoms.includes(s.label) && s.at > last);
+  if (due.length === 0) return null;
+  const labels = [...new Set(due.map((s) => s.label))];
+  return { ruleId: rule.id, title: rule.title, why: rule.why.replace('{symptom}', list(labels)), source: rule.source, confidence: rule.confidence, placeholder: rule.signed_off_by.trim().toLowerCase() === 'placeholder', symptoms: labels };
 }

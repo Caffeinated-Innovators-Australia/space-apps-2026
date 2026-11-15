@@ -44,6 +44,76 @@ function Torso({ side }: { side?: 'left' | 'right' | 'chest' }) {
   );
 }
 
+/** The grades shown as drawn examples (CR-42): normal, then grades 1 to 4. Labels in plain words, the term in brackets. */
+const KIDNEY_GRADES = [
+  { id: 'normal', name: 'Normal', band: '', say: 'Bright centre' },
+  { id: 'g1', name: 'Grade 1', band: 'Mild', say: 'Centre (pelvis) widened' },
+  { id: 'g2', name: 'Grade 2', band: 'Moderate', say: 'Large branches (major calyces) widened' },
+  { id: 'g3', name: 'Grade 3', band: 'Moderate', say: 'Small branches (minor calyces) widened too' },
+  { id: 'g4', name: 'Grade 4', band: 'Severe', say: 'Outer layer (cortex) thinned' },
+] as const;
+type KidneyGrade = (typeof KIDNEY_GRADES)[number]['id'];
+
+const BEAN = 'M22 58 C22 34 44 28 60 30 C76 28 98 34 98 58 C98 76 86 84 74 80 C68 78 64 72 60 72 C56 72 52 78 46 80 C34 84 22 76 22 58 Z';
+
+/**
+ * One drawn kidney in the long view, inside an ultrasound fan, for a grade. Simple shapes drawn in code, not a real scan.
+ * Fixed greys so it reads the same in both themes: bright tissue is white, fluid is black.
+ */
+function KidneyPanel({ grade }: { grade: KidneyGrade }) {
+  const major = [[38, 52], [48, 44], [60, 41], [72, 44], [82, 52]];
+  const minor = [[34, 56], [40, 47], [49, 41], [60, 38], [71, 41], [80, 47], [86, 56], [44, 56], [76, 56]];
+  const severe = [[38, 57, 13], [52, 47, 12], [68, 47, 12], [82, 57, 13], [60, 60, 12]];
+  const stem = <path d="M60 58 L60 72" stroke="#000" strokeWidth="6" />;
+  return (
+    <svg viewBox="0 0 120 100" className="x-us-kidney" aria-hidden="true">
+      <path d="M44 4 L76 4 L116 32 Q120 70 114 96 L6 96 Q0 70 4 32 Z" fill="#d6d6d6" />
+      <path d={BEAN} fill="#6e6e6e" stroke="#2a2a2a" strokeWidth="2" />
+      {grade === 'normal' ? <ellipse cx="60" cy="56" rx="22" ry="9" fill="#f2f2f2" /> : null}
+      {grade === 'g1' ? <g fill="#000"><ellipse cx="60" cy="56" rx="22" ry="9" fill="#f2f2f2" /><ellipse cx="60" cy="59" rx="13" ry="5" />{stem}</g> : null}
+      {grade === 'g2' ? (
+        <g fill="#000" stroke="#000">
+          <ellipse cx="60" cy="58" rx="20" ry="7" />
+          {major.map(([x, y]) => <g key={`${x}${y}`}><path d={`M60 58 L${x} ${y}`} strokeWidth="5" /><circle cx={x} cy={y} r="5.5" /></g>)}
+          {stem}
+        </g>
+      ) : null}
+      {grade === 'g3' ? (
+        <g fill="#000" stroke="#000">
+          <ellipse cx="60" cy="56" rx="24" ry="10" />
+          {minor.map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r="6" />)}
+          {stem}
+        </g>
+      ) : null}
+      {grade === 'g4' ? (
+        <g fill="#000">
+          {severe.map(([x, y, r]) => <circle key={`${x}${y}`} cx={x} cy={y} r={r} />)}
+          <path d={BEAN} fill="none" stroke="#6e6e6e" strokeWidth="3" />
+        </g>
+      ) : null}
+    </svg>
+  );
+}
+
+/** Drawn examples of a normal and a swollen kidney, to show what "look for" means. The app never reads the real image. */
+function KidneyExamples() {
+  return (
+    <figure className="x-us-examples">
+      <figcaption className="x-us-name">What a swollen kidney looks like: long view (drawings, not real scans)</figcaption>
+      <ul role="list" aria-label="Drawn kidney examples in the long view: normal, then grades 1 to 4">
+        {KIDNEY_GRADES.map((g) => (
+          <li key={g.id}>
+            <KidneyPanel grade={g.id} />
+            <span className="x-us-grade">{g.name}{g.band ? ` · ${g.band}` : ''}</span>
+            <span className="x-us-grade-say">{g.say}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="caption">White is bright, black is fluid. Which grade it is, is for your crew medic and Earth to judge.</p>
+    </figure>
+  );
+}
+
 export function Ultrasound({ state, commit, setting, crewId, go, hhmm, returnTo, view }: UltrasoundProps) {
   const proc = ultrasoundProcedure(view);
   const steps = proc.steps;
@@ -102,8 +172,9 @@ export function Ultrasound({ state, commit, setting, crewId, go, hhmm, returnTo,
         {step.side ? <p className="caption">Drawn from the front: the person's left side is on your right.</p> : null}
         {step.lookFor ? <p className="x-us-look">{step.lookFor}</p> : null}
         {step.note ? <p className="x-us-note">{step.note}</p> : null}
+        {step.example === 'kidney' ? <KidneyExamples /> : null}
         {step.side ? <div className="x-us-image" role="note">{proc.imageNote}</div> : null}
-        <p><span className="placeholder">{proc.status}</span></p>
+        <p><span className={proc.status.startsWith('Placeholder') ? 'placeholder' : 'source'}>{proc.status}</span></p>
         <p className="source">Source: {proc.source}</p>
         {isDone ? (
           <button type="button" className="chip chip-toggle x-us-undo" aria-pressed={true} onClick={toggle}>Step done. Tap to mark it not done</button>

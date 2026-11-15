@@ -20,8 +20,8 @@ describe('the pack demo sets', () => {
   it('the 15:00 set raises nothing', () => {
     expect(ids(after(demo('stone')))).toEqual([]);
   });
-  it('the 22:30 set raises possible sepsis, Act now, with plain reasons and only the placeholder steps', () => {
-    const [a, ...rest] = vitalsAlerts(after(demo('infected')), rules, crew);
+  it('the 22:30 set raises possible sepsis, Act now, with plain reasons and the signed-off steps', () => {
+    const [a, ...rest] = vitalsAlerts(after(demo('infected')), rules, crew, 'martian');
     expect(rest).toEqual([]);
     expect(a.id).toBe('SEP-01');
     expect(a.tier).toBe('red');
@@ -29,7 +29,7 @@ describe('the pack demo sets', () => {
     expect(a.construct).toBe(12);
     expect(a.reasons).toEqual(['Temperature 38.6 °C', 'Blood pressure 94/56 mmHg', 'Breathing 24 a minute']);
     expect(a.steps).toEqual(['Lie the person flat and keep them warm.', 'Record vitals from the monitor.', 'Crew medic: follow your sepsis protocol.']);
-    expect(a.placeholder).toBe(true);
+    expect(a.placeholder).toBe(false);
     expect(a.confidence).toBe('Low');
     expect(a.source).toMatch(/clinical lead/);
     expect(a.at).toBe(1000);
@@ -122,4 +122,34 @@ describe('rules file checks', () => {
       expect(() => parseRules(text.replace(sepsis, cut))).toThrow(/SEP-01/);
     });
   }
+});
+
+describe('first steps that depend on gravity (CR-38)', () => {
+  const strap = 'Strap the person down so you can start CPR if needed.';
+  it('at 0 g shows the strap-down step and hides lying flat; elsewhere the reverse', () => {
+    const s = after(demo('infected'));
+    expect(vitalsAlerts(s, rules, crew, 'zero')[0].steps).toEqual(['Keep the person warm.', strap, 'Record vitals from the monitor.', 'Crew medic: follow your sepsis protocol.']);
+    for (const band of ['lunar', 'martian', 'earth'] as const) {
+      const steps = vitalsAlerts(s, rules, crew, band)[0].steps;
+      expect(steps).not.toContain(strap);
+      expect(steps[0]).toBe('Lie the person flat and keep them warm.');
+    }
+  });
+  it('shock lists the systems screen and RUSH scan steps, and stays a placeholder', () => {
+    const shk = rules.monitor_alerts.find((m) => m.id === 'SHK-01')!;
+    expect(shk.signed_off_by).toBe('placeholder');
+    expect(shk.steps.map((x) => x.text)).toContain('Crew medic: work through a systems screen to look for the cause.');
+    const screen = shk.steps.find((x) => x.checklist)!;
+    expect(screen.checklist!.map((h) => h.heading)).toEqual(['Blood or fluid loss', 'Heart', 'Widened blood vessels', 'Blockage']);
+    const shock = vitalsAlerts(after({ sbp: 82, dbp: 50, hr: 124, temp: 37 }), rules, crew, 'martian').find((a) => a.id === 'SHK-01')!;
+    expect(shock.steps).toContain('Give oxygen if it is available and you are trained to. Oxygen is a fire risk: keep sparks and flames away.');
+    expect(shock.checklists[screen.text]).toHaveLength(4);
+    expect(shock.steps.join(' ')).not.toMatch(/\d+ ?(mg|mL|L\/min)/);
+  });
+  it('refuses a step with an unknown gravity band, and a rule whose steps all depend on gravity', () => {
+    expect(() => parseRules(text.replace('gravity: [zero] }', 'gravity: [orbit] }'))).toThrow(/gravity must list/);
+    const only = text.replace(/(  - id: SHK-01[\s\S]*?steps:\n)[\s\S]*?(    source:)/, '$1      - { text: "One step.", gravity: [zero] }\n$2');
+    expect(only).not.toBe(text);
+    expect(() => parseRules(only)).toThrow(/every gravity/);
+  });
 });

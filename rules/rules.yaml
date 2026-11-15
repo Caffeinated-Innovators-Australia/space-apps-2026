@@ -2,7 +2,8 @@
 # Every rule needs a source, a confidence label and a signed_off_by field, or the app refuses to load.
 # signed_off_by is a clinician ROLE (never a name), or the word "placeholder".
 #
-# STATUS: every rule, number and line of wording below is a PLACEHOLDER awaiting clinician review.
+# STATUS: every rule, number and line of wording below is a PLACEHOLDER awaiting clinician review, unless its
+# signed_off_by names a clinician role.
 # The numbers are common statistical conventions, not clinical thresholds. Nothing here is clinical advice.
 # See CLINICIAN_REVIEW.md (CR-02, CR-04, CR-12, CR-14, CR-16) and docs/EVIDENCE.md.
 version: "0.2"
@@ -76,7 +77,7 @@ prompts:
 # Symptom pathways: a pattern of logged symptoms the rules act on. A pathway names a pattern to CHECK FOR
 # and the next steps. It never names a finding. core symptoms open the follow-up questions; core plus
 # min_supporting supporting symptoms is amber; any urgent symptom on top is red.
-# Every symptom, tier and step below is a PLACEHOLDER awaiting clinician review (CR-25 to CR-28).
+# KS-01 and KS-00 are signed off by the clinical lead (15 Nov 2026). CR-26 to CR-28 remain open.
 pathways:
   - id: KS-01
     name: "Possible kidney stone"
@@ -85,6 +86,10 @@ pathways:
     supporting: ["Comes in waves", "Blood in urine", "Pain passing urine", "Nauseous"]
     min_supporting: 1
     urgent: ["Fever or chills", "Confused", "Cannot pass urine"]
+    # A measured fever in the latest vital signs counts as "Fever or chills" (CR-58). 38.0 °C is the fever line in
+    # ANZCOR Guideline 9.2.3 (approved December 2025) and the same value SEP-01 uses. Confirmed by the clinical lead, 15 Nov 2026.
+    from_vitals:
+      "Fever or chills": { temp: ">= 38" }
     context: [fluid, exercise]
     # Early warning, before any symptom: the indicator has sat more than shift_sd standard deviations below the
     # person's own baseline for count logged days in a row. It names a risk to act on early, not a finding.
@@ -99,9 +104,9 @@ pathways:
         - "Drink to your usual daily amount today."
         - "Log your fluid again this evening."
         - "Tell your crew medic if it is still low tomorrow."
-      source: "Placeholder rule, awaiting clinician review. Three days and one standard deviation are statistical conventions. The risk is NASA's: Evidence Report, Risk of Renal Stone Formation (2017), page 5."
+      source: "Three days and one standard deviation kept by the clinical lead on 15 Nov 2026 (CR-29), after the alarm replay showed two days fired more than three times as often on unchanged data. The risk is NASA's: Evidence Report, Risk of Renal Stone Formation (2017), page 5."
       confidence: Low
-      signed_off_by: placeholder
+      signed_off_by: clinical lead
     # Simple tests the pathway asks for. The result is logged and sent with the case. It never changes a tier.
     tests:
       - id: urine-strip
@@ -116,8 +121,13 @@ pathways:
       - id: urine-sg
         label: "Specific gravity"
         options: ["1.005", "1.010", "1.015", "1.020", "1.025", "1.030", "Not done"]
-    # One plain line shown when the strip results match exactly. Wording from the clinical lead, a placeholder until signed off.
+    # One plain line shown when the strip results match. Wording confirmed by the clinical lead, 15 Nov 2026 (CR-41).
+    # Only the earliest note whose results all match is shown, so the most specific is listed at the top (CR-41).
     test_notes:
+      - when: { urine-strip: "Present", urine-nitrite: "Positive", urine-leuk: "Positive" }
+        text: "Blood, nitrite and leucocytes present: possible infection."
+      - when: { urine-nitrite: "Positive", urine-leuk: "Positive" }
+        text: "Nitrite and leucocytes present: possible infection."
       - when: { urine-strip: "Present", urine-nitrite: "Negative", urine-leuk: "Negative" }
         text: "Blood present, no signs of infection."
     check:
@@ -130,7 +140,7 @@ pathways:
       amber: "You logged {symptoms}. Together these match the pattern your crew medic checks for a kidney stone. This is a pattern to check, not a diagnosis."
       red: "You logged {symptoms}. With {urgent}, the pattern your crew medic checks for a kidney stone needs action now. This is a pattern to check, not a diagnosis."
     steps:
-      # Step wording from the team's clinical lead (build pack v3.3). Placeholder until signed off. No drug names or doses.
+      # Step wording from the team's clinical lead (build pack v3.3), signed off 15 Nov 2026 (CR-43). No drug names or doses.
       amber:
         - "Tell your crew medic."
         - "Run the urine test strip."
@@ -155,9 +165,9 @@ pathways:
       - text: "NASA reports: “A total of 43 stone events in 29 crewmembers have been recorded by NASA since 2016.” One episode has been reported during spaceflight itself."
         source: "NASA OCHMO Medical Technical Brief MTB-003, Urinary Health, Rev A, page 6"
         link: "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf#page=6"
-    source: "Placeholder rule, awaiting clinician review. The symptom pattern follows public guidance (healthdirect Australia, Kidney stones; NIDDK, Kidney stones: symptoms and causes). The risk is NASA's: Risk of Renal Stone Formation."
+    source: "Signed off by the clinical lead on 15 Nov 2026 (CR-25, CR-41, CR-43, CR-58). The symptom pattern follows public guidance (healthdirect Australia, Kidney stones; NIDDK, Kidney stones: symptoms and causes). The fever line is ANZCOR Guideline 9.2.3. The risk is NASA's: Risk of Renal Stone Formation."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
 
 steps:
   green:
@@ -178,39 +188,72 @@ steps:
 # with one of >=, <=, > or < and a number. A missing value never matches.
 # Oxygen saturation (spo2) never raises an alert on its own: readings run lower and are less reliable at low
 # cabin pressure. The parser refuses a group that compares spo2 alone. Neither rule below uses it.
+# A step is plain text, or { text, gravity: [bands] } to show it only in those gravity bands (zero, lunar, martian, earth),
+# taken from the place's location profile. A step limited to some bands is hidden when the band is not known.
 # construct is the emergency module's pathway number: 12 Infection and sepsis, 4 Shock.
 # No cardiac arrest rule here: a set of vital signs carries no heart rhythm.
-# STATUS: every threshold and step below is the clinical lead's placeholder (build pack v3.3), awaiting sign-off.
+# STATUS: SEP-01 signed off by the clinical lead (15 Nov 2026, CR-36 and CR-38). SHK-01 stays a placeholder (CR-37).
 monitor_alerts:
   - id: SEP-01
     name: "Possible sepsis"
     title: "Possible sepsis: start now"
-    checks_for: "Checks for sepsis, an infection spreading through the body: a fever or a low temperature, with low blood pressure or fast breathing."
+    checks_for: "Checks for sepsis, an infection spreading through the body: a fever or a low temperature, with low blood pressure or fast breathing at rest."
     construct: 12
     when:
       - { temp: ">= 38", sbp: "<= 100" }
       - { temp: ">= 38", rr: ">= 22" }
       - { temp: "<= 36", sbp: "<= 100", rr: ">= 22" }
     steps:
-      - "Lie the person flat and keep them warm."
+      - { text: "Lie the person flat and keep them warm.", gravity: [lunar, martian, earth] }
+      - { text: "Keep the person warm.", gravity: [zero] }
+      - { text: "Strap the person down so you can start CPR if needed.", gravity: [zero] }
       - "Record vitals from the monitor."
       - "Crew medic: follow your sepsis protocol."
-    source: "Placeholder thresholds from the team's clinical lead (build pack v3.3), awaiting sign-off."
+    source: "Thresholds from the team's clinical lead (build pack v3.3), signed off by the clinical lead on 15 Nov 2026 (CR-36, CR-38)."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
   - id: SHK-01
     name: "Possible shock"
     title: "Possible shock: start now"
-    checks_for: "Checks for shock, when blood is not reaching the body well enough: low blood pressure with a fast pulse."
+    checks_for: "Checks for shock, when blood is not reaching the body well enough: low blood pressure with a fast pulse, at rest."
     construct: 4
     when:
       - { sbp: "< 90", hr: "> 110" }
+    # Steps approved by the clinical lead on 15 Nov 2026 (CR-37), in our own words after ANZCOR Guideline 9.2.3.
     steps:
-      - "Lie the person flat and keep them warm."
+      - { text: "Lie the person flat and keep them warm unless they already feel hot.", gravity: [lunar, martian, earth] }
+      - { text: "Keep the person warm unless they already feel hot.", gravity: [zero] }
+      - { text: "Strap the person down so you can start CPR if needed.", gravity: [zero] }
+      - "Control any bleeding straight away."
+      - "Give oxygen if it is available and you are trained to. Oxygen is a fire risk: keep sparks and flames away."
       - "Record vitals from the monitor."
-    source: "Placeholder thresholds from the team's clinical lead (build pack v3.3), awaiting sign-off."
+      - "If they stop responding and are not breathing normally, press Emergency."
+      - "Stay with them, reassure them, and re-check them often."
+      - text: "Crew medic: work through a systems screen to look for the cause."
+        checklist:
+          - heading: "Blood or fluid loss"
+            checks: ["Any bleeding, seen or possibly hidden (injury, belly pain)", "Vomiting or diarrhoea", "Heavy sweating", "Burns", "Low fluid intake (the fluid trend in the app)"]
+          - heading: "Heart"
+            checks: ["Chest pain", "A new irregular pulse", "New breathlessness"]
+          - heading: "Widened blood vessels"
+            checks: ["Signs of infection (fever, or the sepsis alert)", "Allergic reaction (rash, swelling, wheeze)", "Head or spine injury"]
+          - heading: "Blockage"
+            checks: ["Sudden breathlessness with one side of the chest moving less", "A recent chest injury", "Sudden chest pain with breathlessness"]
+      - "Crew medic: if trained, do a RUSH scan (Rapid Ultrasound in Shock and Hypotension)."
+    source: "Placeholder thresholds from the team's clinical lead (build pack v3.3), awaiting input from another team clinician. Steps and systems screen approved by the clinical lead on 15 Nov 2026, after ANZCOR Guideline 9.2.3 (approved December 2025)."
     confidence: Low
     signed_off_by: placeholder
+
+# Symptoms that ask for a set of vital signs when logged with no set taken since (CR-58), so the monitor alerts
+# (such as SEP-01) can run on measured values. Shown on Today and on the pathway screen until a set is recorded.
+vitals_prompt:
+  id: VP-01
+  symptoms: ["Fever or chills"]
+  title: "Record your vital signs"
+  why: "You logged {symptom}. Record your vital signs now, so the sepsis check can run on measured values."
+  source: "Asked for and approved by the clinical lead on 15 Nov 2026 (CR-58)."
+  confidence: Low
+  signed_off_by: clinical lead
 
 # Symptoms that mean "press Emergency now" the moment one is logged. No pattern, no second symptom, no wait.
 # The app shows a red banner on every screen until the symptom is cleared. It names no condition.
@@ -223,6 +266,6 @@ emergency_symptoms:
     "Chest pain": { construct: 5, label: "Open chest pain checklist" }
     "Short of breath": { construct: 2, label: "Open breathing checklist" }
   why: "Chest pain, shortness of breath and collapse are treated as an emergency until a clinician says otherwise."
-  source: "Placeholder list from the team's clinicians (review of the build, 15 Nov 2026), awaiting sign-off."
+  source: "List from the team's clinicians (review of the build, 15 Nov 2026), signed off by the clinical lead on 15 Nov 2026 (CR-59)."
   confidence: Low
-  signed_off_by: placeholder
+  signed_off_by: clinical lead

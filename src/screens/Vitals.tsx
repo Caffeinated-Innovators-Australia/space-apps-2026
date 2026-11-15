@@ -89,6 +89,17 @@ export function MonitorAlertCard({ alert, onEmergency, onSend, setting, say, syn
                 <span className="box" aria-hidden="true">{done.includes(st) ? '✓' : ''}</span>
                 <span>{say(st, setting)}</span>
               </button>
+              {alert.checklists?.[st] ? (
+                <details className="more">
+                  <summary>Show the checklist</summary>
+                  {alert.checklists[st].map((h) => (
+                    <div key={h.heading}>
+                      <p className="why-label">{h.heading}</p>
+                      <ul>{h.checks.map((c) => <li key={c}>{say(c, setting)}</li>)}</ul>
+                    </div>
+                  ))}
+                </details>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -108,7 +119,7 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
   const [saved, setSaved] = useState(false);
   const person = seed.crew.find((c) => c.id === crewId);
   const latest = latestVitals(state, crewId);
-  const alerts = vitalsAlerts(state, rules, crewId);
+  const alerts = vitalsAlerts(state, rules, crewId, setting.gravityBand);
   const demos = seed.demoVitals ?? [];
   const latestIsDemo = latest ? demos.some((d) => sameSet(d.values, latest.values)) : false;
   const errors = Object.fromEntries(VITAL_FIELDS.map((f) => [f.id, fieldError(f, texts[f.id])])) as Record<VitalField, string | undefined>;

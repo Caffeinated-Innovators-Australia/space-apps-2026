@@ -10,7 +10,7 @@ const t0 = new Date(2026, 10, 14, 15, 20).getTime();
 describe('procedure data', () => {
   it('has four short steps, left then right, marked as placeholder wording from the clinical lead', () => {
     const p = ultrasoundProcedure();
-    expect(p.status).toBe('Placeholder wording, awaiting clinician sign-off');
+    expect(p.status).toBe('Reviewed by our clinical lead, 15 Nov 2026');
     expect(p.source).toContain('build pack v3.3');
     const steps = ultrasoundSteps();
     expect(steps).toHaveLength(4);
