@@ -79,7 +79,7 @@
    "card": {
     "how": "Pick the word that fits how you feel right now. There is no right answer, and the first one that comes to mind is usually the true one.",
     "why": "Isolation and confinement wear on everyone. An honest daily check-in shows a trend long before it shows in your work.",
-    "what": "A low day is logged and nothing more. A run of low days is shared with your crew medic, and only with them. Thoughts of harming yourself or someone else are different: they go to your crew medic and the commander at once.",
+    "what": "A low day is logged and nothing more. A run of low days is shared with your crew medic, and only with them. Thoughts of suicide, of harming yourself or someone else, or having harmed yourself are different: they go to your crew medic and the commander at once.",
     "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
@@ -265,7 +265,9 @@
     "prompt": "Visual acuity check: one eye at a time"
    },
    "standout": {
-    "gravity": ["zero"],
+    "gravity": [
+     "zero"
+    ],
     "short": "important at 0 g",
     "note": "Important at 0 g: this weekly check looks for eye changes linked to spaceflight-associated neuro-ocular syndrome (SANS). Do it every week, on time."
    },
@@ -14486,8 +14488,14 @@
   "level": "S3",
   "note": "SYNTHETIC forecast for the drill. A real one would come from a space weather forecast service.",
   "waves": [
-   { "label": "First particles", "afterMin": 42 },
-   { "label": "Second wave (shock front)", "afterMin": 1860 }
+   {
+    "label": "First particles",
+    "afterMin": 42
+   },
+   {
+    "label": "Second wave (shock front)",
+    "afterMin": 1860
+   }
   ],
   "allClearAfterMin": 4320
  },
@@ -14499,27 +14507,45 @@
   144
  ],
  "symptoms": {
-  "status": "Placeholder list, awaiting clinician review (CR-10, CR-51)",
+  "status": "Approved by our clinical lead on the build assistant's recommendation, 15 Nov 2026 (CR-10, CR-51)",
   "options": [
    "Tired",
    "Fever or chills",
-   "Confused",
+   "Feeling faint",
+   "Collapse",
    "Headache",
    "Dizzy on standing",
+   "Confused",
+   "Numbness or weakness",
+   "Slurred speech or face drooping",
+   "Seizure",
    "Blurred vision",
+   "Eye pain",
+   "Ear pain",
+   "Blocked nose",
+   "Nosebleed",
+   "Toothache",
+   "Cold sore",
    "Low mood",
+   "Anxious or panicky",
+   "Cannot sleep",
+   "Feeling hopeless",
+   "Hearing or seeing things others do not",
+   "Thoughts of suicide",
    "Thoughts of harming myself",
+   "Have harmed myself",
    "Thoughts of harming someone else",
    "Sore throat",
    "Cough",
    "Short of breath",
    "Chest pain",
-   "Collapse",
+   "Racing or irregular heartbeat",
    "Nauseous",
    "Vomiting",
    "Diarrhoea",
    "Constipated",
    "Belly pain",
+   "Blood in vomit or stool",
    "Pain in side or lower back",
    "Blood in urine",
    "Pain passing urine",
@@ -14528,16 +14554,17 @@
    "Rash",
    "Itchy skin",
    "Cut slow to heal",
-   "Cold sore",
+   "Burn",
    "Muscle or joint pain",
-   "Stiffness"
+   "Stiffness",
+   "Swollen or painful leg"
   ],
   "followUps": [
    "Comes in waves"
   ]
  },
  "symptomZones": {
-  "status": "Placeholder grouping, awaiting clinician review (CR-10, CR-51)",
+  "status": "Approved by our clinical lead on the build assistant's recommendation, 15 Nov 2026 (CR-10, CR-51)",
   "zones": [
    {
     "id": "whole",
@@ -14545,19 +14572,47 @@
     "symptoms": [
      "Tired",
      "Fever or chills",
-     "Confused",
+     "Feeling faint",
      "Collapse"
     ]
    },
    {
     "id": "head",
-    "label": "Head, eyes and mind",
+    "label": "Head and brain",
     "symptoms": [
      "Headache",
      "Dizzy on standing",
+     "Confused",
+     "Numbness or weakness",
+     "Slurred speech or face drooping",
+     "Seizure"
+    ]
+   },
+   {
+    "id": "senses",
+    "label": "Eyes, ears, nose and mouth",
+    "symptoms": [
      "Blurred vision",
+     "Eye pain",
+     "Ear pain",
+     "Blocked nose",
+     "Nosebleed",
+     "Toothache",
+     "Cold sore"
+    ]
+   },
+   {
+    "id": "mind",
+    "label": "Mind and mood",
+    "symptoms": [
      "Low mood",
+     "Anxious or panicky",
+     "Cannot sleep",
+     "Feeling hopeless",
+     "Hearing or seeing things others do not",
+     "Thoughts of suicide",
      "Thoughts of harming myself",
+     "Have harmed myself",
      "Thoughts of harming someone else"
     ]
    },
@@ -14568,7 +14623,8 @@
      "Sore throat",
      "Cough",
      "Short of breath",
-     "Chest pain"
+     "Chest pain",
+     "Racing or irregular heartbeat"
     ]
    },
    {
@@ -14579,7 +14635,8 @@
      "Vomiting",
      "Diarrhoea",
      "Constipated",
-     "Belly pain"
+     "Belly pain",
+     "Blood in vomit or stool"
     ]
    },
    {
@@ -14600,7 +14657,7 @@
      "Rash",
      "Itchy skin",
      "Cut slow to heal",
-     "Cold sore"
+     "Burn"
     ]
    },
    {
@@ -14608,7 +14665,8 @@
     "label": "Muscles and joints",
     "symptoms": [
      "Muscle or joint pain",
-     "Stiffness"
+     "Stiffness",
+     "Swollen or painful leg"
     ]
    }
   ]
@@ -14653,7 +14711,7 @@
   ]
  },
  "radiationPrompt": {
-  "status": "Placeholder step, awaiting clinician review (CR-09)",
+  "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-09)",
   "step": "Log your personal dosimeter reading."
  },
  "privacy": {
@@ -14674,7 +14732,7 @@
     "crew": "Never"
    },
    {
-    "what": "Thoughts of harming yourself or someone else",
+    "what": "Thoughts of suicide or of harming yourself or someone else, or having harmed yourself",
     "you": "Always",
     "medic": "Straight away",
     "surgeon": "Straight away, in a private call",

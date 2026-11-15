@@ -98,7 +98,7 @@ describe('thoughts of harm reach the crew medic at once (MH-01, CR-44)', () => {
   it('shows the area to check without a case being sent, and names no symptom', () => {
     const s = toggleSymptom(initialState(seed), 'crew-2', 'Thoughts of harming myself', 1000);
     const row = crewOverview(s, seed, rules).find((r) => r.crewId === 'crew-2')!;
-    expect(row.urgentPathways).toEqual([{ pathwayId: 'MH-01', checkFor: 'Mind and sleep' }]);
+    expect(row.urgentPathways).toEqual([{ pathwayId: 'MH-01', checkFor: 'Mental health' }]);
     expect(row.topTier).toBe('red');
   });
 });

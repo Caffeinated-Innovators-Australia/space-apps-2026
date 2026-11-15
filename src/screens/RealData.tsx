@@ -115,7 +115,7 @@ export function SpaceWeather({ doseLogged, onDose }: { doseLogged: boolean; onDo
         <span className="box" aria-hidden="true">{doseLogged ? '\u2713' : ''}</span>
         <span>{demo.radiationPrompt.step}</span>
       </button>
-      <span className="placeholder">{demo.radiationPrompt.status}</span>
+      <span className={demo.radiationPrompt.status.startsWith('Reviewed') ? 'source' : 'placeholder'}>{demo.radiationPrompt.status}</span>
       <p className="caption">
         {donki.credit}. {donki.source}. <a href={donki.link}>{donki.link}</a>
       </p>

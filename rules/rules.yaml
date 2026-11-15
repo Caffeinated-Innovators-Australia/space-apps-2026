@@ -198,38 +198,41 @@ pathways:
     confidence: Medium
     signed_off_by: clinical lead
 
-  # Thoughts of harming yourself or someone else (CR-44). Act now on one symptom. Shared with the crew medic and the
-  # commander at once: safety comes before privacy here, as in a risk-of-harm situation on Earth.
+  # The mental health red pathway (CR-10, CR-44): thoughts of suicide, of harming yourself or someone else, or having
+  # harmed yourself. Act now on one symptom. Shared with the crew medic and the commander at once: safety comes before
+  # privacy here, as in a risk-of-harm situation on Earth.
   - id: MH-01
-    name: "Thoughts of harm"
-    region: "Mind and sleep"
-    core: ["Thoughts of harming myself", "Thoughts of harming someone else"]
+    name: "Mental health red pathway"
+    region: "Mental health"
+    core: ["Thoughts of suicide", "Thoughts of harming myself", "Have harmed myself", "Thoughts of harming someone else"]
     supporting: []
     min_supporting: 0
     urgent: []
     context: [mood, sleep]
     share_now: true
     privacy_note: "Shared with your crew medic and the commander now. Safety comes before privacy here."
-    ask_after: { indicator: mood, at_or_below: 2, ask: "Have you had any thoughts of harming yourself or someone else?" }
+    ask_after: { indicator: mood, at_or_below: 2, ask: "Have you had any thoughts of suicide, or of harming yourself or someone else?" }
     check:
-      title: "Mind and sleep: a quick question"
+      title: "Mental health: a quick question"
       why: "You logged {core}."
     titles:
-      amber: "Mind and sleep: needs action now"
-      red: "Mind and sleep: needs action now"
+      amber: "Mental health: needs action now"
+      red: "Mental health: needs action now"
     why:
-      amber: "You logged thoughts of harming yourself or someone else. This needs a person to talk to now."
-      red: "You logged thoughts of harming yourself or someone else. This needs a person to talk to now."
+      amber: "You logged {symptoms}. This needs a person with you, and someone to talk to, now."
+      red: "You logged {symptoms}. This needs a person with you, and someone to talk to, now."
     steps:
       amber:
         - "Tell your crew medic now. The commander is told as well."
         - "Stay with a crewmate. Do not stay alone."
+        - "Move anything that could be used to cause harm out of reach."
         - "Send the case to Earth for a private call with the flight surgeon."
       red:
         - "Tell your crew medic now. The commander is told as well."
         - "Stay with a crewmate. Do not stay alone."
+        - "Move anything that could be used to cause harm out of reach."
         - "Send the case to Earth for a private call with the flight surgeon."
-    source: "Asked for by the clinical lead on 15 Nov 2026 (CR-44)."
+    source: "Asked for by the clinical lead on 15 Nov 2026 (CR-10, CR-44). Suicide and having harmed yourself added, and the step to move anything that could cause harm out of reach, on the build assistant's recommendation, approved by the clinical lead."
     confidence: Low
     signed_off_by: clinical lead
 
