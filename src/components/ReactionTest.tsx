@@ -229,7 +229,7 @@ export function ReactionTest({ onResult, onDetail }: { rounds?: number; onResult
       ) : null}
 
       <p className="caption">PVT-style check, modelled on the psychomotor vigilance test. Not NASA's Cognition battery.</p>
-      <span className="placeholder">Lapse time of {LAPSE_MS} ms, and how too-early taps should count: placeholders, awaiting clinician sign-off</span>
+      <span className="caption">A lapse is a tap slower than {LAPSE_MS} ms. Too-early taps are recorded and sent with the case, not scored. Reviewed by our clinical lead, 15 Nov 2026.</span>
 
       <p className="x-sr" aria-live="polite" role="status">
         {phase === 'idle' ? 'Ready.' : phase === 'go' ? 'Counter showing. Tap now.' : phase === 'wait' ? note || 'Wait for the counter.' : result ? `Finished. Median ${result.median} milliseconds, ${result.lapses} lapses, ${result.trials} trials, ${result.falseStarts} too-early taps.` : 'Finished. No reaction times were recorded.'}

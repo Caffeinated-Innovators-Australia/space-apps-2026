@@ -3,7 +3,7 @@
 
 /**
  * A lapse is a response slower than this many milliseconds.
- * 500 ms is the placeholder definition in the clinical lead's build pack, awaiting clinician sign-off.
+ * 500 ms, the classic lapse definition, approved by the clinical lead on 15 Nov 2026 (CR-46). The lapse count is shown, not scored.
  */
 export const LAPSE_MS = 500;
 
