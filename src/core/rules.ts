@@ -115,6 +115,8 @@ export interface RuleFile {
   monitor_alerts: MonitorAlertRule[];
   /** Absent when the file has none. */
   emergency_symptoms?: EmergencySymptomRule;
+  /** Drift from the person's own usual vital signs (FR-64). */
+  drift_alerts?: Signed & { min_sets: number; rules: { id: string; field: MonitorField; construct: number; either_way_more_than?: number; down_more_than?: number; up_more_than?: number; title: string; checks_for: string }[] };
   /** A forecast solar radiation storm that raises a red pop-up, then a banner until the all-clear (CR-09). */
   radiation_storm?: Signed & { id: string; alarm_at: string; title: string; lines: string[]; acknowledge: string; banner: string };
   /** Symptoms that ask for a set of vital signs when logged without one taken since (CR-58). */
@@ -245,6 +247,17 @@ export function parseRules(text: string): RuleFile {
     for (const b of w.background) if (!b.text || !b.source || !b.link) throw new Error(`Pathway ${id}: every background line needs its source and link.`);
   }
   for (const t of TIERS) if (!Array.isArray(f.steps?.[t]) || f.steps[t].length === 0) throw new Error(`Every tier needs at least one next step: none for ${t}.`);
+  if (f.drift_alerts) {
+    const d = f.drift_alerts;
+    signed(d, 'drift alerts');
+    if (!(d.min_sets >= 2) || !Array.isArray(d.rules) || d.rules.length === 0) throw new Error('Drift alerts: need min_sets of 2 or more and at least one rule.');
+    for (const r of d.rules) {
+      if (!r.id || !MONITOR_FIELDS.includes(r.field) || !r.title || !r.checks_for || !Number.isInteger(r.construct)) throw new Error(`Drift alert ${r.id ?? ''}: needs an id, a vital-sign field, a checklist number as construct, a title and checks_for.`);
+      if (r.field === 'spo2') throw new Error(`Drift alert ${r.id}: oxygen saturation may never raise an alert on its own.`);
+      const n = [r.either_way_more_than, r.down_more_than, r.up_more_than].filter((x) => typeof x === 'number' && x > 0).length;
+      if (n !== 1) throw new Error(`Drift alert ${r.id}: needs exactly one of either_way_more_than, down_more_than or up_more_than.`);
+    }
+  }
   if (f.radiation_storm) {
     const r = f.radiation_storm;
     signed(r, r.id ?? 'radiation storm');

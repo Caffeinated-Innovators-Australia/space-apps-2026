@@ -153,3 +153,27 @@ describe('first steps that depend on gravity (CR-38)', () => {
     expect(() => parseRules(only)).toThrow(/every gravity/);
   });
 });
+
+describe('drift from the person\'s own usual vital signs (FR-64, CR-36, CR-37)', () => {
+  const sets = (vals: VitalSigns[]) => vals.reduce((st, v, i) => recordVitals(st, { crewId: crew, values: v, at: 1000 + i * 3600_000 }), initialState(seed) as State);
+  const usual = { temp: 36.8, hr: 70, sbp: 120, dbp: 78, rr: 14 };
+  it('raises nothing until there are three earlier sets, then catches each drift as Act now', () => {
+    expect(ids(sets([usual, usual, { ...usual, rr: 22 }]))).toEqual([]);
+    const s = sets([usual, usual, usual, { ...usual, rr: 21, sbp: 104, hr: 91 }]);
+    const drift = vitalsAlerts(s, rules, crew, 'martian').filter((a) => a.id.startsWith('VD-'));
+    expect(drift.map((a) => a.id)).toEqual(['VD-01', 'VD-02', 'VD-03']);
+    expect(drift[0].reasons[0]).toBe('Breathing rate 21 a minute, against your usual 14 a minute from 3 earlier sets');
+    expect(drift.every((a) => a.tier === 'red' && !a.placeholder)).toBe(true);
+    expect(drift.map((a) => a.construct)).toEqual([2, 4, 5]);
+  });
+  it('catches slow breathing too, and stays quiet within the limits', () => {
+    expect(ids(sets([usual, usual, usual, { ...usual, rr: 7 }]))).toContain('VD-01');
+    expect(ids(sets([usual, usual, usual, { ...usual, rr: 19, sbp: 106, hr: 89 }])).filter((i) => i.startsWith('VD-'))).toEqual([]);
+  });
+  it('counts only sets since the last change of gravity', () => {
+    let s = sets([usual, usual, usual]);
+    s = { ...s, ui: { ...s.ui, gravityChange: { from: 'zero', at: 999_999_999 } } };
+    s = recordVitals(s, { crewId: crew, values: { ...usual, hr: 100 }, at: 1_000_000_000 });
+    expect(ids(s)).not.toContain('VD-03');
+  });
+});
