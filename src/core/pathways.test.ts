@@ -284,3 +284,21 @@ describe('the symptom list and its areas (CR-10, CR-51)', () => {
     for (const s of rules.pathways.find((p) => p.id === 'MH-01')!.core) expect(mind).toContain(s);
   });
 });
+
+describe('new alerts for single symptoms (CR-10)', () => {
+  it('treats stroke signs and seizure as Press Emergency now, opening the neurological checklist', () => {
+    for (const l of ['Slurred speech or face drooping', 'Numbness or weakness', 'Seizure']) {
+      expect(emergencySymptoms(log(initialState(seed), 'crew-4', l), rules, 'crew-4')?.symptoms).toEqual([l]);
+      expect(rules.emergency_symptoms!.checklists![l].construct).toBe(6);
+    }
+  });
+  it('makes a swollen or painful leg, and blood in vomit or stool, Act now with the crew medic told now', () => {
+    for (const [l, id] of [['Swollen or painful leg', 'LG-01'], ['Blood in vomit or stool', 'GI-01']]) {
+      const s = log(initialState(seed), 'crew-4', l);
+      expect(pathwayAlerts(s, seed, rules, 'crew-4').find((x) => x.pathwayId === id)?.tier).toBe('red');
+      const p = pathwayStatuses(s, seed, rules, 'crew-4').find((x) => x.pathway.id === id)!;
+      expect(p.steps[0]).toBe('Tell your crew medic now.');
+      expect(p.why).toContain('not a diagnosis');
+    }
+  });
+});
