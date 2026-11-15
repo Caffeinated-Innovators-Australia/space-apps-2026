@@ -192,7 +192,7 @@ steps:
 # taken from the place's location profile. A step limited to some bands is hidden when the band is not known.
 # construct is the emergency module's pathway number: 12 Infection and sepsis, 4 Shock.
 # No cardiac arrest rule here: a set of vital signs carries no heart rhythm.
-# STATUS: SEP-01 signed off by the clinical lead (15 Nov 2026, CR-36 and CR-38). SHK-01 stays a placeholder (CR-37).
+# STATUS: SEP-01 and SHK-01 signed off by the clinical lead (15 Nov 2026, CR-36 to CR-38).
 monitor_alerts:
   - id: SEP-01
     name: "Possible sepsis"
@@ -240,9 +240,9 @@ monitor_alerts:
           - heading: "Blockage"
             checks: ["Sudden breathlessness with one side of the chest moving less", "A recent chest injury", "Sudden chest pain with breathlessness"]
       - "Crew medic: if trained, do a RUSH scan (Rapid Ultrasound in Shock and Hypotension)."
-    source: "Placeholder thresholds from the team's clinical lead (build pack v3.3), awaiting input from another team clinician. Steps and systems screen approved by the clinical lead on 15 Nov 2026, after ANZCOR Guideline 9.2.3 (approved December 2025)."
+    source: "Thresholds from the team's clinical lead (build pack v3.3), signed off by the clinical lead on 15 Nov 2026 (CR-37). Steps and systems screen approved by the clinical lead on 15 Nov 2026, after ANZCOR Guideline 9.2.3 (approved December 2025)."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
 
 # Symptoms that ask for a set of vital signs when logged with no set taken since (CR-58), so the monitor alerts
 # (such as SEP-01) can run on measured values. Shown on Today and on the pathway screen until a set is recorded.

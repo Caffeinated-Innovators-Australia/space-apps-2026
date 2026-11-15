@@ -135,9 +135,9 @@ describe('first steps that depend on gravity (CR-38)', () => {
       expect(steps[0]).toBe('Lie the person flat and keep them warm.');
     }
   });
-  it('shock lists the systems screen and RUSH scan steps, and stays a placeholder', () => {
+  it('shock lists the systems screen and RUSH scan steps, and is signed off (CR-37)', () => {
     const shk = rules.monitor_alerts.find((m) => m.id === 'SHK-01')!;
-    expect(shk.signed_off_by).toBe('placeholder');
+    expect(shk.signed_off_by).toBe('clinical lead');
     expect(shk.steps.map((x) => x.text)).toContain('Crew medic: work through a systems screen to look for the cause.');
     const screen = shk.steps.find((x) => x.checklist)!;
     expect(screen.checklist!.map((h) => h.heading)).toEqual(['Blood or fluid loss', 'Heart', 'Widened blood vessels', 'Blockage']);
