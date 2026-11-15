@@ -21,7 +21,7 @@ export function PrivacyTable({ rows, status }: { rows: Row[]; status: string }) 
           ))}
         </tbody>
       </table>
-      <span className="placeholder">{status}</span>
+      <span className={/^(Reviewed|Approved)/.test(status) ? 'source' : 'placeholder'}>{status}</span>
     </div>
   );
 }

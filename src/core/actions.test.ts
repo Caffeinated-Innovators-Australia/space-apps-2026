@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { acknowledge, applySlip, assessValue, limitsFor, casePackContent, confirmation, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, initialState, parseRules, plan, recordReading, reportNothing, sendCase, streak, toggleStep, toggleSymptom, type Seed, type State } from './index.ts';
+import { acknowledge, adaptationFor, applySlip, assessValue, awaitingRepeat, indicatorById, limitsFor, casePackContent, confirmation, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, initialState, parseRules, plan, recordReading, reportNothing, sendCase, streak, toggleStep, toggleSymptom, type Seed, type State } from './index.ts';
 
 const rules = parseRules(readFileSync('rules/rules.yaml', 'utf8'));
 const seed = JSON.parse(readFileSync('src/data/seed.json', 'utf8')) as Seed;
@@ -120,7 +120,8 @@ describe('action layer', () => {
     expect(sendCase(sent.state, { readingId: co2.reading.id, settingId: 'mars-base', at: 4000 }).state.outbox).toHaveLength(1);
     const c = casePackContent(sent.state, seed, rules, sent.pack.id);
     expect(c.assessment.tier).toBe('red');
-    expect(c.assessment.rules[0].placeholder).toBe(true);
+    // The tier rules are signed off by the clinical lead (15 Nov 2026, CR-02).
+    expect(c.assessment.rules[0].placeholder).toBe(false);
     expect(c.otherSignalsToday.map((x) => x.indicator)).toContain('Sleep');
     expect(c.stepsDone).toEqual(['Confirm with a second sensor.']);
     expect(c.symptoms[0].label).toBe('Headache');
@@ -194,5 +195,62 @@ describe('cabin readings are worded as the cabin\'s, not the person\'s', () => {
   it('keeps personal wording for a personal reading', () => {
     const a = assessValue(seed, rules, 'crew-1', 'sleep', 6.2);
     expect(a.why).toMatch(/your baseline|your own/);
+  });
+});
+
+describe('clinical lead decisions, 15 Nov 2026 (CR-17, CR-35, CR-44)', () => {
+  const rulesFile = parseRules(readFileSync(new URL('../../rules/rules.yaml', import.meta.url), 'utf8'));
+  const DAY = 86_400_000;
+  it('caps Act now from the own range at Watch for 7 days after a gravity change, then resets the range from those days (CR-17)', () => {
+    let s: State = { ...initialState(seed), ui: { ...initialState(seed).ui, settingId: 'mars-base', gravityChange: { from: 'zero', at: 1000 } } };
+    const during = adaptationFor(s, seed, 'crew-1', 'resting-hr', 1000 + 2 * DAY);
+    expect(during).toEqual({ capWatch: true });
+    for (const [i, v] of [70, 72, 74].entries()) s = recordReading(s, seed, rulesFile, { crewId: 'crew-1', indicatorId: 'resting-hr', value: v, at: 1000 + (i + 1) * DAY }).state;
+    const after = adaptationFor(s, seed, 'crew-1', 'resting-hr', 1000 + 8 * DAY);
+    expect(after.capWatch).toBe(false);
+    expect(after.baseline).toEqual([70, 72, 74]);
+    expect(adaptationFor({ ...s, ui: { ...s.ui, gravityChange: undefined } }, seed, 'crew-1', 'resting-hr', 1000 + 8 * DAY)).toEqual({ capWatch: false });
+  });
+  it('never caps a sourced limit while adapting', () => {
+    const a = assessValue(seed, rulesFile, 'crew-1', 'grip', 1, [], { capWatch: true });
+    expect(a.tier).toBe('red');
+    expect(a.findings.map((f) => f.ruleId)).toContain('LM-01');
+  });
+  it('holds back the crew medic and Earth steps for a Watch from one reading (CR-35)', () => {
+    const ind = indicatorById(seed, 'sleep');
+    const a = { ...assessValue(seed, rulesFile, 'crew-1', 'sleep', 7), tier: 'amber' as const };
+    expect(awaitingRepeat(rulesFile, ind, a, 'unconfirmed')).toBe(true);
+    expect(awaitingRepeat(rulesFile, ind, a, 'confirmed')).toBe(false);
+    expect(awaitingRepeat(rulesFile, ind, { ...a, tier: 'red' }, 'unconfirmed')).toBe(false);
+    expect(rulesFile.steps.amber_unconfirmed).toEqual(['Repeat the reading to confirm.', 'If the repeat is also outside your range, tell your crew medic and send the case to Earth.']);
+  });
+  it('rates fluid under 1 L for 3 logged days as Act now, even though fluid is capped at Watch (CR-44)', () => {
+    const a = assessValue(seed, rulesFile, 'crew-3', 'fluid', 0.8, [0.9, 0.7]);
+    expect(a.tier).toBe('red');
+    expect(a.ruleId).toBe('FL-01');
+    expect(a.why).toContain('under 1 L for 3 logged days in a row: 0.9, 0.7, 0.8 L');
+    expect(assessValue(seed, rulesFile, 'crew-3', 'fluid', 1.2, [0.9, 0.7]).ruleId).not.toBe('FL-01');
+  });
+});
+
+describe('clinical lead decisions, 15 Nov 2026, batch 3 (CR-15, CR-24, CR-30, CR-45)', () => {
+  const rulesFile = parseRules(readFileSync(new URL('../../rules/rules.yaml', import.meta.url), 'utf8'));
+  it('asks for reaction time weekly on its own day as well as when asked (CR-24)', () => {
+    const r = indicatorById(seed, 'reaction');
+    expect(r.cadence).toBe('prompted');
+    expect(r.weekDay).toBe(3);
+    const onDay = { ...seed, missionDay: 213 } as Seed;
+    expect(daySummary(initialState(onDay), onDay, rulesFile, 'crew-1').items.find((x) => x.indicator.id === 'reaction')?.due).toBe(true);
+    const offDay = { ...seed, missionDay: 214 } as Seed;
+    expect(daySummary(initialState(offDay), offDay, rulesFile, 'crew-1').items.find((x) => x.indicator.id === 'reaction')?.due).toBe(false);
+  });
+  it('lets an experimental check raise Act now (CR-30)', () => {
+    const a = assessValue(seed, rulesFile, 'crew-1', 'reaction', 900, [900, 900]);
+    expect(a.tier).toBe('red');
+    expect(a.why).not.toContain('never rated Act now');
+  });
+  it('calls a mood of 3 Neutral (CR-15), and says drink to thirst beside the fluid target (CR-45)', () => {
+    expect(indicatorById(seed, 'mood').input.labels).toEqual(['Very low', 'Low', 'Neutral', 'Good', 'Very good']);
+    expect(indicatorById(seed, 'fluid').target?.note).toBe('In heat, with hard exercise or in dry air: drink to thirst.');
   });
 });

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import seedJson from '../data/seed.json';
 import { acknowledge, caseContent, exportOutbox, initialState, toggleSymptom } from './actions.ts';
-import { emergencySymptoms, logPain, logPathwayTest, pathwayAlerts, pathwayStatuses, sendPathwayCase, testNote, togglePathwayStep, vitalsPrompt } from './pathways.ts';
+import { emergencySymptoms, logPain, logPathwayTest, pathwayAlerts, pathwayStatuses, sendPathwayCase, testNote, togglePathwayStep, vitalsPrompt, painSchedule, painDue, fluidVitalsCheck } from './pathways.ts';
 import { recordVitals } from './vitals.ts';
 import { parseRules } from './rules.ts';
 import type { Seed, State } from './types.ts';
@@ -206,5 +206,68 @@ describe('asks for vital signs after fever or chills is logged (VP-01, CR-58)', 
     const s = log(vitals(initialState(seed), 500), 'crew-4', 'Fever or chills');
     expect(vitalsPrompt(s, rules, 'crew-4')).not.toBeNull();
     expect(vitalsPrompt(log(initialState(seed), 'crew-4', 'Nauseous'), rules, 'crew-4')).toBeNull();
+  });
+});
+
+describe('batch 1 of the open items (CR-26, CR-27, CR-28, CR-31, CR-54)', () => {
+  const ks = rules.pathways.find((p) => p.id === 'KS-01')!;
+  const pain = (st: State, score: number, at: number) => logPain(st, { crewId: 'crew-4', pathwayId: 'KS-01', score, at });
+  const open = () => log(initialState(seed), 'crew-4', 'Pain in side or lower back', 'Nauseous');
+  it('asks for a pain score every 30 minutes until 3 in a row are below 3 (CR-27)', () => {
+    let s = pain(open(), 6, 0);
+    expect(painSchedule(s, ks, 'crew-4')).toEqual({ settled: false, dueAt: 30 * 60_000 });
+    expect(painDue(s, seed, rules, 'crew-4', 29 * 60_000)).toBeNull();
+    expect(painDue(s, seed, rules, 'crew-4', 30 * 60_000)?.title).toBe('Pain score due');
+    s = pain(pain(s, 2, 1_800_000), 2, 3_600_000);
+    expect(painSchedule(s, ks, 'crew-4')?.settled).toBe(false);
+    s = pain(s, 1, 5_400_000);
+    expect(painSchedule(s, ks, 'crew-4')?.settled).toBe(true);
+    expect(painDue(s, seed, rules, 'crew-4', 99 * 60 * 60_000)).toBeNull();
+    s = pain(s, 5, 7_200_000);
+    expect(painSchedule(s, ks, 'crew-4')?.settled).toBe(false);
+  });
+  it('asks for blood pressure and pulse while the low-fluid warning stands, until a set has both (CR-28)', () => {
+    const s = initialState(seed);
+    expect(fluidVitalsCheck(s, seed, rules, 'crew-1')?.title).toBe('Check your blood pressure and pulse');
+    const partial = recordVitals(s, { crewId: 'crew-1', values: { temp: 37 }, at: 10 });
+    expect(fluidVitalsCheck(partial, seed, rules, 'crew-1')).not.toBeNull();
+    const both = recordVitals(s, { crewId: 'crew-1', values: { sbp: 118, dbp: 76, hr: 72 }, at: 10 });
+    expect(fluidVitalsCheck(both, seed, rules, 'crew-1')).toBeNull();
+    expect(fluidVitalsCheck(s, seed, rules, 'crew-3')).toBeNull();
+  });
+  it('a strip suggesting infection adds a crew medic line and puts its steps first, without emergency mode (CR-31)', () => {
+    let s = open();
+    for (const [testId, result] of [['urine-nitrite', 'Positive'], ['urine-leuk', 'Positive']]) s = logPathwayTest(s, rules, { crewId: 'crew-4', pathwayId: 'KS-01', testId, result });
+    const p = one(s);
+    expect(p.level).toBe('amber');
+    expect(p.crewMedic).toBe('Crew medic: the urine strip suggests possible infection. Review today.');
+    expect(p.steps.slice(0, 3)).toEqual(['Tell your crew medic now.', 'Check for fever or other symptoms, such as vomiting, and log them.', 'Record your vital signs.']);
+    expect(p.steps).not.toContain('Tell your crew medic.');
+    expect(one(open()).crewMedic).toBeUndefined();
+  });
+  it('has the three yes/no questions, and "Urine looks unusual" counts toward the pattern (CR-54)', () => {
+    expect(ks.questions?.items.map((x) => x.ask)).toEqual(['Do you have any pain right now?', 'Can you see any blood in your urine?', 'Does your urine look unusual in any other way, such as cloudy, dark or foamy?']);
+    expect(one(log(initialState(seed), 'crew-4', 'Pain in side or lower back', 'Urine looks unusual')).level).toBe('amber');
+    expect(seed.symptoms.options).toContain('Urine looks unusual');
+    expect(() => parseRules(text.replace('symptom: "Urine looks unusual" }', 'symptom: "Hiccups" }'))).toThrow(/not one of its symptoms/);
+  });
+  it('carries the while-waiting line for the countdown (CR-26)', () => {
+    expect(ks.while_waiting).toBe("While you wait: pain relief as your crew medic's protocol sets out, and keep drinking.");
+  });
+});
+
+describe('thoughts of harm (MH-01, CR-44)', () => {
+  const mh = rules.pathways.find((p) => p.id === 'MH-01')!;
+  it('is Act now on one symptom, with the agreed steps and the commander told', () => {
+    for (const l of ['Thoughts of harming myself', 'Thoughts of harming someone else']) {
+      const p = pathwayStatuses(log(initialState(seed), 'crew-4', l), seed, rules, 'crew-4').find((x) => x.pathway.id === 'MH-01')!;
+      expect(p.level).toBe('amber');
+      expect(pathwayAlerts(log(initialState(seed), 'crew-4', l), seed, rules, 'crew-4').find((x) => x.pathwayId === 'MH-01')?.tier).toBe('red');
+      expect(p.title).toBe('Mind and sleep: needs action now');
+      expect(p.steps[0]).toBe('Tell your crew medic now. The commander is told as well.');
+    }
+    expect(mh.share_now).toBe(true);
+    expect(mh.privacy_note).toContain('commander');
+    expect(mh.ask_after).toEqual({ indicator: 'mood', at_or_below: 2, ask: 'Have you had any thoughts of harming yourself or someone else?' });
   });
 });

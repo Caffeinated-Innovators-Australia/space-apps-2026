@@ -2,7 +2,7 @@
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { activeEmergency, emergencySummary, endEmergency, gravityLine, reachStep, startEmergency, type EmergencyProtocol } from './emergency.ts';
+import { activeEmergency, answerStep, emergencySummary, endEmergency, gravityLine, linesFor, reachStep, startEmergency, type EmergencyProtocol } from './emergency.ts';
 import type { State } from './types.ts';
 
 const protocol = JSON.parse(readFileSync('src/data/emergency.json', 'utf8')) as EmergencyProtocol;
@@ -74,5 +74,40 @@ describe('the CPR step at 0 g (CR-32)', () => {
     expect(gravityLine(c, 'zero')).toBe('Strap the person down before you start CPR.');
     for (const band of ['lunar', 'martian', 'earth', undefined] as const) expect(gravityLine(c, band)).toBeUndefined();
     expect(protocol.steps.filter((x) => x.gravity).map((x) => x.id)).toEqual(['C']);
+  });
+});
+
+describe('yes/no questions on Danger and Response (CR-32)', () => {
+  const d = protocol.steps.find((x) => x.id === 'D')!;
+  const r = protocol.steps.find((x) => x.id === 'R')!;
+  it('asks whether it is safe, and shows the make-it-safe lines that apply at the place', () => {
+    expect(d.question?.ask).toBe('Is it safe for you to go closer?');
+    const lines = d.question!.onNo!.lines;
+    const station = linesFor(lines, 'zero', true);
+    expect(station).toContain('Cabin pressure or air alarm: put on your suit or mask first.');
+    expect(station).toContain('At 0 g: secure yourself before you move in.');
+    const mars = linesFor(lines, 'martian', true);
+    expect(mars).not.toContain('At 0 g: secure yourself before you move in.');
+    const earth = linesFor(lines, 'earth', false);
+    expect(earth).toEqual(['Fire or smoke: follow the fire procedure first.', 'Power or equipment hazard: switch it off before you touch the person.', 'If you cannot make it safe, call for help and wait.']);
+  });
+  it('offers the checklists, a priority call and carrying on when the person responds', () => {
+    const y = r.question!.onYes!;
+    expect(r.question?.ask).toBe('Does the person respond to you?');
+    expect(y.checklists).toBe('Open emergency checklists');
+    expect(y.priority.say).toBe('Send for help: priority call to Earth');
+    expect(y.priority.earth).toBe('Send for help: priority call to the RFDS base');
+    expect(y.priority.note).toContain('Pan-Pan');
+    expect(y.priority.sent).toContain('SYNTHETIC');
+  });
+  it('records answers with their times for the handover, and refuses them once the run has ended', () => {
+    const started = startEmergency(blank(), { crewId: 'crew-1', at: 1000 });
+    let s = answerStep(started.state, started.run.id, 'D', 'Area safe: no', 1500);
+    s = answerStep(s, started.run.id, 'D', 'Area made safe', 1200);
+    s = answerStep(s, started.run.id, 'priority-call', 'Priority call sent (Pan-Pan)', 2000);
+    const sum = emergencySummary(activeEmergency(s)!, protocol);
+    expect(sum.answers.map((a) => a.text)).toEqual(['Area made safe', 'Area safe: no', 'Priority call sent (Pan-Pan)']);
+    const ended = endEmergency(s, started.run.id, 3000);
+    expect(() => answerStep(ended, started.run.id, 'R', 'Responds: yes', 3500)).toThrow(/ended/);
   });
 });

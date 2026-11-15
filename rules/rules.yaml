@@ -2,8 +2,8 @@
 # Every rule needs a source, a confidence label and a signed_off_by field, or the app refuses to load.
 # signed_off_by is a clinician ROLE (never a name), or the word "placeholder".
 #
-# STATUS: every rule, number and line of wording below is a PLACEHOLDER awaiting clinician review, unless its
-# signed_off_by names a clinician role.
+# STATUS: a rule whose signed_off_by names a clinician role is signed off; every other rule, number and line of
+# wording below is a PLACEHOLDER awaiting clinician review.
 # The numbers are common statistical conventions, not clinical thresholds. Nothing here is clinical advice.
 # See CLINICIAN_REVIEW.md (CR-02, CR-04, CR-12, CR-14, CR-16) and docs/EVIDENCE.md.
 version: "0.2"
@@ -27,33 +27,33 @@ rules:
     kind: limit
     tier: red
     why: "Your {indicator} is {value} {unit}. That is {direction} than your own expected range of {bandLow} to {bandHigh} {unit}, and beyond the {limitLabel} of {limit} {unit}."
-    source: "Placeholder rule, awaiting clinician review. The limit itself is sourced: see the indicator."
-    confidence: Low
-    signed_off_by: placeholder
+    source: "Signed off by the clinical lead on 15 Nov 2026 (CR-02, CR-12, CR-14, CR-16). The limit itself is sourced: see the indicator."
+    confidence: Medium
+    signed_off_by: clinical lead
   - id: SU-01
     kind: sustained
     tier: red
     count: 3
     why: "Your last {count} readings of {indicator} were all {direction} than your own expected range of {bandLow} to {bandHigh} {unit}. One reading can be a slip. Three in a row is a pattern."
-    source: "Placeholder rule, awaiting clinician review. Three consecutive readings is a statistical convention."
+    source: "Signed off by the clinical lead on 15 Nov 2026 (CR-02, CR-12, CR-14, CR-16). Three consecutive readings is a statistical convention."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
   - id: PB-01
     kind: level
     tier: amber
     why: "Your {indicator} is {value} {unit}. That is {direction} than your own expected range of {bandLow} to {bandHigh} {unit}."
-    source: "Placeholder rule, awaiting clinician review. The band is your own baseline mean plus or minus 2 standard deviations."
+    source: "Signed off by the clinical lead on 15 Nov 2026 (CR-02, CR-12, CR-14, CR-16). The band is your own baseline mean plus or minus 2 standard deviations."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
   - id: TR-01
     kind: trend
     tier: amber
     window: 7
     shift_sd: 1
     why: "Your {indicator} has drifted. Your last {window} readings average {trendMean} {unit}, against your baseline of {baselineMean} {unit}. Each reading alone can look fine while the trend does not."
-    source: "Placeholder rule, awaiting clinician review. A seven-reading average that moves one standard deviation is a statistical convention."
+    source: "Signed off by the clinical lead on 15 Nov 2026 (CR-02, CR-12, CR-14, CR-16). A seven-reading average that moves one standard deviation is a statistical convention."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
 
 # Day-level rules: they look across indicators for one person on one day.
 combined:
@@ -61,9 +61,9 @@ combined:
   min_flags: 2
   title: "Several signals have moved together"
   why: "{count} of today's check-ins are outside their usual range: {list}. They are shown together so that none is read alone."
-  source: "Placeholder rule, awaiting clinician review."
+  source: "Signed off by the clinical lead on 15 Nov 2026 (CR-16): two or more flags shown together at the highest tier among them."
   confidence: Low
-  signed_off_by: placeholder
+  signed_off_by: clinical lead
 
 prompts:
   - id: PR-01
@@ -77,13 +77,13 @@ prompts:
 # Symptom pathways: a pattern of logged symptoms the rules act on. A pathway names a pattern to CHECK FOR
 # and the next steps. It never names a finding. core symptoms open the follow-up questions; core plus
 # min_supporting supporting symptoms is amber; any urgent symptom on top is red.
-# KS-01 and KS-00 are signed off by the clinical lead (15 Nov 2026). CR-26 to CR-28 remain open.
+# KS-01 and KS-00 are signed off by the clinical lead (15 Nov 2026).
 pathways:
   - id: KS-01
     name: "Possible kidney stone"
     region: "Kidneys and urine"
     core: ["Pain in side or lower back"]
-    supporting: ["Comes in waves", "Blood in urine", "Pain passing urine", "Nauseous"]
+    supporting: ["Comes in waves", "Blood in urine", "Pain passing urine", "Nauseous", "Urine looks unusual"]
     min_supporting: 1
     urgent: ["Fever or chills", "Confused", "Cannot pass urine"]
     # A measured fever in the latest vital signs counts as "Fever or chills" (CR-58). 38.0 °C is the fever line in
@@ -104,6 +104,11 @@ pathways:
         - "Drink to your usual daily amount today."
         - "Log your fluid again this evening."
         - "Tell your crew medic if it is still low tomorrow."
+      # While the warning stands, ask for blood pressure and pulse until the latest set of vital signs has both (CR-28).
+      vitals_check:
+        title: "Check your blood pressure and pulse"
+        why: "Low fluid can make blood pressure drop and pulse rise. Record them in vital signs."
+        fields: [sbp, hr]
       source: "Three days and one standard deviation kept by the clinical lead on 15 Nov 2026 (CR-29), after the alarm replay showed two days fired more than three times as often on unchanged data. The risk is NASA's: Evidence Report, Risk of Renal Stone Formation (2017), page 5."
       confidence: Low
       signed_off_by: clinical lead
@@ -123,13 +128,37 @@ pathways:
         options: ["1.005", "1.010", "1.015", "1.020", "1.025", "1.030", "Not done"]
     # One plain line shown when the strip results match. Wording confirmed by the clinical lead, 15 Nov 2026 (CR-41).
     # Only the earliest note whose results all match is shown, so the most specific is listed at the top (CR-41).
+    # A note with crew_medic adds that line to the top of the alert and puts its steps first (CR-31). No emergency mode.
     test_notes:
       - when: { urine-strip: "Present", urine-nitrite: "Positive", urine-leuk: "Positive" }
         text: "Blood, nitrite and leucocytes present: possible infection."
+        crew_medic: "Crew medic: the urine strip suggests possible infection. Review today."
+        steps: ["Tell your crew medic now.", "Check for fever or other symptoms, such as vomiting, and log them.", "Record your vital signs."]
       - when: { urine-nitrite: "Positive", urine-leuk: "Positive" }
         text: "Nitrite and leucocytes present: possible infection."
+        crew_medic: "Crew medic: the urine strip suggests possible infection. Review today."
+        steps: ["Tell your crew medic now.", "Check for fever or other symptoms, such as vomiting, and log them.", "Record your vital signs."]
       - when: { urine-strip: "Present", urine-nitrite: "Negative", urine-leuk: "Negative" }
         text: "Blood present, no signs of infection."
+    # Three yes/no questions that open the "Kidneys and urine" area in "Feeling off?" (CR-54).
+    # A question with a symptom logs it on Yes; the pain question shows where it hurts.
+    questions:
+      zone: kidneys
+      pain_where: "Where is the pain?"
+      items:
+        - { ask: "Do you have any pain right now?" }
+        - { ask: "Can you see any blood in your urine?", symptom: "Blood in urine" }
+        - { ask: "Does your urine look unusual in any other way, such as cloudy, dark or foamy?", symptom: "Urine looks unusual" }
+    # Ask for a pain score every 30 minutes until 3 in a row are below 3 (CR-27). The score never changes a tier.
+    pain_repeat:
+      every_minutes: 30
+      settled_below: 3
+      settled_count: 3
+      next: "Next pain score due at {time}."
+      due: "Pain score due"
+      settled: "Pain has settled. No more pain scores needed unless it comes back."
+    # Shown on the countdown to Earth's reply once the case is sent (CR-26).
+    while_waiting: "While you wait: pain relief as your crew medic's protocol sets out, and keep drinking."
     check:
       title: "Pain in your side or lower back: three quick questions"
       why: "You logged {core}. Pain here has many causes. Three quick questions tell the rules whether your crew medic should check for a kidney stone."
@@ -165,7 +194,42 @@ pathways:
       - text: "NASA reports: “A total of 43 stone events in 29 crewmembers have been recorded by NASA since 2016.” One episode has been reported during spaceflight itself."
         source: "NASA OCHMO Medical Technical Brief MTB-003, Urinary Health, Rev A, page 6"
         link: "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf#page=6"
-    source: "Signed off by the clinical lead on 15 Nov 2026 (CR-25, CR-41, CR-43, CR-58). The symptom pattern follows public guidance (healthdirect Australia, Kidney stones; NIDDK, Kidney stones: symptoms and causes). The fever line is ANZCOR Guideline 9.2.3. The risk is NASA's: Risk of Renal Stone Formation."
+    source: "Signed off by the clinical lead on 15 Nov 2026 (CR-25 to CR-28, CR-31, CR-41, CR-43, CR-54, CR-57, CR-58). The symptom pattern follows public guidance (healthdirect Australia, Kidney stones; NIDDK, Kidney stones: symptoms and causes). The fever line is ANZCOR Guideline 9.2.3. The risk is NASA's: Risk of Renal Stone Formation."
+    confidence: Medium
+    signed_off_by: clinical lead
+
+  # Thoughts of harming yourself or someone else (CR-44). Act now on one symptom. Shared with the crew medic and the
+  # commander at once: safety comes before privacy here, as in a risk-of-harm situation on Earth.
+  - id: MH-01
+    name: "Thoughts of harm"
+    region: "Mind and sleep"
+    core: ["Thoughts of harming myself", "Thoughts of harming someone else"]
+    supporting: []
+    min_supporting: 0
+    urgent: []
+    context: [mood, sleep]
+    share_now: true
+    privacy_note: "Shared with your crew medic and the commander now. Safety comes before privacy here."
+    ask_after: { indicator: mood, at_or_below: 2, ask: "Have you had any thoughts of harming yourself or someone else?" }
+    check:
+      title: "Mind and sleep: a quick question"
+      why: "You logged {core}."
+    titles:
+      amber: "Mind and sleep: needs action now"
+      red: "Mind and sleep: needs action now"
+    why:
+      amber: "You logged thoughts of harming yourself or someone else. This needs a person to talk to now."
+      red: "You logged thoughts of harming yourself or someone else. This needs a person to talk to now."
+    steps:
+      amber:
+        - "Tell your crew medic now. The commander is told as well."
+        - "Stay with a crewmate. Do not stay alone."
+        - "Send the case to Earth for a private call with the flight surgeon."
+      red:
+        - "Tell your crew medic now. The commander is told as well."
+        - "Stay with a crewmate. Do not stay alone."
+        - "Send the case to Earth for a private call with the flight surgeon."
+    source: "Asked for by the clinical lead on 15 Nov 2026 (CR-44)."
     confidence: Low
     signed_off_by: clinical lead
 
@@ -177,6 +241,11 @@ steps:
     - "Repeat the reading to confirm."
     - "Tell your crew medic."
     - "Send the case to Earth."
+  # A Watch from one reading that a repeat has not yet backed (CR-35): the crew member repeats it first. The crew medic
+  # and Earth are brought in once a repeat agrees. Act now is never held back.
+  amber_unconfirmed:
+    - "Repeat the reading to confirm."
+    - "If the repeat is also outside your range, tell your crew medic and send the case to Earth."
   red:
     - "Tell your crew medic now."
     - "Repeat the reading to confirm."
@@ -192,7 +261,7 @@ steps:
 # taken from the place's location profile. A step limited to some bands is hidden when the band is not known.
 # construct is the emergency module's pathway number: 12 Infection and sepsis, 4 Shock.
 # No cardiac arrest rule here: a set of vital signs carries no heart rhythm.
-# STATUS: SEP-01 signed off by the clinical lead (15 Nov 2026, CR-36 and CR-38). SHK-01 stays a placeholder (CR-37).
+# STATUS: SEP-01 and SHK-01 signed off by the clinical lead (15 Nov 2026, CR-36 to CR-38).
 monitor_alerts:
   - id: SEP-01
     name: "Possible sepsis"
@@ -210,7 +279,7 @@ monitor_alerts:
       - "Record vitals from the monitor."
       - "Crew medic: follow your sepsis protocol."
     source: "Thresholds from the team's clinical lead (build pack v3.3), signed off by the clinical lead on 15 Nov 2026 (CR-36, CR-38)."
-    confidence: Low
+    confidence: Medium
     signed_off_by: clinical lead
   - id: SHK-01
     name: "Possible shock"
@@ -240,9 +309,44 @@ monitor_alerts:
           - heading: "Blockage"
             checks: ["Sudden breathlessness with one side of the chest moving less", "A recent chest injury", "Sudden chest pain with breathlessness"]
       - "Crew medic: if trained, do a RUSH scan (Rapid Ultrasound in Shock and Hypotension)."
-    source: "Placeholder thresholds from the team's clinical lead (build pack v3.3), awaiting input from another team clinician. Steps and systems screen approved by the clinical lead on 15 Nov 2026, after ANZCOR Guideline 9.2.3 (approved December 2025)."
+    source: "Thresholds from the team's clinical lead (build pack v3.3), signed off by the clinical lead on 15 Nov 2026 (CR-37). Steps and systems screen approved by the clinical lead on 15 Nov 2026, after ANZCOR Guideline 9.2.3 (approved December 2025)."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
+
+# Runs of days below a fixed amount that are Act now whatever the person's own range, even for a signal capped at
+# Watch (CR-44). Each counts the person's logged days, today included.
+absolute_runs:
+  - id: FL-01
+    indicator: fluid
+    below: 1
+    count: 3
+    title: "Food and fluid: needs action now"
+    why: "Your fluid intake has been under 1 L for {count} logged days in a row: {values} L. This needs action now."
+    steps:
+      - "Tell your crew medic now."
+      - "Drink now, and keep logging what you drink."
+      - "Check your blood pressure and pulse."
+    source: "Set by the clinical lead on 15 Nov 2026 (CR-44)."
+    confidence: Low
+    signed_off_by: clinical lead
+
+# A forecast solar radiation storm at or above alarm_at on the NOAA solar radiation storm scale (S1 to S5) raises a red
+# pop-up on every screen until acknowledged, then a banner until the all-clear (CR-09). Not shown where there is no
+# habitat (the Earth twin), where the atmosphere and magnetic field protect people. Wave times come from the forecast.
+radiation_storm:
+  id: RS-01
+  alarm_at: S3
+  title: "Solar radiation storm: go to shelter"
+  lines:
+    - "A dangerous solar particle event is forecast."
+    - "Go to the storm shelter now and stay there until the all-clear."
+    - "Stop or postpone any EVA."
+    - "Wear your personal dosimeter."
+  acknowledge: "I have read this"
+  banner: "Solar radiation storm: stay in the storm shelter until the all-clear."
+  source: "Wording and behaviour approved by the clinical lead on 15 Nov 2026 (CR-09). The trigger level S3 is where the NOAA Space Weather Prediction Center solar radiation storm scale advises radiation hazard avoidance for astronauts on EVA; awaiting the clinical lead's confirmation of the level."
+  confidence: Low
+  signed_off_by: placeholder
 
 # Symptoms that ask for a set of vital signs when logged with no set taken since (CR-58), so the monitor alerts
 # (such as SEP-01) can run on measured values. Shown on Today and on the pathway screen until a set is recorded.
@@ -252,7 +356,7 @@ vitals_prompt:
   title: "Record your vital signs"
   why: "You logged {symptom}. Record your vital signs now, so the sepsis check can run on measured values."
   source: "Asked for and approved by the clinical lead on 15 Nov 2026 (CR-58)."
-  confidence: Low
+  confidence: Medium
   signed_off_by: clinical lead
 
 # Symptoms that mean "press Emergency now" the moment one is logged. No pattern, no second symptom, no wait.
@@ -267,5 +371,5 @@ emergency_symptoms:
     "Short of breath": { construct: 2, label: "Open breathing checklist" }
   why: "Chest pain, shortness of breath and collapse are treated as an emergency until a clinician says otherwise."
   source: "List from the team's clinicians (review of the build, 15 Nov 2026), signed off by the clinical lead on 15 Nov 2026 (CR-59)."
-  confidence: Low
+  confidence: High
   signed_off_by: clinical lead

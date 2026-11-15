@@ -30,6 +30,8 @@ export interface PathwayStatus {
   source: string;
   confidence: string;
   tests: Record<string, string>;
+  /** A crew medic line raised by a test result, such as possible infection on the urine strip (CR-31). */
+  crewMedic?: string;
   /** Symptoms counted from the latest vital signs rather than logged (CR-58), each with the reading behind it. */
   fromVitals: { symptom: string; reading: string }[];
   /** An early warning that fired before this pattern matched. It still counts: the pattern is added to it, not put in its place. */
@@ -37,8 +39,12 @@ export interface PathwayStatus {
 }
 
 /** The clinicians' one-line note for the test results logged so far, if the results match one exactly. */
+/** The first test note whose results all match, with any crew medic line and steps it carries (CR-31). */
+export function testNoteFull(pathway: PathwayRule, tests: Record<string, string>) {
+  return (pathway.test_notes ?? []).find((n) => Object.entries(n.when).every(([id, v]) => tests[id] === v));
+}
 export function testNote(pathway: PathwayRule, tests: Record<string, string>): string | undefined {
-  return (pathway.test_notes ?? []).find((n) => Object.entries(n.when).every(([id, v]) => tests[id] === v))?.text;
+  return testNoteFull(pathway, tests)?.text;
 }
 
 export const pathwayKey = (crewId: string, pathwayId: string) => `pathway:${crewId}:${pathwayId}`;
@@ -125,6 +131,7 @@ export function pathwayStatuses(state: State, seed: Seed, rules: RuleFile, crewI
       });
       continue;
     }
+    const note = level === 'check' ? undefined : testNoteFull(pathway, tests);
     const all = list([...matched.core, ...matched.supporting, ...matched.urgent]);
     const fill = (t: string) => t.replace('{symptoms}', all).replace('{urgent}', list(matched.urgent)).replace('{core}', list(matched.core));
     out.push({
@@ -132,7 +139,8 @@ export function pathwayStatuses(state: State, seed: Seed, rules: RuleFile, crewI
       title: level === 'check' ? fill(pathway.check.title) : pathway.titles[level],
       why: fill(level === 'check' ? pathway.check.why : pathway.why[level]) + fromVitals.map((v) => ` ${v.symptom} is counted from your latest vital signs (${v.reading}).`).join(''),
       matched,
-      steps: level === 'check' ? [] : pathway.steps[level],
+      steps: level === 'check' ? [] : note?.crew_medic ? [...new Set([...note.steps!, ...pathway.steps[level].filter((st) => st !== 'Tell your crew medic.')])] : pathway.steps[level],
+      ...(note?.crew_medic ? { crewMedic: note.crew_medic } : {}),
       stepsDone: state.pathwaySteps?.[key] ?? [],
       context: pathwayContext(state, seed, rules, crewId, pathway),
       pain: (state.painLog ?? []).filter((p) => p.crewId === crewId && p.pathwayId === pathway.id),
@@ -270,4 +278,45 @@ export function vitalsPrompt(state: State, rules: RuleFile, crewId: string) {
   if (due.length === 0) return null;
   const labels = [...new Set(due.map((s) => s.label))];
   return { ruleId: rule.id, title: rule.title, why: rule.why.replace('{symptom}', list(labels)), source: rule.source, confidence: rule.confidence, placeholder: rule.signed_off_by.trim().toLowerCase() === 'placeholder', symptoms: labels };
+}
+
+/**
+ * When the next pain score is due (CR-27): every so many minutes after the last one, until enough scores in a row are
+ * below the settled value. Null when the pathway has no repeat rule or no score is logged yet.
+ */
+export function painSchedule(state: State, pathway: PathwayRule, crewId: string): { settled: boolean; dueAt: number } | null {
+  const r = pathway.pain_repeat;
+  if (!r) return null;
+  const pain = (state.painLog ?? []).filter((p) => p.crewId === crewId && p.pathwayId === pathway.id).sort((a, b) => a.at - b.at);
+  if (pain.length === 0) return null;
+  const tail = pain.slice(-r.settled_count);
+  const settled = tail.length === r.settled_count && tail.every((p) => p.score < r.settled_below);
+  return { settled, dueAt: pain[pain.length - 1].at + r.every_minutes * 60_000 };
+}
+
+/** A pain score that is due now on an open pattern, for Today. */
+export function painDue(state: State, seed: Seed, rules: RuleFile, crewId: string, now: number) {
+  for (const p of pathwayStatuses(state, seed, rules, crewId)) {
+    if (p.level !== 'amber' && p.level !== 'red') continue;
+    const sch = painSchedule(state, p.pathway, crewId);
+    if (sch && !sch.settled && now >= sch.dueAt) return { pathwayId: p.pathway.id, title: p.pathway.pain_repeat!.due, region: p.pathway.region };
+  }
+  return null;
+}
+
+/**
+ * Asks for blood pressure and pulse while low fluid is flagged (CR-28): the early warning stands, or the fluid trend
+ * beside the pattern has drifted. It stays until the latest set of vital signs has every field asked for.
+ */
+export function fluidVitalsCheck(state: State, seed: Seed, rules: RuleFile, crewId: string) {
+  for (const pathway of rules.pathways) {
+    const v = pathway.early?.vitals_check;
+    if (!v) continue;
+    const flagged = earlyWarning(state, seed, rules, crewId, pathway) || pathwayContext(state, seed, rules, crewId, pathway).some((l) => l.indicatorId === pathway.early!.indicator && l.flagged);
+    if (!flagged) continue;
+    const latest = latestVitals(state, crewId);
+    if (latest && v.fields.every((f) => latest.values[f] !== undefined)) continue;
+    return { ruleId: pathway.early!.id, title: v.title, why: v.why };
+  }
+  return null;
 }

@@ -38,8 +38,8 @@ export function noteGravityChange(state: State, from: Setting, to: Setting, at: 
   return { ...state, ui: { ...state.ui, gravityChange: { from: from.gravityBand, at } } };
 }
 
-/** Days of the "adapting to new gravity" period. Placeholder set by the clinical lead (build pack v3.3), awaiting sign-off. */
-export const ADAPT_DAYS = 14;
+/** Days of the "adapting to new gravity" period: Act now from the own range is capped at Watch, then the own range is reset from these days. Set by the clinical lead on 15 Nov 2026 (CR-17, CR-48). */
+export const ADAPT_DAYS = 7;
 const DAY_MS = 86_400_000;
 
 export interface Adapting {

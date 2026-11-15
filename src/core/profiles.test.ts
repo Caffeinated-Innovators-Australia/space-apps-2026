@@ -55,12 +55,12 @@ describe('noteGravityChange and adapting', () => {
     expect(noteGravityChange(s0, transit, station, 1000)).toBe(s0);
     expect(noteGravityChange(s0, mars, by('mars-base'), 1000)).toBe(s0);
   });
-  it('is active for the placeholder number of days, counted in real time', () => {
-    expect(ADAPT_DAYS).toBe(14);
+  it('is active for the 7 days the clinical lead set (CR-17), counted in real time', () => {
+    expect(ADAPT_DAYS).toBe(7);
     const s1 = noteGravityChange(s0, transit, mars, 0);
-    expect(adapting(s1, mars, 0)).toEqual({ active: true, daysLeft: 14, from: 'zero' });
-    expect(adapting(s1, mars, 3.5 * DAY)).toEqual({ active: true, daysLeft: 11, from: 'zero' });
-    expect(adapting(s1, mars, 14 * DAY).active).toBe(false);
+    expect(adapting(s1, mars, 0)).toEqual({ active: true, daysLeft: 7, from: 'zero' });
+    expect(adapting(s1, mars, 3.5 * DAY)).toEqual({ active: true, daysLeft: 4, from: 'zero' });
+    expect(adapting(s1, mars, 7 * DAY).active).toBe(false);
   });
   it('is off with no change, or when back in the old gravity', () => {
     expect(adapting(s0, mars, 0).active).toBe(false);

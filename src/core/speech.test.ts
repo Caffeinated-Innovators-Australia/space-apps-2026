@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { describe, expect, it } from 'vitest';
 import { alertSpeech, normaliseSpeech, parseVitalsUtterance, spokenIntent, spokenNumber, spokenSymptoms, vitalReadBack, vitalSpokenProblem } from './speech.ts';
@@ -56,5 +57,24 @@ describe('read-back and checks', () => {
     const said = alertSpeech({ title: 'Possible sepsis: start now', reasons: ['Temperature 38.6 °C'], steps: ['Tell the crew medic.', 'Repeat the vital signs.'] });
     expect(said).toContain('Act now. Possible sepsis: start now. Not a diagnosis.');
     expect(said).toContain('Step 2. Repeat the vital signs.');
+  });
+});
+
+describe('symptoms said aloud on "Feeling off?" (CR-10)', () => {
+  it('matches the new symptoms against the app list, and nothing else', () => {
+    const seed = JSON.parse(readFileSync('src/data/seed.json', 'utf8'));
+    expect(spokenSymptoms('my urine looks unusual and I am nauseous', seed.symptoms.options)).toEqual(['Nauseous', 'Urine looks unusual']);
+    expect(spokenSymptoms('I feel a bit flat', seed.symptoms.options)).toEqual([]);
+  });
+});
+
+describe('commands are short replies, not words inside an answer', () => {
+  it('reads "lower back" and "pass urine" in a sentence as content, and short replies as commands', () => {
+    expect(spokenIntent('I have pain in my side or lower back')).toBeUndefined();
+    expect(spokenIntent('I cannot pass urine at all today')).toBeUndefined();
+    expect(spokenIntent('go back')).toBe('back');
+    expect(spokenIntent('skip')).toBe('skip');
+    expect(spokenIntent('save')).toBe('yes');
+    expect(spokenIntent('please stop')).toBe('stop');
   });
 });

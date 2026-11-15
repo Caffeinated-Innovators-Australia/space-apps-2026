@@ -32,10 +32,22 @@ export interface PathwayRule extends Signed {
   why: Record<'amber' | 'red', string>;
   steps: Record<'amber' | 'red', string[]>;
   background: { text: string; source: string; link: string }[];
-  early?: Signed & { id: string; indicator: string; count: number; shift_sd: number; title: string; why: string; steps: string[] };
+  early?: Signed & { id: string; indicator: string; count: number; shift_sd: number; title: string; why: string; steps: string[]; vitals_check?: { title: string; why: string; fields: MonitorField[] } };
+  /** Yes/no questions that open a "Feeling off?" area (CR-54). */
+  questions?: { zone: string; pain_where: string; items: { ask: string; symptom?: string }[] };
+  /** Repeat pain scores until they settle (CR-27). */
+  pain_repeat?: { every_minutes: number; settled_below: number; settled_count: number; next: string; due: string; settled: string };
+  /** A line on the countdown to Earth's reply once the case is sent (CR-26). */
+  while_waiting?: string;
+  /** Shown to the crew medic at once, without waiting for a case to be sent (CR-44). */
+  share_now?: boolean;
+  /** Who else is told, shown on the alert. */
+  privacy_note?: string;
+  /** A yes/no question asked after a low reading of an indicator, such as mood at 2 or below (CR-44). */
+  ask_after?: { indicator: string; at_or_below: number; ask: string };
   tests: { id: string; label: string; options: string[] }[];
   /** A plain line shown when the test results match exactly. Clinician wording; a placeholder until signed off. */
-  test_notes?: { when: Record<string, string>; text: string }[];
+  test_notes?: { when: Record<string, string>; text: string; crew_medic?: string; steps?: string[] }[];
   /**
    * Supporting or red-flag symptoms that a measured vital sign also counts as (CR-58), for example a temperature
    * at or above a set value counts as "Fever or chills". Read from the latest set of vital signs; a newer set clears it.
@@ -96,14 +108,20 @@ export interface RuleFile {
   combined: CombinedRule;
   prompts: PromptRule[];
   pathways: PathwayRule[];
-  steps: Record<Tier, string[]>;
+  steps: Record<Tier, string[]> & { amber_unconfirmed?: string[] };
+  /** Runs of logged days below a fixed amount that are Act now whatever the person's own range (CR-44). */
+  absolute_runs: AbsoluteRun[];
   /** Rules that read one set of vital signs. Empty when the file has none. */
   monitor_alerts: MonitorAlertRule[];
   /** Absent when the file has none. */
   emergency_symptoms?: EmergencySymptomRule;
+  /** A forecast solar radiation storm that raises a red pop-up, then a banner until the all-clear (CR-09). */
+  radiation_storm?: Signed & { id: string; alarm_at: string; title: string; lines: string[]; acknowledge: string; banner: string };
   /** Symptoms that ask for a set of vital signs when logged without one taken since (CR-58). */
   vitals_prompt?: Signed & { id: string; symptoms: string[]; title: string; why: string };
 }
+
+export interface AbsoluteRun extends Signed { id: string; indicator: string; below: number; count: number; title: string; why: string; steps: string[] }
 
 export interface Band { low: number; high: number; mean: number; sd: number }
 export interface Finding { ruleId: string; tier: Tier; why: string; source: string; confidence: string; placeholder: boolean; reviewedBy: string | null }
@@ -204,6 +222,20 @@ export function parseRules(text: string): RuleFile {
       signed(w.early, w.early.id ?? `${id} early warning`);
       if (!w.early.indicator || !(Number(w.early.count) >= 2) || !(Number(w.early.shift_sd) > 0) || !w.early.title || !w.early.why || !Array.isArray(w.early.steps) || w.early.steps.length === 0) throw new Error(`Pathway ${id}: the early warning needs an indicator, a count of 2 or more, a shift, a title, an explanation and at least one step.`);
     }
+    for (const n of w.test_notes) if (n.crew_medic !== undefined && (!n.crew_medic || !Array.isArray(n.steps) || n.steps.length === 0)) throw new Error(`Pathway ${id}: a test note with a crew medic line needs its steps.`);
+    if (w.questions) {
+      const q = w.questions;
+      if (!q.zone || !q.pain_where || !Array.isArray(q.items) || q.items.length === 0 || !q.items.every((x) => x?.ask)) throw new Error(`Pathway ${id}: questions need a zone, the "where" wording and at least one question.`);
+      for (const x of q.items) if (x.symptom && ![...w.core, ...w.supporting, ...w.urgent].includes(x.symptom)) throw new Error(`Pathway ${id}: the question "${x.ask}" logs "${x.symptom}", which is not one of its symptoms.`);
+    }
+    if (w.pain_repeat) {
+      const r = w.pain_repeat;
+      if (!(r.every_minutes > 0) || !(r.settled_count >= 1) || typeof r.settled_below !== 'number' || !r.next || !r.due || !r.settled) throw new Error(`Pathway ${id}: pain_repeat needs every_minutes, settled_below, settled_count and its three lines.`);
+    }
+    if (w.early?.vitals_check) {
+      const v = w.early.vitals_check;
+      if (!v.title || !v.why || !Array.isArray(v.fields) || v.fields.length === 0 || !v.fields.every((x) => MONITOR_FIELDS.includes(x))) throw new Error(`Pathway ${id}: the early warning's vitals_check needs a title, why and vital-sign fields.`);
+    }
     w.min_supporting = Number(w.min_supporting ?? 1);
     if (!w.check?.title || !w.check.why) throw new Error(`Pathway ${id}: missing the check wording.`);
     for (const t of ['amber', 'red'] as const) {
@@ -213,6 +245,11 @@ export function parseRules(text: string): RuleFile {
     for (const b of w.background) if (!b.text || !b.source || !b.link) throw new Error(`Pathway ${id}: every background line needs its source and link.`);
   }
   for (const t of TIERS) if (!Array.isArray(f.steps?.[t]) || f.steps[t].length === 0) throw new Error(`Every tier needs at least one next step: none for ${t}.`);
+  if (f.radiation_storm) {
+    const r = f.radiation_storm;
+    signed(r, r.id ?? 'radiation storm');
+    if (!/^S[1-5]$/.test(String(r.alarm_at)) || !r.title || !Array.isArray(r.lines) || r.lines.length === 0 || !r.acknowledge || !r.banner) throw new Error('Radiation storm: needs alarm_at (S1 to S5), a title, lines, the acknowledge wording and the banner.');
+  }
   if (f.vitals_prompt) {
     const v = f.vitals_prompt;
     signed(v, v.id ?? 'vitals prompt');
@@ -227,6 +264,11 @@ export function parseRules(text: string): RuleFile {
       if (!e.symptoms.includes(s)) throw new Error(`Emergency symptoms: the checklist for "${s}" names a symptom that is not on the list.`);
       if (!Number.isInteger(c?.construct) || !c?.label) throw new Error(`Emergency symptoms: the checklist for "${s}" needs a pathway number as construct and a label.`);
     }
+  }
+  f.absolute_runs = f.absolute_runs ?? [];
+  for (const a of f.absolute_runs) {
+    signed(a, a?.id ?? 'absolute run');
+    if (!a.indicator || typeof a.below !== 'number' || !(a.count >= 1) || !a.title || !a.why || !Array.isArray(a.steps) || a.steps.length === 0) throw new Error(`Absolute run ${a.id}: needs an indicator, below, count, title, why and steps.`);
   }
   f.monitor_alerts = f.monitor_alerts ?? [];
   if (!Array.isArray(f.monitor_alerts)) throw new Error('monitor_alerts must be a list of rules.');

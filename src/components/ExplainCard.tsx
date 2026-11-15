@@ -25,7 +25,7 @@ export function ExplainCard({ how, why, what, status, hazards, sources }: { how:
           ))}
         </ul>
       ) : null}
-      <span className="placeholder">{status}</span>
+      <span className={/^(Reviewed|Approved)/.test(status) ? 'source' : 'placeholder'}>{status}</span>
       </More>
     </div>
   );

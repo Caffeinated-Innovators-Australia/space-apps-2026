@@ -15,10 +15,14 @@ export interface Indicator {
   cadence: 'daily' | 'weekly' | 'prompted' | 'sensor';
   /** For weekly check-ins: the day of the mission week it falls due (mission day modulo 7). */
   weekDay?: number;
-  /** How well-established this signal is, as measured in this app. An experimental signal can raise amber but never red alone. */
+  /** How well-established this signal is, as measured in this app. A label only: since 15 Nov 2026 (CR-30) any signal can raise Act now. */
   evidence?: 'established' | 'emerging' | 'experimental';
   /** The highest tier this signal may raise on its own. Set by clinicians for signals that should only ever ask the crew to watch. */
   maxTier?: 'amber';
+  /** Made to stand out in some gravity bands, such as the eye check at 0 g (CR-17). Display only. */
+  standout?: { gravity: string[]; short: string; note: string };
+  /** A daily target shown beside the reading, never an alert (CR-45). perEvaHour adds to it for each EVA hour. */
+  target?: { low: number; high: number; perEvaHour?: number; note?: string; label: string; source: string };
   /** True for a reading of the shared habitat, such as cabin air. It is worded as the cabin's, never as the person's own. */
   environment?: boolean;
   /** 'cumulative' marks a running total, such as radiation dose, which is judged against a limit and not a personal band. */
@@ -103,6 +107,8 @@ export interface Seed {
   clockOptions: string[];
   slipMinutes: number;
   radiationDays: number[];
+  /** A SYNTHETIC solar radiation storm forecast for the drill (CR-09): its NOAA S level and when each wave arrives. */
+  radiationForecast?: { synthetic: true; level: string; note: string; waves: { label: string; afterMin: number }[]; allClearAfterMin: number };
   /** `followUps` are questions about a symptom, asked only inside a pathway once that symptom is logged. They are not on the general list. */
   symptoms: { status: string; options: string[]; followUps?: string[] };
   /** Symptoms grouped by where on the body they are felt, for the "Feeling off?" flow. */
@@ -157,7 +163,11 @@ export interface PainEntry { crewId: string; pathwayId: string; score: number; a
 export interface EarthReply { id: string; caseId: string; at: number; decision: 'agree' | 'add' | 'change' | 'escalate'; note: string; steps: string[]; acceptedAt?: number }
 
 /** One run of the emergency screen: which steps were reached, and when. */
-export interface EmergencyRun { id: string; crewId: string; startedAt: number; endedAt?: number; steps: { id: string; at: number }[] }
+export interface EmergencyRun {
+  id: string; crewId: string; startedAt: number; endedAt?: number; steps: { id: string; at: number }[];
+  /** Answers and actions on the way, for the handover: such as "Area safe: yes" or a priority call sent. */
+  answers?: { id: string; text: string; at: number }[];
+}
 
 /** A wound or skin problem being watched as it heals. No photo is kept. */
 export interface Wound { id: string; crewId: string; label: string; startedAt: number; checks: { at: number; status: 'better' | 'same' | 'worse' }[] }
@@ -182,6 +192,8 @@ export interface State {
   pathwayTests?: Record<string, Record<string, string>>;
   replies?: EarthReply[];
   emergencies?: EmergencyRun[];
+  /** A solar radiation storm drill in progress (CR-09): when it started and when the alarm was acknowledged. */
+  storm?: { startedAt: number; ackAt?: number };
   wounds?: Wound[];
   vitals?: VitalsEntry[];
   /** Guided ultrasound steps saved, keyed by crew member. No image is kept. */

@@ -1,7 +1,8 @@
 // Emergency screen: walks a crew member who is not a medical expert through basic life support, one step at a time.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { activeEmergency, emergencySummary, endEmergency, gravityLine, reachStep, startEmergency, type EmergencyProtocol } from '../core/emergency.ts';
+import { activeEmergency, answerStep, emergencySummary, endEmergency, gravityLine, linesFor, reachStep, startEmergency, type EmergencyProtocol } from '../core/emergency.ts';
+import { lifeThreats } from '../core/threats.ts';
 import type { RuleFile, Seed, Setting, State } from '../core/index.ts';
 import protocolJson from '../data/emergency.json';
 import './emergency.css';
@@ -46,7 +47,7 @@ function mmss(ms: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-export function Emergency({ state, commit, crewId, go, hhmm, setting }: EmergencyProps) {
+export function Emergency({ state, commit, crewId, go, hhmm, setting, seed, rules }: EmergencyProps) {
   const steps = protocol.steps;
   const run = activeEmergency(state);
   const [endedId, setEndedId] = useState<string | null>(null);
@@ -85,6 +86,32 @@ export function Emergency({ state, commit, crewId, go, hhmm, setting }: Emergenc
   const next = useCallback(() => setIndex((i) => Math.min(steps.length - 1, i + 1)), [steps.length]);
   const back = useCallback(() => setIndex((i) => Math.max(0, i - 1)), []);
 
+  // Yes/no questions on Danger and Response (CR-32). "No" on Danger shows how to make it safe; "Yes" on Response offers more help.
+  const q = step.question;
+  const [panel, setPanel] = useState<'none' | 'safe' | 'options'>('none');
+  useEffect(() => { setPanel('none'); }, [index]);
+  const record = useCallback((id: string, text: string) => {
+    const r = activeEmergency(stateRef.current);
+    if (r) commit(answerStep(stateRef.current, r.id, id, text, Date.now()));
+  }, [commit]);
+  const answerYes = useCallback(() => {
+    if (!q) return;
+    record(step.id, q.record.yes);
+    if (q.onYes) setPanel('options'); else next();
+  }, [q, record, step.id, next]);
+  const answerNo = useCallback(() => {
+    if (!q) return;
+    record(step.id, q.record.no);
+    if (q.onNo) setPanel('safe'); else next();
+  }, [q, record, step.id, next]);
+  const priority = q?.onYes?.priority;
+  const called = Boolean(priority && run?.answers?.some((a) => a.text === priority.record));
+  const openChecklists = () => {
+    record('checklists', 'Emergency checklists opened');
+    const threat = lifeThreats(stateRef.current, seed, rules, crewId).find((t) => t.construct !== undefined);
+    go('astra', threat ? String(threat.construct) : undefined);
+  };
+
   // Read aloud: on by default where the browser can speak (it works offline).
   const synth = speechOut();
   const [readAloud, setReadAloud] = useState(true);
@@ -94,7 +121,7 @@ export function Emergency({ state, commit, crewId, go, hhmm, setting }: Emergenc
       synth.cancel();
       if (!readAloud) return;
       const g = gravityLine(step, setting.gravityBand);
-      const u = new SpeechSynthesisUtterance(`${step.name}. ${g ? `${g} ` : ''}${step.say}`);
+      const u = new SpeechSynthesisUtterance(`${step.name}. ${g ? `${g} ` : ''}${step.say}${step.question ? ` ${step.question.ask}` : ''}`);
       u.lang = 'en-AU';
       synth.speak(u);
     } catch { /* Speech is a help, never a requirement. */ }
@@ -105,8 +132,8 @@ export function Emergency({ state, commit, crewId, go, hhmm, setting }: Emergenc
   const Ctor = recogniserCtor();
   const [listening, setListening] = useState(false);
   const [heard, setHeard] = useState('');
-  const handlers = useRef({ next, back });
-  handlers.current = { next, back };
+  const handlers = useRef({ next, back, yes: () => {}, no: () => {} });
+  handlers.current = { next, back, yes: q && panel === 'none' ? answerYes : () => {}, no: q && panel === 'none' ? answerNo : () => {} };
   useEffect(() => {
     if (!Ctor || !listening || endedId) return;
     let stopped = false;
@@ -124,6 +151,8 @@ export function Emergency({ state, commit, crewId, go, hhmm, setting }: Emergenc
           const word = text.replace(/[^a-z ]/g, '').trim();
           if (word === 'next') handlers.current.next();
           else if (word === 'back') handlers.current.back();
+          else if (word === 'yes') handlers.current.yes();
+          else if (word === 'no') handlers.current.no();
         }
       };
       rec.onend = () => { if (!stopped) { try { rec.start(); } catch { /* ignore */ } } };
@@ -235,6 +264,14 @@ export function Emergency({ state, commit, crewId, go, hhmm, setting }: Emergenc
             ))}
           </ol>
           {sum.notReached.length ? <p className="caption">Not reached: {sum.notReached.join(', ')}.</p> : null}
+          {sum.answers.length ? (
+            <>
+              <h2 className="title">Answers on the way</h2>
+              <ul className="rows" aria-label="Answers on the way">
+                {sum.answers.map((a) => <li key={`${a.id}-${a.at}`}><span className="row-name">{a.text}</span> <span className="mono">{hhmm(a.at)}</span></li>)}
+              </ul>
+            </>
+          ) : null}
           <p>This summary stays on this device. It is not sent anywhere.</p>
           <div className="btn-row">
             <button type="button" className="btn" onClick={() => go('home')}>Back to today</button>
@@ -269,6 +306,36 @@ export function Emergency({ state, commit, crewId, go, hhmm, setting }: Emergenc
         {gravityLine(step, setting.gravityBand) ? <p className="x-em-say">{gravityLine(step, setting.gravityBand)}</p> : null}
         <p className="x-em-say" aria-live="assertive">{step.say}</p>
         {step.detail ? <p className="x-em-detail">{step.detail}</p> : null}
+        {q && panel === 'none' ? (
+          <div className="x-em-question">
+            <p className="x-em-ask">{q.ask}</p>
+            <div className="btn-row">
+              <button type="button" className="btn" onClick={answerYes}>{q.yes}</button>
+              <button type="button" className="btn secondary" onClick={answerNo}>{q.no}</button>
+            </div>
+          </div>
+        ) : null}
+        {q?.onNo && panel === 'safe' ? (
+          <div className="x-em-panel" role="region" aria-label={q.onNo.title}>
+            <p className="x-em-ask">{q.onNo.title}</p>
+            <ul>{linesFor(q.onNo.lines, setting.gravityBand, setting.habitat).map((l) => <li key={l}>{l}</li>)}</ul>
+            <button type="button" className="btn" onClick={() => { record(step.id, q.onNo!.record); next(); }}>{q.onNo.done}</button>
+          </div>
+        ) : null}
+        {q?.onYes && panel === 'options' ? (
+          <div className="x-em-panel" role="region" aria-label={q.onYes.title}>
+            <p className="x-em-ask">{q.onYes.title}</p>
+            <div className="x-em-choices">
+              <button type="button" className="btn" onClick={openChecklists}>{q.onYes.checklists}</button>
+              <button type="button" className="btn x-em-priority" onClick={() => record('priority-call', q.onYes!.priority.record)} disabled={called}>
+                {setting.gravityBand === 'earth' && q.onYes.priority.earth ? q.onYes.priority.earth : q.onYes.priority.say}
+              </button>
+              <p className="caption">{q.onYes.priority.note}</p>
+              {called ? <p role="status"><strong>{q.onYes.priority.sent}</strong></p> : null}
+              <button type="button" className="btn secondary" onClick={next}>{q.onYes.carryOn}</button>
+            </div>
+          </div>
+        ) : null}
         {step.ratio ? <p className="source"><span className="mono">{step.ratio.compressions}</span> compressions to <span className="mono">{step.ratio.breaths}</span> breaths: {step.ratio.source}.</p> : null}
         {pace ? (
           <div className="x-em-pace">
@@ -296,7 +363,7 @@ export function Emergency({ state, commit, crewId, go, hhmm, setting }: Emergenc
         {synth ? <button type="button" className="chip chip-toggle" aria-pressed={readAloud} onClick={() => setReadAloud((v) => !v)}>Read aloud: {readAloud ? 'on' : 'off'}</button> : null}
         {Ctor ? (
           <>
-            <button type="button" className="chip chip-toggle" aria-pressed={listening} aria-describedby="x-em-listen-note" onClick={() => { setListening((v) => !v); setHeard(''); }}>Listen for 'next'</button>
+            <button type="button" className="chip chip-toggle" aria-pressed={listening} aria-describedby="x-em-listen-note" onClick={() => { setListening((v) => !v); setHeard(''); }}>{q ? "Listen for 'next', 'yes' or 'no'" : "Listen for 'next'"}</button>
             <span id="x-em-listen-note" className="caption">Experimental. Needs a network in some browsers.</span>
             {listening ? <span className="x-em-heard" role="status">Heard: {heard || '…'}</span> : null}
           </>

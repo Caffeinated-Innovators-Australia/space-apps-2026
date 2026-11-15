@@ -11,8 +11,43 @@ export interface EmergencyStep {
   detail?: string;
   ratio?: { compressions: number; breaths: number; source: string };
   pace?: { perMinute: number; range?: number[]; source: string };
+  /** A yes/no question on the step (CR-32): "No" on Danger shows how to make it safe; "Yes" on Response offers more help. */
+  question?: EmergencyQuestion;
   /** A line shown and read before the step in one gravity band, for example strapping the person down at 0 g (CR-32). */
   gravity?: Partial<Record<'zero' | 'lunar' | 'martian' | 'earth', string>>;
+}
+
+type Band = 'zero' | 'lunar' | 'martian' | 'earth';
+/** A line that can be limited to some gravity bands, or to places with or without a habitat. */
+export interface EmergencyLine { text: string; gravity?: Band[]; habitat?: boolean }
+export interface EmergencyQuestion {
+  ask: string;
+  yes: string;
+  no: string;
+  /** What each answer records for the handover. */
+  record: { yes: string; no: string };
+  /** Shown after "No": lines and a button to carry on. */
+  onNo?: { title: string; lines: EmergencyLine[]; done: string; record: string };
+  /** Shown after "Yes": the choices offered. */
+  onYes?: {
+    title: string;
+    checklists: string;
+    /** A priority call, like an aviation Pan-Pan: urgent help, not yet a life threat. The Earth place has its own wording. */
+    priority: { say: string; earth?: string; note: string; sent: string; record: string };
+    carryOn: string;
+  };
+}
+
+/** The lines that apply at this place. */
+export function linesFor(lines: EmergencyLine[], band?: Band, habitat?: boolean): string[] {
+  return lines.filter((l) => (!l.gravity || (band !== undefined && l.gravity.includes(band))) && (l.habitat === undefined || l.habitat === (habitat !== false))).map((l) => l.text);
+}
+
+/** Records an answer or action on the way, such as "Area safe: yes". Each one is kept with its time. */
+export function answerStep(state: State, runId: string, id: string, text: string, at: number): State {
+  const run = findRun(state, runId);
+  if (run.endedAt !== undefined) throw new Error('This emergency run has already ended.');
+  return replace(state, { ...run, answers: [...(run.answers ?? []), { id, text, at }] });
 }
 
 /** The gravity line for a step in this band, if the protocol has one. */
@@ -39,6 +74,8 @@ export interface EmergencySummary {
   reached: { id: string; letter: string; name: string; at: number }[];
   /** Steps of the protocol that were never reached. */
   notReached: string[];
+  /** Answers and actions on the way, in time order. */
+  answers: { id: string; text: string; at: number }[];
 }
 
 function runs(state: State): EmergencyRun[] {
@@ -101,5 +138,6 @@ export function emergencySummary(run: EmergencyRun, protocol: EmergencyProtocol)
     durationMs: last - run.startedAt,
     reached,
     notReached: protocol.steps.filter((p) => !firstAt.has(p.id)).map((p) => p.name),
+    answers: [...(run.answers ?? [])].sort((a, b) => a.at - b.at),
   };
 }
