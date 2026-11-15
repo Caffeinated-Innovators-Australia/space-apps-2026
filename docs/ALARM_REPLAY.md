@@ -19,10 +19,10 @@ This is a check of the rule numbers on SYNTHETIC data. It is not a clinical eval
 | Change built into the data | Began | First raised | Days taken | How |
 |---|---|---|---|---|
 | Jo's sleep slides over three weeks | Day 193 | Day 207 | 14 | Watch, trend rule TR-01 |
-| Jo's fluid intake is low for three days | Day 211 | Day 211 | 0 (the same day) | Watch, level rule PB-01 and trend rule TR-01. The early warning KS-00 first fired on day 211 |
+| Jo's fluid intake is low for three days | Day 211 | Day 211 | 0 (the same day) | Watch, level rule PB-01 and trend rule TR-01. The early warning KS-00 first fired on day 212 |
 | Cabin carbon dioxide creeps up over a week | Day 207 | Day 210 | 3 | Watch, level rule PB-01 and trend rule TR-01 |
 
-The early warning KS-00 (low fluid for two logged days, set by the clinical lead on 15 Nov 2026, CR-29) fired 33 times across 820 person-days on series nobody changed. With three days it fired 10 times.
+The early warning KS-00 (low fluid for three logged days) fired 10 times across 820 person-days on series nobody changed. With two days it fired 33 times, so the clinical lead kept three days (15 Nov 2026, CR-29).
 
 ## What this means
 

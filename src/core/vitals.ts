@@ -45,6 +45,8 @@ export interface VitalsAlert {
   construct: number;
   reasons: string[];
   steps: string[];
+  /** Headed checks under a step, keyed by the step's wording. */
+  checklists: Record<string, NonNullable<MonitorStep['checklist']>>;
   source: string;
   confidence: string;
   placeholder: boolean;
@@ -139,6 +141,7 @@ export function vitalsAlerts(state: State, rules: RuleFile, crewId: string, grav
       construct: rule.construct,
       reasons: reasonsFor(fields, entry.values),
       steps: stepsFor(rule.steps, gravityBand),
+      checklists: Object.fromEntries(rule.steps.filter((st) => st.checklist).map((st) => [st.text, st.checklist!])),
       source: rule.source,
       confidence: rule.confidence,
       placeholder: rule.signed_off_by.trim().toLowerCase() === 'placeholder',

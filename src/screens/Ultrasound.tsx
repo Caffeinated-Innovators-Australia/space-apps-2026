@@ -44,36 +44,51 @@ function Torso({ side }: { side?: 'left' | 'right' | 'chest' }) {
   );
 }
 
-/** Greys stand for an ultrasound image: bright is white, fluid is black. Fixed greys, so they read the same in both themes. */
+/** The grades shown as drawn examples (CR-42): normal, then grades 1 to 4. Labels in plain words, the term in brackets. */
 const KIDNEY_GRADES = [
-  { id: 'normal', name: 'Normal', say: 'Bright centre' },
-  { id: 'mild', name: 'Mild', say: 'Small dark pool in the centre' },
-  { id: 'moderate', name: 'Moderate', say: 'Dark spaces branch out' },
-  { id: 'severe', name: 'Severe', say: 'Large dark space, thin outer rim' },
+  { id: 'normal', name: 'Normal', band: '', say: 'Bright centre' },
+  { id: 'g1', name: 'Grade 1', band: 'Mild', say: 'Centre (pelvis) widened' },
+  { id: 'g2', name: 'Grade 2', band: 'Moderate', say: 'Large branches (major calyces) widened' },
+  { id: 'g3', name: 'Grade 3', band: 'Moderate', say: 'Small branches (minor calyces) widened too' },
+  { id: 'g4', name: 'Grade 4', band: 'Severe', say: 'Outer layer (cortex) thinned' },
 ] as const;
+type KidneyGrade = (typeof KIDNEY_GRADES)[number]['id'];
 
-/** One drawn kidney, long view, for a grade. Simple shapes drawn in code, not a real scan. */
-function KidneyPanel({ grade }: { grade: (typeof KIDNEY_GRADES)[number]['id'] }) {
-  const calyces = [[-26, -12], [-10, -17], [10, -17], [26, -12], [-26, 12], [-10, 17], [10, 17], [26, 12]];
+const BEAN = 'M22 58 C22 34 44 28 60 30 C76 28 98 34 98 58 C98 76 86 84 74 80 C68 78 64 72 60 72 C56 72 52 78 46 80 C34 84 22 76 22 58 Z';
+
+/**
+ * One drawn kidney in the long view, inside an ultrasound fan, for a grade. Simple shapes drawn in code, not a real scan.
+ * Fixed greys so it reads the same in both themes: bright tissue is white, fluid is black.
+ */
+function KidneyPanel({ grade }: { grade: KidneyGrade }) {
+  const major = [[38, 52], [48, 44], [60, 41], [72, 44], [82, 52]];
+  const minor = [[34, 56], [40, 47], [49, 41], [60, 38], [71, 41], [80, 47], [86, 56], [44, 56], [76, 56]];
+  const severe = [[38, 57, 13], [52, 47, 12], [68, 47, 12], [82, 57, 13], [60, 60, 12]];
+  const stem = <path d="M60 58 L60 72" stroke="#000" strokeWidth="6" />;
   return (
     <svg viewBox="0 0 120 100" className="x-us-kidney" aria-hidden="true">
-      <path d="M60 4 L114 30 A64 64 0 0 1 114 96 L6 96 A64 64 0 0 1 6 30 Z" fill="#1c1c1c" />
-      <ellipse cx="60" cy="58" rx="44" ry="26" fill={grade === 'severe' ? '#1c1c1c' : '#6e6e6e'} stroke="#b8b8b8" strokeWidth={grade === 'severe' ? 2 : 3} />
-      {grade === 'normal' || grade === 'mild' ? <ellipse cx="60" cy="58" rx="22" ry="10" fill="#e6e6e6" /> : null}
-      {grade === 'mild' ? <ellipse cx="60" cy="58" rx="9" ry="5" fill="#000" /> : null}
-      {grade === 'moderate' ? (
-        <g>
-          <ellipse cx="60" cy="58" rx="33" ry="18" fill="#e6e6e6" />
-          <g fill="#000" stroke="#000">
-            <ellipse cx="60" cy="58" rx="9" ry="5" />
-            {calyces.map(([dx, dy]) => <g key={`${dx}${dy}`}><path d={`M60 58 L${60 + dx * 0.9} ${58 + dy * 0.75}`} strokeWidth="3" strokeLinecap="round" /><circle cx={60 + dx * 0.9} cy={58 + dy * 0.75} r="4.5" /></g>)}
-          </g>
+      <path d="M44 4 L76 4 L116 32 Q120 70 114 96 L6 96 Q0 70 4 32 Z" fill="#d6d6d6" />
+      <path d={BEAN} fill="#6e6e6e" stroke="#2a2a2a" strokeWidth="2" />
+      {grade === 'normal' ? <ellipse cx="60" cy="56" rx="22" ry="9" fill="#f2f2f2" /> : null}
+      {grade === 'g1' ? <g fill="#000"><ellipse cx="60" cy="56" rx="22" ry="9" fill="#f2f2f2" /><ellipse cx="60" cy="59" rx="13" ry="5" />{stem}</g> : null}
+      {grade === 'g2' ? (
+        <g fill="#000" stroke="#000">
+          <ellipse cx="60" cy="58" rx="20" ry="7" />
+          {major.map(([x, y]) => <g key={`${x}${y}`}><path d={`M60 58 L${x} ${y}`} strokeWidth="5" /><circle cx={x} cy={y} r="5.5" /></g>)}
+          {stem}
         </g>
       ) : null}
-      {grade === 'severe' ? (
+      {grade === 'g3' ? (
+        <g fill="#000" stroke="#000">
+          <ellipse cx="60" cy="56" rx="24" ry="10" />
+          {minor.map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r="6" />)}
+          {stem}
+        </g>
+      ) : null}
+      {grade === 'g4' ? (
         <g fill="#000">
-          <ellipse cx="60" cy="58" rx="22" ry="13" />
-          {calyces.map(([dx, dy]) => <circle key={`${dx}${dy}`} cx={60 + dx * 1.15} cy={58 + dy * 0.9} r="9" />)}
+          {severe.map(([x, y, r]) => <circle key={`${x}${y}`} cx={x} cy={y} r={r} />)}
+          <path d={BEAN} fill="none" stroke="#6e6e6e" strokeWidth="3" />
         </g>
       ) : null}
     </svg>
@@ -84,17 +99,17 @@ function KidneyPanel({ grade }: { grade: (typeof KIDNEY_GRADES)[number]['id'] })
 function KidneyExamples() {
   return (
     <figure className="x-us-examples">
-      <figcaption className="x-us-name">What a swollen kidney looks like (drawings, not real scans)</figcaption>
-      <ul role="list" aria-label="Drawn kidney examples: normal, then mild, moderate and severe swelling">
+      <figcaption className="x-us-name">What a swollen kidney looks like: long view (drawings, not real scans)</figcaption>
+      <ul role="list" aria-label="Drawn kidney examples in the long view: normal, then grades 1 to 4">
         {KIDNEY_GRADES.map((g) => (
           <li key={g.id}>
             <KidneyPanel grade={g.id} />
-            <span className="x-us-grade">{g.name}</span>
+            <span className="x-us-grade">{g.name}{g.band ? ` · ${g.band}` : ''}</span>
             <span className="x-us-grade-say">{g.say}</span>
           </li>
         ))}
       </ul>
-      <p className="caption">White is bright, black is fluid. How swollen it is, is for your crew medic and Earth to judge.</p>
+      <p className="caption">White is bright, black is fluid. Which grade it is, is for your crew medic and Earth to judge.</p>
     </figure>
   );
 }

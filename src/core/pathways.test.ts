@@ -104,11 +104,11 @@ describe('kidney stone pathway (KS-01)', () => {
   it('refuses a pathway with no source or sign-off field', () => {
     expect(() => parseRules(text.replace(/    source: "Signed off by the clinical lead on 15 Nov 2026 \(CR-25[^\n]*\n/, ''))).toThrow(/KS-01 has no source/);
   });
-  it('warns early, before any symptom, when fluid has been low for two logged days (CR-29), and names NASA as the source of the risk', () => {
+  it('warns early, before any symptom, when fluid has been low for three logged days (CR-29), and names NASA as the source of the risk', () => {
     const p = pathwayStatuses(initialState(seed), seed, rules, 'crew-1')[0];
     expect(p.level).toBe('early');
     expect(p.ruleId).toBe('KS-00');
-    expect(p.title).toBe('Kidneys and urine: low fluid for 2 days');
+    expect(p.title).toBe('Kidneys and urine: low fluid for 3 days');
     expect(p.why).toContain('not a finding');
     expect(p.source).toContain('Risk of Renal Stone Formation');
     expect(pathwayAlerts(initialState(seed), seed, rules, 'crew-1')[0].tier).toBe('amber');

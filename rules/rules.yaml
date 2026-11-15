@@ -96,7 +96,7 @@ pathways:
     early:
       id: KS-00
       indicator: fluid
-      count: 2
+      count: 3
       shift_sd: 1
       title: "Kidneys and urine: low fluid for {count} days"
       why: "Your fluid intake has been below your usual level for {count} logged days in a row: {values} {unit}, against your baseline of {baselineMean} {unit}. NASA names dehydration and low urine output among the reasons kidney stones are a risk in spaceflight. This is a risk to act on early, not a finding."
@@ -104,7 +104,7 @@ pathways:
         - "Drink to your usual daily amount today."
         - "Log your fluid again this evening."
         - "Tell your crew medic if it is still low tomorrow."
-      source: "Two days set by the clinical lead on 15 Nov 2026 (CR-29), as low fluid is also a dehydration and low blood volume risk; one standard deviation is a statistical convention. The risk is NASA's: Evidence Report, Risk of Renal Stone Formation (2017), page 5."
+      source: "Three days and one standard deviation kept by the clinical lead on 15 Nov 2026 (CR-29), after the alarm replay showed two days fired more than three times as often on unchanged data. The risk is NASA's: Evidence Report, Risk of Renal Stone Formation (2017), page 5."
       confidence: Low
       signed_off_by: clinical lead
     # Simple tests the pathway asks for. The result is logged and sent with the case. It never changes a tier.
@@ -219,14 +219,28 @@ monitor_alerts:
     construct: 4
     when:
       - { sbp: "< 90", hr: "> 110" }
+    # Steps approved by the clinical lead on 15 Nov 2026 (CR-37), in our own words after ANZCOR Guideline 9.2.3.
     steps:
-      - { text: "Lie the person flat and keep them warm.", gravity: [lunar, martian, earth] }
-      - { text: "Keep the person warm.", gravity: [zero] }
+      - { text: "Lie the person flat and keep them warm unless they already feel hot.", gravity: [lunar, martian, earth] }
+      - { text: "Keep the person warm unless they already feel hot.", gravity: [zero] }
       - { text: "Strap the person down so you can start CPR if needed.", gravity: [zero] }
+      - "Control any bleeding straight away."
+      - "Give oxygen if it is available and you are trained to."
       - "Record vitals from the monitor."
-      - "Crew medic: work through a systems screen to look for the cause."
+      - "If they stop responding and are not breathing normally, press Emergency."
+      - "Stay with them, reassure them, and re-check them often."
+      - text: "Crew medic: work through a systems screen to look for the cause."
+        checklist:
+          - heading: "Blood or fluid loss"
+            checks: ["Any bleeding, seen or possibly hidden (injury, belly pain)", "Vomiting or diarrhoea", "Heavy sweating", "Burns", "Low fluid intake (the fluid trend in the app)"]
+          - heading: "Heart"
+            checks: ["Chest pain", "A new irregular pulse", "New breathlessness"]
+          - heading: "Widened blood vessels"
+            checks: ["Signs of infection (fever, or the sepsis alert)", "Allergic reaction (rash, swelling, wheeze)", "Head or spine injury"]
+          - heading: "Blockage"
+            checks: ["Sudden breathlessness with one side of the chest moving less", "A recent chest injury", "Sudden chest pain with breathlessness"]
       - "Crew medic: if trained, do a RUSH scan (Rapid Ultrasound in Shock and Hypotension)."
-    source: "Placeholder thresholds from the team's clinical lead (build pack v3.3), awaiting sign-off."
+    source: "Placeholder thresholds from the team's clinical lead (build pack v3.3), awaiting input from another team clinician. Steps and systems screen approved by the clinical lead on 15 Nov 2026, after ANZCOR Guideline 9.2.3 (approved December 2025)."
     confidence: Low
     signed_off_by: placeholder
 
@@ -237,9 +251,9 @@ vitals_prompt:
   symptoms: ["Fever or chills"]
   title: "Record your vital signs"
   why: "You logged {symptom}. Record your vital signs now, so the sepsis check can run on measured values."
-  source: "Asked for by the clinical lead on 15 Nov 2026 (CR-58). Wording drafted by the build assistant, awaiting approval."
+  source: "Asked for and approved by the clinical lead on 15 Nov 2026 (CR-58)."
   confidence: Low
-  signed_off_by: placeholder
+  signed_off_by: clinical lead
 
 # Symptoms that mean "press Emergency now" the moment one is logged. No pattern, no second symptom, no wait.
 # The app shows a red banner on every screen until the symptom is cleared. It names no condition.

@@ -69,7 +69,12 @@ export interface MonitorAlertRule extends Signed {
 export const GRAVITY_BANDS = ['zero', 'lunar', 'martian', 'earth'] as const;
 export type GravityBand = (typeof GRAVITY_BANDS)[number];
 /** A first step on a monitor alert. Without gravity it shows everywhere. */
-export interface MonitorStep { text: string; gravity?: GravityBand[] }
+export interface MonitorStep {
+  text: string;
+  gravity?: GravityBand[];
+  /** Headed checks shown under the step, for example the crew medic's systems screen (CR-37). Guidance only; nothing is scored. */
+  checklist?: { heading: string; checks: string[] }[];
+}
 
 /** Symptoms that call for the Emergency button the moment one is logged. */
 export interface EmergencySymptomRule extends Signed {
@@ -240,10 +245,19 @@ export function parseRules(text: string): RuleFile {
     if (!Array.isArray(m.steps) || m.steps.length === 0) throw new Error(`Monitor alert ${id}: needs at least one first step.`);
     m.steps = (m.steps as unknown[]).map((st): MonitorStep => {
       if (typeof st === 'string' && st.trim()) return { text: st };
-      const o = st as { text?: unknown; gravity?: unknown };
+      const o = st as { text?: unknown; gravity?: unknown; checklist?: unknown };
       if (!o || typeof o.text !== 'string' || !o.text.trim()) throw new Error(`Monitor alert ${id}: every step needs its wording.`);
-      if (!Array.isArray(o.gravity) || o.gravity.length === 0 || !o.gravity.every((g) => (GRAVITY_BANDS as readonly string[]).includes(String(g)))) throw new Error(`Monitor alert ${id}: a step's gravity must list one or more of ${GRAVITY_BANDS.join(', ')}.`);
-      return { text: o.text, gravity: o.gravity as GravityBand[] };
+      const out: MonitorStep = { text: o.text };
+      if (o.gravity !== undefined) {
+        if (!Array.isArray(o.gravity) || o.gravity.length === 0 || !o.gravity.every((g) => (GRAVITY_BANDS as readonly string[]).includes(String(g)))) throw new Error(`Monitor alert ${id}: a step's gravity must list one or more of ${GRAVITY_BANDS.join(', ')}.`);
+        out.gravity = o.gravity as GravityBand[];
+      }
+      if (o.checklist !== undefined) {
+        const c = o.checklist as { heading?: unknown; checks?: unknown }[];
+        if (!Array.isArray(c) || c.length === 0 || !c.every((h) => typeof h?.heading === 'string' && Array.isArray(h.checks) && h.checks.length > 0 && h.checks.every((x) => typeof x === 'string' && x.trim()))) throw new Error(`Monitor alert ${id}: a step's checklist needs headings, each with at least one check.`);
+        out.checklist = c as MonitorStep['checklist'];
+      }
+      return out;
     });
     for (const band of GRAVITY_BANDS) if (!m.steps.some((st) => !st.gravity || st.gravity.includes(band))) throw new Error(`Monitor alert ${id}: needs at least one first step in every gravity (none for ${band}).`);
     if (!Array.isArray(m.when) || m.when.length === 0) throw new Error(`Monitor alert ${id}: needs at least one group of conditions under when.`);

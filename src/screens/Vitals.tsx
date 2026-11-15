@@ -89,6 +89,17 @@ export function MonitorAlertCard({ alert, onEmergency, onSend, setting, say, syn
                 <span className="box" aria-hidden="true">{done.includes(st) ? '✓' : ''}</span>
                 <span>{say(st, setting)}</span>
               </button>
+              {alert.checklists?.[st] ? (
+                <details className="more">
+                  <summary>Show the checklist</summary>
+                  {alert.checklists[st].map((h) => (
+                    <div key={h.heading}>
+                      <p className="why-label">{h.heading}</p>
+                      <ul>{h.checks.map((c) => <li key={c}>{say(c, setting)}</li>)}</ul>
+                    </div>
+                  ))}
+                </details>
+              ) : null}
             </li>
           ))}
         </ul>
