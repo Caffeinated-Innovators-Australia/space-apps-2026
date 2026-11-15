@@ -41,6 +41,10 @@ The NASA Human Research Program hazard pages are linked as hazard chips on every
 - A 2021 simulation study of cardiopulmonary resuscitation in hypogravity (PubMed 33468291). Cited by the emergency module's gravity-aware resuscitation notes. Cited by the emergency module; not opened or verified by the build lead. https://www.pubmed.gov/33468291/
 - The team's clinical lead's build pack v3.3 (14 Nov 2026). A private team document. The source of the placeholder values for the monitor alerts, display bands, lapse time, adapting period, crew check-in items, urine strip note and pathway and ultrasound step wording. Each awaits sign-off (CLINICIAN_REVIEW.md, CR-36 to CR-50).
 
+- Web Speech API (speech recognition and speech synthesis in the browser), W3C community draft. Used for the Talk card. https://webaudio.github.io/web-speech-api/
+- Web Bluetooth, W3C community draft. Used to read a device the person picks. https://webbluetoothcg.github.io/web-bluetooth/
+- Bluetooth SIG, Assigned Numbers, and the Heart Rate, Health Thermometer, Blood Pressure and Pulse Oximeter service specifications. The measurement formats our device readers follow. https://www.bluetooth.com/specifications/assigned-numbers/ and https://www.bluetooth.com/specifications/specs/
+
 ## Design criteria
 - NASA-STD-3001 Volume 2, Revision F, section 10 and Appendix F (Display Standard). https://standards.nasa.gov/
 - Human Integration Design Handbook, NASA/SP-2010-3407, Revision 1, chapter 10.

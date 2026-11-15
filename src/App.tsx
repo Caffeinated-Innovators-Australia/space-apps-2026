@@ -34,6 +34,7 @@ import { Immune } from './screens/Immune';
 import { Radiation } from './screens/Radiation';
 import { CrewData, RealBand, SpaceWeather } from './screens/RealData';
 import { Vitals, MonitorAlertCard } from './screens/Vitals';
+import { Devices } from './screens/Devices';
 import { Ultrasound } from './screens/Ultrasound';
 import { CrewCheckIn } from './screens/CrewCheckIn';
 import { Location } from './screens/Location';
@@ -78,7 +79,7 @@ function clock(totalSeconds: number): string {
 }
 const shown = (i: Indicator, v: number) => (i.input.kind === 'scale' ? `${v.toFixed(0)}` : v.toFixed(i.dp));
 
-const ROUTES = ['reading', 'result', 'gap', 'pathway', 'crew', 'outbox', 'about', 'checkin', 'feeling', 'inbox', 'medic', 'menu', 'emergency', 'radiation', 'immune', 'schedule', 'signals', 'sources', 'vitals', 'ultrasound', 'crewcheck', 'location', 'astra', 'area', 'replies'] as const;
+const ROUTES = ['reading', 'result', 'gap', 'pathway', 'crew', 'outbox', 'about', 'checkin', 'feeling', 'inbox', 'medic', 'menu', 'emergency', 'radiation', 'immune', 'schedule', 'signals', 'sources', 'vitals', 'ultrasound', 'crewcheck', 'location', 'astra', 'area', 'replies', 'devices'] as const;
 interface Route { name: 'home' | (typeof ROUTES)[number]; arg?: string }
 function readRoute(): Route {
   const [name, arg] = window.location.hash.replace(/^#\/?/, '').split('/');
@@ -214,6 +215,8 @@ export function App() {
             <MedicOverview {...shared} {...extra} rules={rules} />
           ) : route.name === 'menu' ? (
             <Menu {...shared} {...extra} rules={rules} />
+          ) : route.name === 'devices' ? (
+            <Devices {...shared} {...extra} />
           ) : route.name === 'vitals' ? (
             <Vitals {...shared} {...extra} rules={rules} onSend={pathwayStatuses(state, seed, rules, crew.id).some((x) => x.pathway.id === 'KS-01' && (x.level === 'amber' || x.level === 'red')) ? () => { if (!state.outbox.some((k) => k.pathwayId === 'KS-01' && k.crewId === crew.id && k.status === 'queued')) commit(sendPathwayCase(state, seed, rules, { crewId: crew.id, pathwayId: 'KS-01', settingId: setting.id, at: nowMs() }).state); go('pathway', 'KS-01'); } : undefined} />
           ) : route.name === 'ultrasound' ? (
@@ -610,6 +613,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
             <button className="btn secondary" onClick={() => go('signals')}>All signals</button>
             <button className="btn secondary" onClick={() => go('sources')}>Sources</button>
             <button className="btn secondary" onClick={() => go('vitals')}>Vital signs</button>
+            <button className="btn secondary" onClick={() => go('devices')}>Devices and AI</button>
             {seed.crewCheck ? <button className="btn secondary" onClick={() => go('crewcheck')}>Weekly crew check-in{crewCheckDue(state, seed, crewId) ? <span className="due-mark"> Due</span> : <span className="done-mark"> ✓ Done</span>}</button> : null}
           </div>
           <More label={`Demo: ${crewById(seed, crewId).name.replace('Crew member', 'Crew')} · ${setting.label}`}>
@@ -1314,7 +1318,7 @@ function About() {
   ];
   const needed = [
     'Rules written and tested by flight clinicians against real cases, including rules that change by environment.',
-    'Links to the sensors a crew carries, and voice input, instead of typed values.',
+    'The device links tested with flight hardware, and speech recognition that runs on the device with no internet.',
     'One shared record across crew devices on the spacecraft\'s own network, enforcing the privacy rules.',
     'A ground system that receives case files and returns replies.',
     'A space agency\'s own safety, security and hardware approval. We claim none of this.',

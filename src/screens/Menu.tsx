@@ -48,7 +48,7 @@ export function Menu({ state, commit, ui, setting, seed, go, say }: MenuProps) {
       <div className="card">
         <h2 className="title">More checks and settings</h2>
         <ul className="rows">
-          {[['astra', 'Emergency checklists', 'Sixteen emergency checklists, by touch or voice. A separate team prototype'], ['vitals', 'Vital signs', 'Temperature, pulse, blood pressure, breathing'], ['crewcheck', 'Weekly crew check-in', 'Five questions, seen by the flight psychologist only'], ['location', 'Location', 'Gravity, cabin atmosphere and what changes']].map(([route, name, sub]) => (
+          {[['astra', 'Emergency checklists', 'Sixteen emergency checklists, by touch or voice. A separate team prototype'], ['devices', 'Devices and AI', 'Voice, connected devices, and what the AI does and never does'], ['vitals', 'Vital signs', 'By voice, from a device, or typed'], ['crewcheck', 'Weekly crew check-in', 'Five questions, seen by the flight psychologist only'], ['location', 'Location', 'Gravity, cabin atmosphere and what changes']].map(([route, name, sub]) => (
             <li key={route}>
               <button className="row" onClick={() => go(route)}>
                 <span className="row-name">{say(name, setting)}<br /><span className="caption">{say(sub, setting)}</span></span>

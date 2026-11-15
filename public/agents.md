@@ -92,7 +92,8 @@ Symptoms that form a pattern open a pathway. The first is a possible kidney ston
 - Monitor alerts (SEP-01 possible sepsis, SHK-01 possible shock, under `monitor_alerts` in the rules file) read one set of vital signs. Their thresholds are the clinical lead's placeholders. Report one as "a pattern to act on now", never as a diagnosis. Oxygen saturation never raises an alert on its own.
 - Never report a weekly crew check-in answer or an average. Only a count of who has completed it is exposed.
 - The emergency module (`public/astra/`) is a separate team prototype, not for clinical use. Do not relay its medicine names or doses as advice; they await clinical review.
-- Not built: voice input on our own screens, sensor connections, a rover profile, rules that change by environment, any calibrated or clinical eye test (for example retinal imaging), and any direct bone measurement.
+- Voice and devices: `src/core/speech.ts` turns spoken words into form values and `src/core/devices.ts` reads the published Bluetooth health formats and a simulated kit (SYNTHETIC). Both are plain rules. The browser's speech recognition and voice are AI models that listen and speak; they never set a tier.
+- Not built: speech recognition that runs on the device with no internet, device links tested with flight hardware, a rover profile, rules that change by environment, any calibrated or clinical eye test (for example retinal imaging), and any direct bone measurement.
 
 ## Where things are
 

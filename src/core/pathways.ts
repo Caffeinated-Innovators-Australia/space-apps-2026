@@ -2,7 +2,7 @@
 // A pathway names a pattern to check and the next steps. It never names a finding: that is for the clinicians.
 // Pure functions, like the rest of the action layer. Rules decide; nothing here calls a language model.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
-import { groupHolds, latestVitals, reasonsFor, vitalsLine } from './vitals.ts';
+import { groupHolds, latestVitals, reasonsFor, vitalsLine, vitalsSourceLine } from './vitals.ts';
 import { ultrasoundSummary } from './ultrasound.ts';
 import { recordsSummary } from './records.ts';
 import { crewById, daySummary, indicatorById, latestReading, settingById } from './actions.ts';
@@ -234,7 +234,7 @@ export function pathwayCaseContent(state: State, seed: Seed, rules: RuleFile, pa
     },
     symptoms: state.symptoms.filter((s) => s.crewId === pack.crewId).map((s) => ({ label: s.label, at: iso(s.at) })),
     tests: pathway.tests.map((t) => ({ test: t.label, result: state.pathwayTests?.[key]?.[t.id] ?? 'Not recorded' })),
-    vitals: latestVitals(state, pack.crewId) ? vitalsLine(latestVitals(state, pack.crewId)!.values) : undefined,
+    vitals: latestVitals(state, pack.crewId) ? [vitalsLine(latestVitals(state, pack.crewId)!.values), vitalsSourceLine(latestVitals(state, pack.crewId)!)].filter(Boolean).join(' ') : undefined,
     ultrasound: ultrasoundSummary(state, pack.crewId),
     records: recordsSummary(state, pack.crewId),
     painScores: (state.painLog ?? []).filter((p) => p.crewId === pack.crewId && p.pathwayId === pathway.id).map((p) => ({ score: p.score, outOf: 10, at: iso(p.at) })),

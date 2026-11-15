@@ -38,9 +38,9 @@ This is a hackathon prototype. It is built the way a real crew tool would have t
 
 ## Not built
 
-- Voice input on our own screens. The emergency module has optional voice input, off until tapped. It uses the browser's own speech recognition, which in some browsers needs the internet and sends audio to the browser maker. The module works by touch offline.
+- Speech recognition that runs on the device. Today the Talk card uses the browser's own speech recognition, which in some browsers needs the internet and sends audio to the browser maker. It is off until tapped and every screen works by touch offline. A flight version runs an on-device speech model.
 - Capping drift to Watch while adapting to new gravity, and re-baselining after it. That is a clinician decision.
-- Connections to real sensors or devices.
+- Device links tested with flight hardware. Today the app reads a simulated kit (SYNTHETIC) and the published Bluetooth health formats, checked against example data.
 - A rover profile.
 - Any calibrated or clinical eye test (for example retinal imaging).
 - Any direct bone measurement. Exercise and grip strength stand in for it.

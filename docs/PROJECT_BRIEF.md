@@ -33,10 +33,10 @@ Day 214 on a Mars base. Jo's sleep has slid for three weeks, although each night
 
 - Diagnosis, and any clinical accuracy claim.
 - Any clinical threshold not written and signed off by the team's clinicians.
-- Live connections to sensors or devices, voice input on our own screens, a rover profile, and any calibrated or clinical eye test.
+- Device links tested with flight hardware, speech recognition that runs on the device with no internet, a rover profile, and any calibrated or clinical eye test.
 - Rules that change by environment.
 - Accounts or sign-in, a server, and a shared record across devices.
-- A language model at run time.
+- A language model at run time. AI is used only to listen and speak; rules decide.
 
 ## Source of the design
 
