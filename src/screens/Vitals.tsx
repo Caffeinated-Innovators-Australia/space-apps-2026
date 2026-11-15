@@ -1,9 +1,14 @@
 // Vital signs screen, and the Act now card a set of vital signs can raise (possible sepsis, possible shock).
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { useState } from 'react';
-import type { RuleFile, Seed, Setting, State, VitalSigns } from '../core/index.ts';
-import { checkVitals, latestVitals, recordVitals, VITAL_FIELDS, vitalsAlerts, vitalsLine, type VitalField, type VitalFieldInfo, type VitalsAlert } from '../core/vitals.ts';
+import type { RuleFile, Seed, Setting, State, VitalSigns, VitalSource } from '../core/index.ts';
+import { checkVitals, latestVitals, recordVitals, VITAL_FIELDS, vitalsAlerts, vitalsLine, vitalsSourceLine, type VitalField, type VitalFieldInfo, type VitalsAlert } from '../core/vitals.ts';
 import { More, SyntheticTag, TierPill } from '../components/ui.tsx';
+import { alertSpeech, parseVitalsUtterance, VITAL_QUESTIONS, vitalReadBack, vitalSpokenProblem } from '../core/speech.ts';
+import { DEVICE_KIT, simulatedKitReading } from '../core/devices.ts';
+import { VoiceTalk, type VoiceValues } from '../components/VoiceTalk.tsx';
+import { canSpeak, speak } from '../components/voice.ts';
+import { bluetoothAvailable, readBluetooth } from '../components/bluetooth.ts';
 import './x-vt.css';
 
 export interface VitalsProps {
@@ -79,6 +84,7 @@ export function MonitorAlertCard({ alert, onEmergency, onSend, setting, say, syn
       <div className="x-vt-actions">
         <button type="button" className="btn x-vt-big" onClick={onEmergency}>Open emergency mode</button>
         {onSend ? <button type="button" className="btn secondary x-vt-big" onClick={onSend}>{say('Send case to Earth', setting)}</button> : null}
+        {canSpeak() ? <button type="button" className="btn secondary x-vt-big" onClick={() => { void speak(alertSpeech({ title: say(alert.title, setting), reasons: alert.reasons, steps: alert.steps.map((st) => say(st, setting)) })); }}>Read aloud</button> : null}
       </div>
       <div>
         <p className="why-label">First steps</p>
@@ -117,6 +123,8 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
   const [texts, setTexts] = useState<Texts>(EMPTY);
   const [formError, setFormError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [origin, setOrigin] = useState<Partial<Record<VitalField, { src: VitalSource; from?: string }>>>({});
+  const [btNote, setBtNote] = useState<string | null>(null);
   const person = seed.crew.find((c) => c.id === crewId);
   const latest = latestVitals(state, crewId);
   const alerts = vitalsAlerts(state, rules, crewId, setting.gravityBand);
@@ -124,7 +132,31 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
   const latestIsDemo = latest ? demos.some((d) => sameSet(d.values, latest.values)) : false;
   const errors = Object.fromEntries(VITAL_FIELDS.map((f) => [f.id, fieldError(f, texts[f.id])])) as Record<VitalField, string | undefined>;
 
-  const set = (id: VitalField, t: string) => { setTexts((x) => ({ ...x, [id]: t })); setFormError(null); setSaved(false); };
+  const set = (id: VitalField, t: string, src: VitalSource = 'typed', from?: string) => {
+    setTexts((x) => ({ ...x, [id]: t }));
+    setOrigin((o) => ({ ...o, [id]: { src, from } }));
+    setFormError(null); setSaved(false);
+  };
+  /** Put several values in at once, from a device or from speech. */
+  const fill = (values: VitalSigns, src: VitalSource, from?: Partial<Record<VitalField, string>> | string) => {
+    for (const f of VITAL_FIELDS) if (values[f.id] !== undefined) set(f.id, values[f.id]!.toFixed(f.dp), src, typeof from === 'string' ? from : from?.[f.id]);
+  };
+  const readKit = (values: VitalSigns) => { const r = simulatedKitReading(values); setTexts(EMPTY); setOrigin({}); fill(r.values, 'device', r.from); };
+  const readReal = async (deviceId: string) => {
+    const d = DEVICE_KIT.find((x) => x.id === deviceId);
+    if (!d) return;
+    setBtNote(`Choose your ${d.name.toLowerCase()} in the browser's list, then take a reading on it.`);
+    try {
+      const r = await readBluetooth(d);
+      fill(r.values, 'device', r.name);
+      setBtNote(`Read from ${r.name}.`);
+    } catch (e) { setBtNote(`Nothing was read. ${(e as Error).message}`); }
+  };
+  const understand = (text: string, currentId: string): VoiceValues | string | undefined => {
+    const got = parseVitalsUtterance(text, currentId as VitalField);
+    for (const f of VITAL_FIELDS) { const v = got[f.id]; if (v !== undefined) { const bad = vitalSpokenProblem(f.id, v); if (bad) return bad; } }
+    return Object.keys(got).length ? (got as VoiceValues) : undefined;
+  };
   const nudge = (f: VitalFieldInfo, dir: 1 | -1) => {
     const v = parse(texts[f.id]);
     const start = typeof v === 'number' ? v : latest?.values[f.id];
@@ -132,29 +164,59 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
     const next = Math.min(f.max, Math.max(f.min, start + dir * f.step));
     set(f.id, next.toFixed(f.dp));
   };
-  const save = () => {
-    if (VITAL_FIELDS.some((f) => errors[f.id])) { setFormError('Check the values marked below, then save again.'); return; }
+  const save = (): string => {
+    if (VITAL_FIELDS.some((f) => errors[f.id])) { setFormError('Check the values marked below, then save again.'); return 'Not saved. Check the values marked on the screen.'; }
     const values: VitalSigns = {};
     for (const f of VITAL_FIELDS) { const v = parse(texts[f.id]); if (typeof v === 'number') values[f.id] = v; }
+    const sources: Partial<Record<VitalField, VitalSource>> = {};
+    for (const f of VITAL_FIELDS) if (values[f.id] !== undefined && origin[f.id]) sources[f.id] = origin[f.id]!.src;
     try {
-      commit(recordVitals(state, { crewId, values, at: Date.now() }));
+      const next = recordVitals(state, { crewId, values, at: Date.now(), sources });
+      commit(next);
       setSaved(true);
       setFormError(null);
-    } catch (e) { setFormError((e as Error).message); }
+      const raised = vitalsAlerts(next, rules, crewId, setting.gravityBand);
+      return raised.length ? `Saved. ${raised.map((a) => alertSpeech({ title: say(a.title, setting), reasons: a.reasons, steps: a.steps.map((st) => say(st, setting)) })).join(' ')}` : 'Saved. No alert from these vital signs.';
+    } catch (e) { setFormError((e as Error).message); return `Not saved. ${(e as Error).message}`; }
   };
 
   return (
     <section className="stack x-vt" aria-labelledby="x-vt-h">
+      <VoiceTalk what="vital signs" questions={VITAL_QUESTIONS} understand={understand} readBack={(id, v) => vitalReadBack(id as VitalField, Number(v))}
+        onFill={(v) => fill(v as VitalSigns, 'voice')} onFinish={save} example="Temperature 38.6, pulse 118, blood pressure 94 over 56" />
       <div className="card">
         <div className="card-head">
           <h1 id="x-vt-h" className="title">Vital signs{person ? <> for {person.name}</> : null}</h1>
         </div>
-        <p className="caption">Read them from the monitor and type them in, or use − and + to adjust. Leave out anything not measured.</p>
+        <p className="caption">Read them from the crew's devices, say them, or type them in. Use − and + to adjust. Leave out anything not measured.</p>
+
+        {demos.length ? (
+          <div className="x-vt-demo" role="group" aria-label="Read from the crew's devices">
+            {demos.map((d) => (
+              <button key={d.id} type="button" className="btn" onClick={() => readKit(d.values)}>
+                Read devices: {d.label} <SyntheticTag />
+              </button>
+            ))}
+          </div>
+        ) : null}
+        <p className="caption">The demo reads a simulated kit: wrist wearable, sensor vest, blood pressure cuff and thermometer. <button type="button" className="link" onClick={() => go('devices')}>Devices and AI</button></p>
+        {bluetoothAvailable() ? (
+          <details className="more">
+            <summary>Read a real Bluetooth device</summary>
+            <div className="more-body">
+              <div className="x-vt-demo">
+                {DEVICE_KIT.filter((d) => d.bluetooth).map((d) => <button key={d.id} type="button" className="btn secondary" onClick={() => { void readReal(d.id); }}>{d.name}</button>)}
+              </div>
+              {btNote ? <p role="status">{btNote}</p> : null}
+              <p className="caption">Works with devices that use the published Bluetooth health formats. The browser shows its own list; the app sees only the device you pick.</p>
+            </div>
+          </details>
+        ) : null}
 
         {demos.length ? (
           <div className="x-vt-demo" role="group" aria-label="Demo sets of vital signs">
             {demos.map((d) => (
-              <button key={d.id} type="button" className="btn secondary" onClick={() => { setTexts(toText(d.values)); setFormError(null); setSaved(false); }}>
+              <button key={d.id} type="button" className="btn secondary" onClick={() => { setTexts(toText(d.values)); setOrigin({}); setFormError(null); setSaved(false); }}>
                 Demo: fill {d.label} <SyntheticTag />
               </button>
             ))}
@@ -178,6 +240,7 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
                   </div>
                   <button type="button" className="x-vt-step" aria-label={`Raise ${f.label.toLowerCase()}`} disabled={!canStep} onClick={() => nudge(f, 1)}>+</button>
                 </div>
+                {origin[f.id] && origin[f.id]!.src !== 'typed' && texts[f.id] ? <p className="x-vo-src">{origin[f.id]!.src === 'voice' ? 'Taken down by voice' : `From a device: ${origin[f.id]!.from ?? 'crew kit'}`}</p> : null}
                 {err ? <p className="x-vt-error" id={`${id}-err`} role="alert">{err}</p> : null}
                 {f.id === 'spo2' ? (
                   <div className="x-vt-note" id="x-vt-spo2-note">
@@ -192,7 +255,7 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
 
         {formError ? <p className="x-vt-error" role="alert">{formError}</p> : null}
         <div className="btn-row">
-          <button type="button" className="btn x-vt-big" onClick={save}>Save</button>
+          <button type="button" className="btn x-vt-big" onClick={() => { save(); }}>Save</button>
         </div>
         <p className="caption">Values outside the possible range are refused as typing slips. Those checks are not clinical limits.</p>
       </div>
@@ -202,6 +265,7 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
           <p className="caption">
             {saved ? 'Saved. ' : ''}Latest set, <span className="mono">{hhmm(latest.at)}</span>: <span className="mono">{vitalsLine(latest.values)}</span>{latestIsDemo ? <> <SyntheticTag /></> : null}
           </p>
+          {vitalsSourceLine(latest) ? <p className="caption">{vitalsSourceLine(latest)}</p> : null}
           {alerts.length === 0 ? (
             <p className="x-vt-quiet">No alert from these vital signs.</p>
           ) : alerts.map((a) => (

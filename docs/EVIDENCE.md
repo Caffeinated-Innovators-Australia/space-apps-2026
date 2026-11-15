@@ -75,7 +75,8 @@ On the "Real crew data" screen, one crew member's haemoglobin sat below the labo
 - The visual acuity self-check is uncalibrated. It is not a calibrated eye chart and not a test for any eye condition. Screen, lighting and distance change its result.
 - There is no in-flight way to measure bone directly. Exercise and grip strength stand in for it.
 - Every value from the clinical lead's build pack v3.3 (the monitor alert thresholds, the display bands, the lapse time, the adapting period, the crew check-in items and the urine strip note) is a placeholder until signed off.
-- Not built: voice input on our own screens, sensor connections, a rover profile, rules that change by environment, any calibrated or clinical eye test (for example retinal imaging), and any direct bone measurement.
+- Built on 15 Nov 2026 after the mentors' feedback: voice on Vital signs and the daily check-in, and device reading (a simulated kit, SYNTHETIC, and readers for the published Bluetooth health formats, checked by automated tests against example data).
+- Not built: speech recognition that runs on the device with no internet, device links tested with flight hardware, a rover profile, rules that change by environment, any calibrated or clinical eye test (for example retinal imaging), and any direct bone measurement.
 - Synthetic results are never evidence of clinical accuracy.
 
 ## Where this sits beside existing work

@@ -24,7 +24,7 @@ The verbatim statement is on the official page. This file holds our traceability
 | C3 | Consider prompting measurements as part of the mission routine | Consideration | Prompt scheduler on a mock crew timeline: never prompts during a critical operation, holds check-ins until five minutes after it ends, re-plans when a task runs late. Space-weather card with a radiation check step, from NASA DONKI |
 | C4 | Consider gamification, dynamic charts and colour coding | Consideration | Honest-reporting loop: a streak that counts check-ins, never results; a shared crew goal with no ranking; insights unlocked at 14 and 30 days of streak. Dynamic charts with the baseline band; colour coding with shape and word |
 | C5 | Consider simple instructions, because astronauts are not assumed to be medical experts | Consideration | Plain-language explanation cards, why lines and steps throughout |
-| C6 | Consider any input: keyboard, mouse clicks or camera images | Consideration | Keyboard, tap, the PVT-style reaction check and the near-vision self-check (one eye at a time, tap per line). The emergency module has optional voice input, off until tapped. Voice input on our own screens, sensor connections and camera input: not built |
+| C6 | Consider any input: keyboard, mouse clicks or camera images | Consideration | Keyboard, tap, the PVT-style reaction check and the near-vision self-check (one eye at a time, tap per line). Voice: the app asks aloud and takes down spoken answers on Vital signs and the daily check-in, off until tapped. Connected devices: a simulated crew kit (SYNTHETIC) and readers for the published Bluetooth health formats. Camera input: not built |
 
 ## Challenge resources (Resources tab, read 13 Nov 2026)
 

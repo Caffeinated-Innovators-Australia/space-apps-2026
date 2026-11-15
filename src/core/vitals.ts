@@ -2,7 +2,7 @@
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 // Pure functions, like the rest of the action layer. Rules decide; the thresholds live in rules/rules.yaml, never here.
 import type { GravityBand, MonitorAlertRule, MonitorComparison, MonitorField, MonitorStep, RuleFile } from './rules.ts';
-import type { State, VitalSigns, VitalsEntry } from './types.ts';
+import type { State, VitalSigns, VitalsEntry, VitalSource } from './types.ts';
 
 export type VitalField = keyof VitalSigns;
 
@@ -72,10 +72,12 @@ export function checkVitals(values: VitalSigns): VitalSigns {
 }
 
 /** Save one set of vital signs for one person. */
-export function recordVitals(state: State, args: { crewId: string; values: VitalSigns; at: number }): State {
+export function recordVitals(state: State, args: { crewId: string; values: VitalSigns; at: number; sources?: Partial<Record<VitalField, VitalSource>> }): State {
   const values = checkVitals(args.values);
   const list = state.vitals ?? [];
-  const entry: VitalsEntry = { id: `vitals-${args.crewId}-${args.at}-${list.length + 1}`, crewId: args.crewId, at: args.at, values };
+  const sources: Partial<Record<VitalField, VitalSource>> = {};
+  for (const f of VITAL_FIELDS) if (values[f.id] !== undefined && args.sources?.[f.id]) sources[f.id] = args.sources[f.id];
+  const entry: VitalsEntry = { id: `vitals-${args.crewId}-${args.at}-${list.length + 1}`, crewId: args.crewId, at: args.at, values, ...(Object.keys(sources).length ? { sources } : {}) };
   return { ...state, vitals: [...list, entry] };
 }
 
@@ -169,4 +171,16 @@ export function vitalsLine(values: VitalSigns): string {
   if (parts.length === 0) return 'No vital signs recorded.';
   const line = parts.join(' · ');
   return line.charAt(0).toUpperCase() + line.slice(1);
+}
+
+const SOURCE_WORDS: Record<VitalSource, string> = { device: 'From a device', voice: 'By voice', typed: 'Typed' };
+/** One plain line saying how each value in a set reached the app, or undefined when the set carries no sources. */
+export function vitalsSourceLine(entry: VitalsEntry): string | undefined {
+  if (!entry.sources) return undefined;
+  const parts: string[] = [];
+  for (const src of ['device', 'voice', 'typed'] as VitalSource[]) {
+    const names = VITAL_FIELDS.filter((f) => entry.values[f.id] !== undefined && entry.sources?.[f.id] === src).map((f) => (f.id === 'sbp' || f.id === 'dbp' ? 'blood pressure' : f.label.toLowerCase()));
+    if (names.length) parts.push(`${SOURCE_WORDS[src]}: ${[...new Set(names)].join(', ')}.`);
+  }
+  return parts.length ? parts.join(' ') : undefined;
 }

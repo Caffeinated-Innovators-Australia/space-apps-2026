@@ -2,6 +2,8 @@
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { useState } from 'react';
 import { ScaleInput } from '../components/ScaleInput';
+import { VoiceTalk, type VoiceValues } from '../components/VoiceTalk.tsx';
+import { spokenNumber, spokenSymptoms } from '../core/speech.ts';
 import { AdvisoryPill, SyntheticTag, TierPill } from '../components/ui';
 import {
   crewById, daySummary, demoValue, pathwayStatuses, pathwayTier, plausible, recordReading, reportNothing, toggleSymptom,
@@ -15,6 +17,8 @@ export interface CheckInProps {
 }
 
 const fmt = (ind: Indicator, v: number) => v.toFixed(ind.dp);
+/** Units as words, so the voice says "litres" and not "L". */
+const UNIT_WORDS: Record<string, string> = { h: 'hours', L: 'litres', bpm: 'beats a minute', kcal: 'kilocalories', '%': 'percent', kg: 'kilograms', mmHg: 'millimetres of mercury', ms: 'milliseconds' };
 
 export function CheckIn({ state, commit, setting, crewId, seed, rules, go, say, hhmm }: CheckInProps) {
   const crew = crewById(seed, crewId);
@@ -43,12 +47,12 @@ export function CheckIn({ state, commit, setting, crewId, seed, rules, go, say, 
   const nothing = state.nothingToReport.includes(crewId);
   const question = pathwayStatuses(state, seed, rules, crewId).find((p) => p.level === 'early' || p.level === 'check');
 
-  const finish = () => {
+  const finish = (): string => {
     const bad: Record<string, string> = {};
     for (const ind of rows) {
       if (!ok(ind)) bad[ind.id] = `That cannot be right: ${ind.name.toLowerCase()} must be between ${ind.input.min} and ${ind.input.max} ${ind.unit}. Check it and try again.`;
     }
-    if (Object.keys(bad).length) { setErrors(bad); return; }
+    if (Object.keys(bad).length) { setErrors(bad); return 'Not saved. Check the values marked on the screen.'; }
     let next = state;
     const at = Date.now();
     for (const ind of rows) {
@@ -56,11 +60,43 @@ export function CheckIn({ state, commit, setting, crewId, seed, rules, go, say, 
         next = recordReading(next, seed, rules, { crewId, indicatorId: ind.id, value: Number(Number(text(ind)).toFixed(ind.dp)), at }).state;
       } catch (e) {
         setErrors({ [ind.id]: (e as Error).message });
-        return;
+        return `Not saved. ${(e as Error).message}`;
       }
     }
     commit(next);
     go('home');
+    return 'Check-in saved.';
+  };
+
+  // Talk: the same form, filled by voice. The spoken answers go through the same checks as typed ones.
+  const SYMPTOMS = '__symptoms';
+  const questions = [...rows.map((ind) => ({ id: ind.id, ask: (ind.input.prompt && ind.input.prompt.toLowerCase() !== ind.name.toLowerCase() ? `${ind.name}. ${ind.input.prompt}?` : `${ind.name}, in ${ind.unit}?`).replace(/\?\?$/, '?') })), { id: SYMPTOMS, ask: 'Anything else today? Say a symptom from the list, or say nothing to report.' }];
+  const understand = (said: string, id: string): VoiceValues | string | undefined => {
+    if (id === SYMPTOMS) {
+      const found = spokenSymptoms(said, seed.symptoms.options);
+      if (found.length) return { [SYMPTOMS]: found.join(', ') };
+      return /\b(nothing|none|no symptoms|all good|i am fine|i'm fine)\b/i.test(said) ? { [SYMPTOMS]: 'nothing' } : undefined;
+    }
+    const ind = rows.find((r) => r.id === id);
+    const n = spokenNumber(said);
+    if (!ind || n === undefined) return undefined;
+    if (!plausible(ind, n)) return `${ind.name} of ${n} cannot be right. It must be between ${ind.input.min} and ${ind.input.max}.`;
+    return { [id]: n };
+  };
+  const readBack = (id: string, v: number | string) => {
+    if (id === SYMPTOMS) return v === 'nothing' ? 'Nothing to report.' : `Logged: ${v}.`;
+    const ind = rows.find((r) => r.id === id);
+    return ind ? `${ind.name} ${Number(v).toFixed(ind.dp)} ${UNIT_WORDS[ind.unit] ?? ind.unit}.` : '';
+  };
+  const voiceFill = (got: VoiceValues) => {
+    for (const ind of rows) if (got[ind.id] !== undefined) set(ind, fmt(ind, Number(got[ind.id])));
+    const sym = got[SYMPTOMS];
+    if (sym === 'nothing') { if (!nothing) commit(reportNothing(state, crewId)); }
+    else if (typeof sym === 'string') {
+      let next = state;
+      for (const label of sym.split(', ')) if (!next.symptoms.some((x) => x.crewId === crewId && x.label === label)) next = toggleSymptom(next, crewId, label, Date.now());
+      commit(next);
+    }
   };
 
   const context = (
@@ -84,6 +120,7 @@ export function CheckIn({ state, commit, setting, crewId, seed, rules, go, say, 
     <>
       {context}
       <h1 className="display">Daily check-in</h1>
+      <VoiceTalk what="daily check-in" questions={questions} understand={understand} readBack={readBack} onFill={voiceFill} onFinish={finish} />
       <form className="stack" onSubmit={(e) => { e.preventDefault(); finish(); }} noValidate>
         <section className="card" aria-labelledby="x-ci-rows">
           <div className="card-head"><h2 className="title" id="x-ci-rows">Today's numbers</h2><SyntheticTag /></div>

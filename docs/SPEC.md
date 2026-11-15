@@ -68,6 +68,7 @@ Each crew member has a pre-flight baseline and 213 past mission days. Baselines 
 - An indicator can carry `maxTier: amber`: by itself it can raise Watch, never Act now. Fluid intake and mood carry it; reaction time and visual acuity are capped because they are experimental.
 - Monitor alerts (`monitor_alerts`, code in `src/core/vitals.ts`) read only the latest set of vital signs. SEP-01 (possible sepsis) and SHK-01 (possible shock) fire when any of their `when` groups matches; a group matches when all its comparisons hold, and a missing value never matches. A match is Act now and offers emergency mode. The loader refuses a group that compares oxygen saturation alone. Every threshold is the clinical lead's placeholder.
 - No language model runs in the app. Explanations are the rule's own text with its values filled in.
+- AI at the edges only: the browser's speech recognition and voice listen and speak on the Talk card, fill the form and read each value back. `src/core/speech.ts` turns the words into numbers with plain rules. Connected devices supply numbers through `src/core/devices.ts`. Neither ever sets a tier.
 - The rules do not change by environment (CR-17).
 
 ## 4. Prompt scheduler (satisfies: FR-19)

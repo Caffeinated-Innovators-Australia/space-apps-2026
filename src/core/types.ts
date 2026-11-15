@@ -129,7 +129,9 @@ export interface Reading {
 
 /** One set of vital signs. Any value may be missing. Oxygen saturation never raises an alert on its own. */
 export interface VitalSigns { temp?: number; hr?: number; sbp?: number; dbp?: number; rr?: number; spo2?: number }
-export interface VitalsEntry { id: string; crewId: string; at: number; values: VitalSigns }
+/** How one vital sign reached the app. Kept with the set and sent with the case, so the doctor can weigh it. */
+export type VitalSource = 'device' | 'voice' | 'typed';
+export interface VitalsEntry { id: string; crewId: string; at: number; values: VitalSigns; sources?: Partial<Record<keyof VitalSigns, VitalSource>> }
 
 /** One weekly crew check-in. Answers are 1 to 5, in the order of the items. Never shown to crewmates or the crew medic. */
 export interface CrewCheck { crewId: string; week: number; answers: number[]; at: number }
