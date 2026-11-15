@@ -11,7 +11,7 @@ The story, set by the team lead on 14 November 2026: **the first 20 seconds are 
 | Time | Part | On screen | Caption |
 |---|---|---|---|
 | 0:00 to 0:01.6 | Mars | Team card: team name, "Four clinicians and an aerospace engineer", and the challenge | none |
-| 0:01.6 to 0:03 | Mars | Title card: "Crew health check. Care that starts before the expert arrives." [Project name: team to choose] | none |
+| 0:01.6 to 0:03 | Mars | Title card: "S.E.R.E.N. Clinical. Care that starts before the expert arrives." (Spaceflight Extreme and Remote Environment Nexus) | none |
 | 0:03 to 0:04.6 | Mars | Today as Jo: one status mark, one tile, the body figure | "Day 87 on Mars. Earth is 18 minutes away." |
 | 0:04.6 to 0:07.4 | Mars | The early warning opened, with "Why this alert?" showing its NASA source | "Three days of low fluid. It flags kidney stone risk early. Source: NASA." |
 | 0:07.4 to 0:11.8 | Mars | "Feeling off?": Kidneys and urine, two symptoms, then the result | "Then pain in her side. Three taps, and the rules say: crew medic." |

@@ -54,24 +54,29 @@ export function assistantRoute(s: AiSettings, replySeconds: number): { use: 'clo
 
 // ---------- Understanding what was said ----------
 
-export interface FieldSpec { id: string; name: string; unit: string; min: number; max: number }
-export interface InterpretContext { fields: FieldSpec[]; symptoms: string[]; checklists?: Checklist[] }
+/** One form field. labels gives the words for each point on a scale, from min upwards (for example mood 1 to 5). */
+export interface FieldSpec { id: string; name: string; unit: string; min: number; max: number; labels?: string[] }
+/** suggestChecklist false: a routine form (check-in, vital signs) never suggests an emergency checklist; the rules raise alerts there. */
+export interface InterpretContext { fields: FieldSpec[]; symptoms: string[]; checklists?: Checklist[]; suggestChecklist?: boolean }
 export interface Interpretation { values: Record<string, number>; symptoms: string[]; checklist: { construct: number; name: string; reason: string } | null; source: 'slm' | 'built-in' }
 
 /** The instruction to the small model. It asks for JSON only, and lists exactly what may be filled. */
 export function interpretMessages(ctx: InterpretContext, said: string): { role: 'system' | 'user'; content: string }[] {
-  const fields = ctx.fields.map((f) => `- ${f.id}: ${f.name} in ${f.unit}, between ${f.min} and ${f.max}`).join('\n') || '- none';
+  const fields = ctx.fields.map((f) => `- ${f.id}: ${f.name} in ${f.unit}, between ${f.min} and ${f.max}${f.labels?.length ? ` (${f.labels.map((l, i) => `${f.min + i} = ${l}`).join(', ')})` : ''}`).join('\n') || '- none';
+  const ask = ctx.suggestChecklist !== false;
   const lists = (ctx.checklists ?? CHECKLISTS).map((c) => `- ${c.construct}: ${c.name}`).join('\n');
   return [
     {
       role: 'system',
       content: [
-        'You turn what an astronaut said into form entries for a crew health app. Reply with JSON only, no other text:',
-        '{"values": {"<field id>": <number>}, "symptoms": ["<symptom exactly as listed>"], "checklist": {"construct": <number>, "reason": "<short reason>"} | null}',
-        'Use only these fields:', fields,
-        'Use only these symptoms, spelled exactly:', ctx.symptoms.map((s) => `- ${s}`).join('\n') || '- none',
-        'Suggest an emergency checklist only if what was said sounds like an emergency, using only these numbers:', lists,
-        'Never add a value, symptom or checklist that was not said or clearly meant. Never name a diagnosis. Leave anything unclear out.',
+        'You turn what an astronaut said into form entries for a crew health app. Reply with one JSON object only, no other text.',
+        'Example reply: {"values": {"sleep": 6.5}, "symptoms": ["Headache"], "checklist": null}',
+        ask ? 'Example reply in an emergency: {"values": {}, "symptoms": ["Seizure"], "checklist": {"construct": 6, "reason": "fitting"}}' : 'Always reply with "checklist": null.',
+        'Fields you may fill (use the field id as the key and a number as the value):', fields,
+        'Numbers may be spoken as words: "one eighteen" is 118, "six and a half" is 6.5, "ninety four on fifty six" or "ninety four over fifty six" is an upper blood pressure of 94 and a lower of 56. A pulse is the heart rate.',
+        'Symptoms you may list, spelled exactly as here:', ctx.symptoms.map((s) => `- ${s}`).join('\n') || '- none',
+        ...(ask ? ['Suggest an emergency checklist only if what was said sounds like an emergency. Not breathing, no pulse or not responding is checklist 1. Use only these numbers:', lists] : []),
+        'Never add a value, symptom or checklist that was not said or clearly meant. Never name a diagnosis. Leave anything unclear out. Use null, never a placeholder.',
       ].join('\n'),
     },
     { role: 'user', content: said },
@@ -83,22 +88,57 @@ function firstJson(text: string): unknown {
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
   if (start < 0 || end <= start) return undefined;
-  try { return JSON.parse(text.slice(start, end + 1)); } catch { return undefined; }
+  const raw = text.slice(start, end + 1);
+  try { return JSON.parse(raw); } catch { /* try the common slips below */ }
+  // Small models sometimes copy notation from an instruction, such as "| null", leave a trailing comma, or drop a closing brace.
+  const repair = (x: string) => {
+    let fixed = x.replace(/\s*\|\s*null/g, '').replace(/,\s*([}\]])/g, '$1');
+    const missing = (fixed.match(/{/g) ?? []).length - (fixed.match(/}/g) ?? []).length;
+    if (missing > 0 && missing < 4) fixed += '}'.repeat(missing);
+    return JSON.parse(fixed) as unknown;
+  };
+  // Everything from the opening brace to the end first (a dropped closing brace loses the tail otherwise), then up to the last brace.
+  for (const candidate of [text.slice(start).trim().replace(/```\s*$/, '').trim(), raw]) {
+    try { return repair(candidate); } catch { /* next */ }
+  }
+  return undefined;
+}
+
+/**
+ * Safety net for red-flag symptoms, checked without any model and added to whatever a model returns, because a missed
+ * red flag costs more than a second look. Each phrase maps to a symptom on the app's own list.
+ */
+export const RED_FLAG_PHRASES: [RegExp, string][] = [
+  [/\b(suicid\w*|kill(ing)? myself|end(ing)? (my|it) (life|all)|take my (own )?life|don'?t want to (live|be alive)|better off dead)\b/i, 'Thoughts of suicide'],
+  [/\b(harm(ing)? myself|hurt(ing)? myself|self[- ]?harm|cut(ting)? myself)\b/i, 'Thoughts of harming myself'],
+  [/\b(i (have|'ve) (hurt|harmed|cut) myself|i (hurt|harmed|cut) myself)\b/i, 'Have harmed myself'],
+  [/\b(hurt(ing)?|harm(ing)?|kill(ing)?) (someone|somebody|him|her|them|my crewmate|the crew)\b/i, 'Thoughts of harming someone else'],
+];
+export function redFlagSymptoms(said: string, allowed: string[]): string[] {
+  return RED_FLAG_PHRASES.filter(([re, s]) => allowed.includes(s) && re.test(said)).map(([, s]) => s);
 }
 
 /** Check a model's reply against the app's own lists and bounds. Anything unknown or out of range is dropped. */
 export function checkInterpretation(reply: string, ctx: InterpretContext): Interpretation | null {
-  const j = firstJson(reply) as { values?: Record<string, unknown>; symptoms?: unknown; checklist?: { construct?: unknown; reason?: unknown } | null } | undefined;
+  const j = firstJson(reply) as { values?: Record<string, unknown>; symptoms?: unknown; checklist?: { construct?: unknown; reason?: unknown } | null } & Record<string, unknown> | undefined;
   if (!j || typeof j !== 'object') return null;
+  // Small models do not always keep the layout asked for: values may sit at the top level, and symptoms inside "values".
+  const vals: Record<string, unknown> = j.values && typeof j.values === 'object' ? { ...j, ...j.values } : j;
   const values: Record<string, number> = {};
   for (const f of ctx.fields) {
-    const v = Number(j.values?.[f.id]);
-    if (j.values?.[f.id] !== undefined && Number.isFinite(v) && v >= f.min && v <= f.max) values[f.id] = v;
+    const raw = vals[f.id];
+    const v = Number(raw);
+    if (raw !== undefined && raw !== null && raw !== '' && Number.isFinite(v) && v >= f.min && v <= f.max) values[f.id] = v;
   }
-  const symptoms = Array.isArray(j.symptoms) ? ctx.symptoms.filter((s) => (j.symptoms as unknown[]).includes(s)) : [];
+  const listed = Array.isArray(j.symptoms) ? j.symptoms : Array.isArray(vals.symptoms) ? vals.symptoms : [];
+  const symptoms = ctx.symptoms.filter((s) => (listed as unknown[]).includes(s));
   const lists = ctx.checklists ?? CHECKLISTS;
-  const c = j.checklist && lists.find((x) => x.construct === Number(j.checklist!.construct));
-  return { values, symptoms, checklist: c ? { construct: c.construct, name: c.name, reason: String(j.checklist!.reason ?? '').slice(0, 200) } : null, source: 'slm' };
+  // The checklist may come as {"construct": 7, "reason": …}, as a bare number, or inside "values".
+  const rawList = (j.checklist ?? vals.checklist) as { construct?: unknown; reason?: unknown } | number | null | undefined;
+  const num = typeof rawList === 'number' ? rawList : rawList && typeof rawList === 'object' ? Number(rawList.construct) : NaN;
+  const c = ctx.suggestChecklist !== false ? lists.find((x) => x.construct === num) : undefined;
+  const reason = rawList && typeof rawList === 'object' ? String(rawList.reason ?? '') : 'Suggested from what was said.';
+  return { values, symptoms, checklist: c ? { construct: c.construct, name: c.name, reason: reason.slice(0, 200) } : null, source: 'slm' };
 }
 
 /** The checklist whose keywords best match what was said, with no model: the emergency module's own keyword weights. */
@@ -115,7 +155,8 @@ export function keywordChecklist(said: string, lists: Checklist[] = CHECKLISTS):
 
 /** The built-in understanding, used when no model is set up or the model cannot be reached. */
 export function builtInInterpretation(said: string, ctx: InterpretContext): Interpretation {
-  return { values: {}, symptoms: spokenSymptoms(said, ctx.symptoms), checklist: keywordChecklist(said, ctx.checklists), source: 'built-in' };
+  const symptoms = [...new Set([...spokenSymptoms(said, ctx.symptoms), ...redFlagSymptoms(said, ctx.symptoms)])];
+  return { values: {}, symptoms, checklist: ctx.suggestChecklist === false ? null : keywordChecklist(said, ctx.checklists), source: 'built-in' };
 }
 
 // ---------- The AI clinical assistant ----------
@@ -125,11 +166,12 @@ export function assistantSystem(opts: { place: string; reason: string; allowMedi
   return [
     'You are the AI clinical assistant in a crew health app, used when Earth or the flight surgeon cannot be reached.',
     `Place: ${opts.place}. Why you were asked: ${opts.reason}.`,
-    'You support the crew medic, who decides. Be brief and practical, in plain words, with numbered next steps.',
+    'You support the crew medic, who decides. Be brief and practical, with numbered next steps. Use plain words a non-medical crew member understands; if you use a medical term, explain it in brackets. Use Australian English.',
     "The app's rules set every alert level. Never change, lower or argue against an alert. If anything sounds life-threatening, open your reply with: press Emergency now.",
+    "The app's active alerts and their first steps are signed off by the team's clinical lead. Build on those steps; never contradict them. For example, if a step says lie the person flat, do not suggest a different position.",
     'Say what to check for and what to do next. Do not give a diagnosis as fact; say what it could be and what would tell them apart.',
     opts.allowMedicines
-      ? 'You may name generic medicines and adult doses, each marked "Suggestion: check against your formulary and protocol before giving". Never brand names.'
+      ? 'You may name generic medicines and usual adult doses, using Australian generic names (for example paracetamol, not acetaminophen), each marked "Suggestion: check against your formulary and protocol before giving". Never brand names. Mention the main caution for each medicine in this situation, such as kidney function or dehydration.'
       : 'Do not name any medicine or dose. Say "as your protocol sets out" instead.',
     'Say when to contact Earth as soon as the link returns.',
   ].join('\n');
@@ -178,9 +220,15 @@ export async function interpret(s: AiSettings, ctx: InterpretContext, said: stri
     const reply = await chatOpenAiCompatible(s.slm, interpretMessages(ctx, said), fetcher);
     const got = checkInterpretation(reply, ctx);
     if (!got) return builtInInterpretation(said, ctx);
-    // Keep a critical emergency the keywords catch, even if the model missed it: a missed emergency costs more than a
-    // second look. Only the critical checklists, so a mild cough or headache in a check-in raises nothing.
-    return got.checklist ? got : { ...got, checklist: keywordChecklist(said, (ctx.checklists ?? CHECKLISTS).filter((c) => c.tier === 'crit')) };
+    // Red-flag phrases are always added, whatever the model returned.
+    const symptoms = [...new Set([...got.symptoms, ...redFlagSymptoms(said, ctx.symptoms)])];
+    if (ctx.suggestChecklist === false) return { ...got, symptoms, checklist: null };
+    // A critical emergency the keywords catch is kept even if the model missed it, and a cardiac arrest the keywords
+    // catch wins over a different model suggestion: a missed arrest costs more than a second look.
+    // "over" marks the hazardous atmosphere checklist, which overrides the others: it is kept in the safety net too.
+    const crit = keywordChecklist(said, (ctx.checklists ?? CHECKLISTS).filter((c) => c.tier === 'crit' || c.tier === 'over'));
+    const checklist = crit?.construct === 1 ? crit : got.checklist ?? crit;
+    return { ...got, symptoms, checklist };
   } catch {
     return builtInInterpretation(said, ctx);
   }

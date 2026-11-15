@@ -186,7 +186,7 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
   return (
     <section className="stack x-vt" aria-labelledby="x-vt-h">
       <ChecklistSuggestion checklist={suggested} onOpen={(c) => go('astra', String(c))} />
-      <VoiceTalk what="vital signs" questions={VITAL_QUESTIONS} understand={aiUnderstand(understand, { fields: VITAL_FIELDS.map((f) => ({ id: f.id, name: f.label, unit: f.unit, min: f.min, max: f.max })), symptoms: [] }, (i) => i.values, setSuggested)} readBack={(id, v) => vitalReadBack(id as VitalField, Number(v))}
+      <VoiceTalk what="vital signs" questions={VITAL_QUESTIONS} understand={aiUnderstand(understand, { fields: VITAL_FIELDS.map((f) => ({ id: f.id, name: f.label, unit: f.unit, min: f.min, max: f.max })), symptoms: [], suggestChecklist: false }, (i) => i.values, setSuggested)} readBack={(id, v) => vitalReadBack(id as VitalField, Number(v))}
         onFill={(v) => fill(v as VitalSigns, 'voice')} onFinish={save} example="Temperature 38.6, pulse 118, blood pressure 94 over 56" />
       <div className="card">
         <div className="card-head">

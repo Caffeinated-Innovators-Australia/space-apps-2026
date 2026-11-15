@@ -173,7 +173,7 @@ export function App() {
     <TierWords.Provider value={tierWords}>
       <div className="app">
         <header className="top">
-          <button className="brand" onClick={() => go('home')}>Crew health check</button>
+          <button className="brand" onClick={() => go('home')} title="Spaceflight Extreme and Remote Environment Nexus – Clinical">S.E.R.E.N. Clinical</button>
           <nav className="nav" aria-label="Main">
             <button aria-current={['home', 'reading', 'result', 'gap', 'pathway', 'checkin', 'feeling', 'radiation', 'immune', 'schedule', 'signals', 'sources', 'area', 'vitals', 'ultrasound'].includes(route.name) ? 'page' : undefined} onClick={() => go('home')}>Today</button>
             <button aria-current={route.name === 'outbox' ? 'page' : undefined} onClick={() => go('outbox')}>Outbox{queued ? ` (${queued})` : ''}</button>
@@ -225,7 +225,7 @@ export function App() {
           ) : route.name === 'ai' ? (
             <AiConnections setting={setting} go={go} />
           ) : route.name === 'assistant' ? (
-            <Assistant state={state} seed={seed} setting={setting} crewId={crew.id} go={go} />
+            <Assistant state={state} seed={seed} rules={rules} setting={setting} crewId={crew.id} go={go} />
           ) : route.name === 'vitals' ? (
             <Vitals {...shared} {...extra} rules={rules} onSend={pathwayStatuses(state, seed, rules, crew.id).some((x) => x.pathway.id === 'KS-01' && (x.level === 'amber' || x.level === 'red')) ? () => { if (!state.outbox.some((k) => k.pathwayId === 'KS-01' && k.crewId === crew.id && k.status === 'queued')) commit(sendPathwayCase(state, seed, rules, { crewId: crew.id, pathwayId: 'KS-01', settingId: setting.id, at: nowMs() }).state); go('pathway', 'KS-01'); } : undefined} />
           ) : route.name === 'ultrasound' ? (
