@@ -263,6 +263,11 @@
     "max": 8,
     "prompt": "Visual acuity check: one eye at a time"
    },
+   "standout": {
+    "gravity": ["zero"],
+    "short": "important at 0 g",
+    "note": "Important at 0 g: this weekly check looks for eye changes linked to spaceflight-associated neuro-ocular syndrome (SANS). Do it every week, on time."
+   },
    "hazards": [
     "G"
    ],
@@ -420,6 +425,13 @@
     "min": 0,
     "max": 12,
     "prompt": "Fluid you drank today"
+   },
+   "target": {
+    "low": 2.2,
+    "high": 2.5,
+    "perEvaHour": 0.24,
+    "label": "Target: 2.2 to 2.5 L a day",
+    "source": "Set by the clinical lead on 15 Nov 2026 (CR-45), from NASA OCHMO-TB-027 Water (Rev C, 29 Nov 2023): NASA-STD-3001 sets at least 2.5 L a day for drinking and rehydrating food, plus 0.24 L for each EVA hour; average intake on Shuttle and ISS missions was about 2.0 to 2.3 L a day. https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-027-water.pdf"
    },
    "hazards": [
     "E",
@@ -14484,6 +14496,8 @@
    "Dizzy on standing",
    "Blurred vision",
    "Low mood",
+   "Thoughts of harming myself",
+   "Thoughts of harming someone else",
    "Sore throat",
    "Cough",
    "Short of breath",
@@ -14530,7 +14544,9 @@
      "Headache",
      "Dizzy on standing",
      "Blurred vision",
-     "Low mood"
+     "Low mood",
+     "Thoughts of harming myself",
+     "Thoughts of harming someone else"
     ]
    },
    {
@@ -14644,6 +14660,13 @@
     "medic": "Only a run of low days, or what you send",
     "surgeon": "Only the cases you send",
     "crew": "Never"
+   },
+   {
+    "what": "Thoughts of harming yourself or someone else",
+    "you": "Always",
+    "medic": "Straight away",
+    "surgeon": "Straight away, in a private call",
+    "crew": "The commander straight away; no one else"
    },
    {
     "what": "Check-in streak and crew goal",

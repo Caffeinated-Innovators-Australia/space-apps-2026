@@ -30,7 +30,7 @@ describe('the pack demo sets', () => {
     expect(a.reasons).toEqual(['Temperature 38.6 °C', 'Blood pressure 94/56 mmHg', 'Breathing 24 a minute']);
     expect(a.steps).toEqual(['Lie the person flat and keep them warm.', 'Record vitals from the monitor.', 'Crew medic: follow your sepsis protocol.']);
     expect(a.placeholder).toBe(false);
-    expect(a.confidence).toBe('Low');
+    expect(a.confidence).toBe('Medium');
     expect(a.source).toMatch(/clinical lead/);
     expect(a.at).toBe(1000);
   });

@@ -5,6 +5,7 @@
 import { assess, RANK, type Assessment, type RuleFile, type Tier } from './rules.ts';
 import { pathwayCaseContent } from './pathways.ts';
 import { recordsSummary } from './records.ts';
+import { ADAPT_DAYS } from './profiles.ts';
 import { applySlip, plan, type CheckIn, type PlanItem } from './schedule.ts';
 import type { CasePack, CrewProfile, Indicator, Reading, Seed, Setting, State, Symptom, TimelineBlock } from './types.ts';
 
@@ -34,6 +35,23 @@ export function settingById(seed: Seed, id: string): Setting {
 }
 
 const logged = (xs: (number | null)[] | undefined): number[] => (xs ?? []).filter((v): v is number => v !== null);
+
+/** After a change of gravity (CR-17, CR-48): Act now from the person's own range is capped at Watch for the adapting days, then readings from those days become the new own range. */
+export interface Adaptation { capWatch: boolean; baseline?: number[]; history?: number[] }
+/** Readings from the adapting window needed before they replace the own range. Fewer keeps the earlier range. */
+export const ADAPT_MIN_READINGS = 3;
+
+export function adaptationFor(state: State, seed: Seed, crewId: string, indicatorId: string, at: number): Adaptation {
+  const change = state.ui.gravityChange;
+  const band = settingById(seed, state.ui.settingId).gravityBand;
+  if (!change || !band || change.from === band || at < change.at) return { capWatch: false };
+  const end = change.at + ADAPT_DAYS * 86_400_000;
+  if (at < end) return { capWatch: true };
+  const mine = recorded(state, crewId, indicatorId);
+  const window = mine.filter((r) => r.at >= change.at && r.at < end).map((r) => r.value);
+  if (window.length < ADAPT_MIN_READINGS) return { capWatch: false };
+  return { capWatch: false, baseline: window, history: mine.filter((r) => r.at >= end && r.at < at).map((r) => r.value) };
+}
 
 /** Readings saved on this device for one person and one indicator, oldest first. */
 export function recorded(state: State, crewId: string, indicatorId: string): Reading[] {
@@ -101,17 +119,19 @@ function assessCumulative(seed: Seed, rules: RuleFile, crew: CrewProfile, ind: I
  * Assess one value for one crew member against their own baseline and their mission so far.
  * `earlier` holds readings already saved today, oldest first. Changes nothing.
  */
-export function assessValue(seed: Seed, rules: RuleFile, crewId: string, indicatorId: string, value: number, earlier: number[] = []): Assessment {
+export function assessValue(seed: Seed, rules: RuleFile, crewId: string, indicatorId: string, value: number, earlier: number[] = [], adapt: Adaptation = { capWatch: false }): Assessment {
   const crew = crewById(seed, crewId);
   const ind = indicatorById(seed, indicatorId);
   if (!plausible(ind, value)) throw new Error(`${ind.name} must be between ${ind.input.min} and ${ind.input.max} ${ind.unit}. Check the reading and enter it again.`);
   if (ind.mode === 'cumulative') return assessCumulative(seed, rules, crew, ind, value, earlier);
-  const baseline = crew.baseline[ind.id] ?? [];
+  const reset = !ind.environment && adapt.baseline ? adapt.baseline : undefined;
+  const baseline = reset ?? crew.baseline[ind.id] ?? [];
   if (baseline.length === 0) throw new Error(`${crew.name} has no baseline for ${ind.name}.`);
   const lim = limitsFor(seed, crewId, indicatorId);
   const a = assess(rules, {
     region: ind.region, indicator: ind.name, unit: ind.unit, dp: ind.dp, watch: ind.watch, value, baseline,
-    history: [...logged(crew.mission[ind.id]), ...earlier],
+    // After a reset, only readings taken since the adapting days ended count towards the trend and the run.
+    history: reset ? (adapt.history ?? []) : [...logged(crew.mission[ind.id]), ...earlier],
     fixedSd: ind.fixedSd,
     displayMin: ind.input.kind === 'scale' || ind.input.kind === 'vision' ? ind.input.min : undefined,
     displayMax: ind.input.kind === 'scale' || ind.input.kind === 'vision' ? ind.input.max : undefined,
@@ -134,20 +154,44 @@ export function assessValue(seed: Seed, rules: RuleFile, crewId: string, indicat
     a.steps = rules.steps.amber;
     a.why = `${a.why} By itself this signal is never rated Act now.`;
   }
+  // Adapting to a new gravity: Act now from the person's own range is capped at Watch. Sourced limits are never capped.
+  if (adapt.capWatch && !ind.environment && a.tier === 'red' && !a.findings.some((f) => f.ruleId === 'LM-01')) {
+    a.tier = 'amber';
+    a.title = rules.titles.amber.replace('{region}', ind.region);
+    a.steps = rules.steps.amber;
+    a.why = `${a.why} You are adapting to a new gravity, so for ${ADAPT_DAYS} days this is rated Watch at most. Your own range is then reset from those days.`;
+  }
+  // A run of logged days below a fixed amount is Act now whatever the person's own range, even for a capped signal (CR-44).
+  for (const run of rules.absolute_runs ?? []) {
+    if (run.indicator !== ind.id) continue;
+    const last = [...logged(crew.mission[ind.id]), ...earlier, value].slice(-run.count);
+    if (last.length < run.count || !last.every((v) => v < run.below)) continue;
+    const placeholder = run.signed_off_by.trim().toLowerCase() === 'placeholder';
+    const why = run.why.replace(/\{count\}/g, String(run.count)).replace('{values}', last.map((v) => v.toFixed(ind.dp)).join(', '));
+    return {
+      ...a, tier: 'red', title: run.title, why, steps: run.steps, ruleId: run.id, source: run.source, confidence: run.confidence, placeholder, reviewedBy: placeholder ? null : run.signed_off_by,
+      findings: [{ ruleId: run.id, tier: 'red', why, source: run.source, confidence: run.confidence, placeholder, reviewedBy: placeholder ? null : run.signed_off_by }, ...a.findings],
+    };
+  }
   const own = ind.steps?.[a.tier];
   return own ? { ...a, steps: own } : a;
+}
+
+/** Whether a Watch result should wait for a repeat reading before the crew medic and Earth are brought in (CR-35). */
+export function awaitingRepeat(rules: RuleFile, ind: Indicator, a: Assessment, status: 'not-needed' | 'unconfirmed' | 'confirmed'): boolean {
+  return a.tier === 'amber' && status === 'unconfirmed' && !ind.steps?.amber && Boolean(rules.steps.amber_unconfirmed?.length);
 }
 
 /** Assess a saved reading as it stood when it was taken. */
 export function assessReading(state: State, seed: Seed, rules: RuleFile, reading: Reading): Assessment {
   const earlier = recorded(state, reading.crewId, reading.indicatorId).filter((r) => r.at < reading.at).map((r) => r.value);
-  return assessValue(seed, rules, reading.crewId, reading.indicatorId, reading.value, earlier);
+  return assessValue(seed, rules, reading.crewId, reading.indicatorId, reading.value, earlier, adaptationFor(state, seed, reading.crewId, reading.indicatorId, reading.at));
 }
 
 /** Save a reading and return it with its assessment. */
 export function recordReading(state: State, seed: Seed, rules: RuleFile, args: { crewId: string; indicatorId: string; value: number; at: number }): { state: State; reading: Reading; assessment: Assessment } {
   const earlier = recorded(state, args.crewId, args.indicatorId).map((r) => r.value);
-  const assessment = assessValue(seed, rules, args.crewId, args.indicatorId, args.value, earlier);
+  const assessment = assessValue(seed, rules, args.crewId, args.indicatorId, args.value, earlier, adaptationFor(state, seed, args.crewId, args.indicatorId, args.at));
   const reading: Reading = { id: `r-${args.at}-${state.readings.length + 1}`, crewId: args.crewId, indicatorId: args.indicatorId, value: args.value, at: args.at, day: seed.missionDay, tier: assessment.tier, ruleId: assessment.ruleId, stepsDone: [] };
   return { state: { ...state, readings: [...state.readings, reading] }, reading, assessment };
 }

@@ -15,7 +15,7 @@ import { AdvisoryPill, AlertCard, LimitArrow, More, ReadingTile, Ring, Synthetic
 import {
   acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
   fromMin, initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
-  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, lifeThreats, toMin, vitalsPrompt, painDue, painSchedule, fluidVitalsCheck,
+  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, lifeThreats, toMin, vitalsPrompt, painDue, painSchedule, fluidVitalsCheck, awaitingRepeat,
   type Assessment, type DaySummary, type Indicator, type PathwayStatus, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
 import osd from './data/osd569_cbc.json';
@@ -469,7 +469,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
                     return (
                       <li key={i.id}>
                         <button className="row" onClick={() => open(i.id)}>
-                          <span className="row-name">{i.name}{prompted && !r ? ' · asked for today' : ''}</span>
+                          <span className="row-name">{i.name}{prompted && !r ? ' · asked for today' : ''}{i.standout && setting.gravityBand && i.standout.gravity.includes(setting.gravityBand) ? <strong>{` · ${i.standout.short}`}</strong> : null}</span>
                           <span className="row-val">{r || past !== undefined ? <><span className="mono">{shown(i, r ? r.value : past!)}</span> {i.unit}</> : null}{a ? <LimitArrow tier={a.tier} delta={a.delta} /> : null}</span>
                           {a ? <TierPill tier={a.tier} /> : (
                             <span className="stale">{past !== undefined ? `From day ${lastDay}. ` : 'No reading yet. '}{i.cadence === 'prompted' && !prompted ? 'Taken when asked' : due ? 'Due today' : i.cadence === 'weekly' ? 'Weekly' : 'Not logged today'}</span>
@@ -553,6 +553,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
     ...day.flagged.filter((x) => !(setting.habitat === false && x.indicator.environment)).map((x) => ({ key: x.reading!.id, tier: x.assessment!.tier as Tier | 'advisory', name: x.indicator.name, sub: x.indicator.environment ? 'Cabin reading' : x.assessment!.deltaText, val: `${shown(x.indicator, x.reading!.value)} ${x.indicator.unit}`, arrow: <LimitArrow tier={x.assessment!.tier} delta={x.assessment!.delta} />, go: () => go('result', x.reading!.id) })),
     ...pathways.map((p) => ({ key: p.key, tier: (pathwayTier(p) ?? 'advisory') as Tier | 'advisory', name: p.pathway.region, sub: p.level === 'check' ? '3 quick questions' : p.title.includes(': ') ? cap(p.title.split(': ')[1]) : p.title, val: '', arrow: null, go: () => go('pathway', p.pathway.id) })),
     ...vitalsAlerts(state, rules, crewId, setting.gravityBand).map((v) => ({ key: v.key, tier: 'red' as Tier | 'advisory', name: 'Vital signs', sub: v.title, val: '', arrow: null, go: () => go('vitals') })),
+    ...day.items.filter((x) => x.due && !x.reading && x.indicator.standout && setting.gravityBand && x.indicator.standout.gravity.includes(setting.gravityBand)).map((x) => ({ key: `standout-${x.indicator.id}`, tier: 'advisory' as const, name: x.indicator.name, sub: `Due today, ${x.indicator.standout!.short}`, val: '', arrow: null, go: () => go('reading', x.indicator.id) })),
     ...(fluidVitalsCheck(state, seed, rules, crewId) ? [{ key: 'fluid-vitals', tier: 'advisory' as const, name: 'Vital signs', sub: fluidVitalsCheck(state, seed, rules, crewId)!.title, val: '', arrow: null, go: () => go('vitals') }] : []),
     ...(painDue(state, seed, rules, crewId, nowMs()) ? [{ key: 'pain-due', tier: 'advisory' as const, name: painDue(state, seed, rules, crewId, nowMs())!.region, sub: painDue(state, seed, rules, crewId, nowMs())!.title, val: '', arrow: null, go: () => go('pathway', painDue(state, seed, rules, crewId, nowMs())!.pathwayId) }] : []),
     ...(vitalsPrompt(state, rules, crewId) ? [{ key: 'vitals-prompt', tier: 'advisory' as const, name: 'Vital signs', sub: vitalsPrompt(state, rules, crewId)!.title, val: '', arrow: null, go: () => go('vitals') }] : []),
@@ -649,6 +650,28 @@ function missionPoints(state: State, crewId: string, ind: Indicator, lastDays: n
   return pts;
 }
 
+/** A daily target shown beside the reading, never an alert (CR-45). EVA hours raise it by the sourced amount per hour. */
+function TargetLine({ target, unit }: { target: NonNullable<Indicator['target']>; unit: string }) {
+  const [eva, setEva] = useState(0);
+  const add = (target.perEvaHour ?? 0) * eva;
+  const f = (v: number) => v.toFixed(1);
+  return (
+    <div className="confirm" role="note">
+      <p><strong>{target.label}</strong>{add > 0 ? <>. With <span className="mono">{eva}</span> h of EVA today: <strong className="mono">{f(target.low + add)} to {f(target.high + add)} {unit}</strong></> : null}</p>
+      {target.perEvaHour ? (
+        <div className="chips" role="group" aria-label="Hours of EVA today">
+          <span className="caption">EVA today?</span>
+          <button type="button" className="chip" onClick={() => setEva((h) => Math.max(0, h - 1))} aria-label="One hour less">−</button>
+          <span className="mono" aria-live="polite">{eva} h</span>
+          <button type="button" className="chip" onClick={() => setEva((h) => Math.min(12, h + 1))} aria-label="One hour more">+</button>
+          <span className="caption">adds {target.perEvaHour} {unit} per EVA hour</span>
+        </div>
+      ) : null}
+      <More label="Source"><p className="caption">{target.source}</p></More>
+    </div>
+  );
+}
+
 function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: Shared & { rules: RuleFile; indicatorId: string }) {
   const ind = indicatorById(seed, indicatorId);
   const crew = crewById(seed, crewId);
@@ -688,6 +711,8 @@ function ReadingScreen({ state, commit, setting, crewId, rules, indicatorId }: S
         <div className="stack">
           <form className="card" onSubmit={(e) => { e.preventDefault(); submit(); }}>
             <label className="title" htmlFor="reading">{ind.input.prompt}</label>
+            {ind.target ? <TargetLine target={ind.target} unit={ind.unit} /> : null}
+            {ind.standout && setting.gravityBand && ind.standout.gravity.includes(setting.gravityBand) ? <p className="confirm" role="note"><strong>{ind.standout.note}</strong></p> : null}
             {ind.input.kind === 'scale' ? (
               <ScaleInput labels={ind.input.labels ?? []} value={valid ? n : undefined} onPick={(v) => setText(String(v))} />
             ) : ind.input.kind === 'test' ? (
@@ -747,9 +772,13 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
   const raw = assessReading(state, seed, rules, reading);
   const pvt = state.reactionDetail?.[reading.id];
   // The card leads with the strongest finding; any others are listed under it.
-  const a = localise({ ...raw, why: raw.findings[0]?.why ?? raw.why }, setting);
-  const sent = state.outbox.some((p) => p.readingId === reading.id);
   const conf = confirmation(state, reading);
+  // A Watch from one reading waits for a repeat before the crew medic and Earth are brought in (CR-35).
+  const holdBack = awaitingRepeat(rules, ind, raw, conf.status);
+  const a = localise({ ...raw, why: raw.findings[0]?.why ?? raw.why, steps: holdBack ? rules.steps.amber_unconfirmed! : raw.steps }, setting);
+  const sent = state.outbox.some((p) => p.readingId === reading.id);
+  // A follow-up question after a low reading, such as mood at 2 or below (CR-44).
+  const askAfter = rules.pathways.find((w) => w.ask_after?.indicator === ind.id && reading.value <= w.ask_after.at_or_below);
   const day = daySummary(state, seed, rules, reading.crewId);
   const promptOpen = day.prompt && day.prompt.indicatorId !== ind.id && !day.items.find((x) => x.indicator.id === day.prompt!.indicatorId)?.reading;
   const others = day.flagged.filter((x) => x.indicator.id !== ind.id);
@@ -789,11 +818,13 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
             <div className="btn-row">
               {promptOpen ? <button className="btn" onClick={() => go('reading', day.prompt!.indicatorId)}>Next: reaction check</button> : a.tier === 'green' ? (
                 <button className="btn" onClick={() => go('home')}>Log and finish</button>
+              ) : holdBack ? (
+                <button className="btn" onClick={() => go('reading', ind.id)}>Repeat the reading</button>
               ) : (
                 <button className="btn" onClick={send}>{sent ? 'Open the case' : say('Send case to Earth', setting)}</button>
               )}
-              {promptOpen && a.tier !== 'green' ? <button className="btn secondary" onClick={send}>{say('Send case to Earth', setting)}</button> : null}
-              <button className="btn secondary" onClick={() => go('reading', ind.id)}>Repeat the reading</button>
+              {promptOpen && a.tier !== 'green' && !holdBack ? <button className="btn secondary" onClick={send}>{say('Send case to Earth', setting)}</button> : null}
+              {!holdBack ? <button className="btn secondary" onClick={() => go('reading', ind.id)}>Repeat the reading</button> : null}
               <button className="btn secondary" onClick={() => go('home')}>Back to today</button>
             </div>
           </>}>
@@ -803,9 +834,20 @@ function Result({ state, commit, setting, rules, reading }: Shared & { rules: Ru
               </ul>
             ) : null}
             {ind.environment && raw.tier !== 'green' ? <p className="confirm" role="note">{say('This is a reading of the shared cabin, not of one person. The air system is checked first. It becomes a health matter for you if you also have symptoms or a slower reaction time.', setting)}</p> : null}
-            {ind.evidence ? <p className="caption">Two different labels. How the signal is measured: {ind.evidence === 'established' ? 'a standard instrument reading (established)' : ind.evidence === 'emerging' ? 'your own log (emerging)' : 'an uncalibrated check in this app (experimental)'}.{ind.evidence === 'experimental' ? ' An experimental signal can raise Watch but never Act now by itself.' : ''} How sure the rule is: {raw.confidence.toLowerCase()}, until a clinician signs it. {seed.evidenceStatus}</p> : null}
+            {ind.evidence ? <p className="caption">Two different labels. How the signal is measured: {ind.evidence === 'established' ? 'a standard instrument reading (established)' : ind.evidence === 'emerging' ? 'your own log (emerging)' : 'an uncalibrated check in this app (experimental)'}.{ind.evidence === 'experimental' ? ' An experimental signal can raise Watch but never Act now by itself.' : ''} How sure the rule is: {raw.confidence.toLowerCase()}{raw.placeholder ? ', until a clinician signs it' : ''}. {seed.evidenceStatus}</p> : null}
             {raw.findings.length > 0 ? <p className="caption">Rules that fired: {raw.findings.map((f) => f.ruleId).join(', ')}.</p> : null}
           </AlertCard>
+          {askAfter ? (
+            <div className="card" role="group" aria-label={askAfter.ask_after!.ask}>
+              <p><strong>{say(askAfter.ask_after!.ask, setting)}</strong></p>
+              <p className="caption">Tap any that apply. Tap again to take it off.</p>
+              <div className="chips">
+                {askAfter.core.map((o) => <button key={o} className="chip chip-toggle" aria-pressed={state.symptoms.some((x) => x.crewId === reading.crewId && x.label === o)} onClick={() => commit(toggleSymptom(state, reading.crewId, o, nowMs()))}>{o}</button>)}
+              </div>
+              {askAfter.privacy_note ? <p className="caption">{askAfter.privacy_note}</p> : null}
+            </div>
+          ) : null}
+          {ind.target ? <TargetLine target={ind.target} unit={ind.unit} /> : null}
           {others.length > 0 ? (
             <div className="card">
               <span className="why-label">Also outside range today</span>
@@ -1046,6 +1088,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
           <h1 className="title">{say(active.title, setting)}</h1>
           <p>Not a diagnosis. A pattern to check.</p>
           {active.crewMedic ? <p className="confirm" role="note"><strong>{say(active.crewMedic, setting)}</strong></p> : null}
+          {pathway.privacy_note ? <p className="confirm" role="note">{say(pathway.privacy_note, setting)}</p> : null}
           {active.earlier ? <p className="confirm" role="note">This adds to the earlier warning. It does not replace it: {active.earlier.title} (rule {active.earlier.ruleId}).</p> : null}
           {active.level === 'early' && active.matched.core.length > 0 ? <p className="confirm" role="note">You logged {active.matched.core.join(', ').toLowerCase()}. This warning still stands. Tap anything else that applies below.</p> : null}
           <More label="Why this alert?">
@@ -1064,9 +1107,9 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
       <div className="grid wide-left steps-first">
         <div className="stack">
           <div className="card">
-            <h2 className="title">Pain or symptoms to report</h2>
+            <h2 className="title">{pathway.pain_repeat ? "Pain or symptoms to report" : "Symptoms to report"}</h2>
             {chips(pathway.core)}
-            {painLogged ? (
+            {painLogged && pathway.pain_repeat ? (
               <div className="follow">
                 {followUps.length > 0 ? (
                   <>
@@ -1086,11 +1129,19 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
                 })()}
               </div>
             ) : null}
-            <h2 className="title">Also?</h2>
-            {chips(pathway.supporting.filter((x) => !followUps.includes(x)))}
-            <h2 className="title">Act now if</h2>
-            {chips(pathway.urgent)}
-            <span className="placeholder">Placeholder list</span>
+            {pathway.supporting.filter((x) => !followUps.includes(x)).length > 0 ? (
+              <>
+                <h2 className="title">Also?</h2>
+                {chips(pathway.supporting.filter((x) => !followUps.includes(x)))}
+              </>
+            ) : null}
+            {pathway.urgent.length > 0 ? (
+              <>
+                <h2 className="title">Act now if</h2>
+                {chips(pathway.urgent)}
+              </>
+            ) : null}
+            {pathway.signed_off_by.trim().toLowerCase() === 'placeholder' ? <span className="placeholder">Placeholder list</span> : null}
           </div>
           {pathway.tests.length > 0 && (
             <div className="card">

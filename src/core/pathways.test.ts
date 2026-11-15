@@ -255,3 +255,19 @@ describe('batch 1 of the open items (CR-26, CR-27, CR-28, CR-31, CR-54)', () => 
     expect(ks.while_waiting).toBe("While you wait: pain relief as your crew medic's protocol sets out, and keep drinking.");
   });
 });
+
+describe('thoughts of harm (MH-01, CR-44)', () => {
+  const mh = rules.pathways.find((p) => p.id === 'MH-01')!;
+  it('is Act now on one symptom, with the agreed steps and the commander told', () => {
+    for (const l of ['Thoughts of harming myself', 'Thoughts of harming someone else']) {
+      const p = pathwayStatuses(log(initialState(seed), 'crew-4', l), seed, rules, 'crew-4').find((x) => x.pathway.id === 'MH-01')!;
+      expect(p.level).toBe('amber');
+      expect(pathwayAlerts(log(initialState(seed), 'crew-4', l), seed, rules, 'crew-4').find((x) => x.pathwayId === 'MH-01')?.tier).toBe('red');
+      expect(p.title).toBe('Mind and sleep: needs action now');
+      expect(p.steps[0]).toBe('Tell your crew medic now. The commander is told as well.');
+    }
+    expect(mh.share_now).toBe(true);
+    expect(mh.privacy_note).toContain('commander');
+    expect(mh.ask_after).toEqual({ indicator: 'mood', at_or_below: 2, ask: 'Have you had any thoughts of harming yourself or someone else?' });
+  });
+});

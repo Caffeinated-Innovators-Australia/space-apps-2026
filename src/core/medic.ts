@@ -68,7 +68,10 @@ export function crewOverview(state: State, seed: Seed, rules: RuleFile): MedicRo
       .filter((r) => assessReading(state, seed, rules, r).tier === 'red' && confirmation(state, r).status === 'confirmed')
       .map((r) => ({ indicatorId: r.indicatorId, indicator: seed.indicators.find((i) => i.id === r.indicatorId)!.name, at: r.at }));
     const sentPathways = new Set(packs.filter((p) => p.pathwayId).map((p) => p.pathwayId));
-    const urgentPathways = statuses.filter((s) => s.level === 'red' && sentPathways.has(s.pathway.id)).map((s) => ({ pathwayId: s.pathway.id, checkFor: s.pathway.region }));
+    // A pattern marked share_now (thoughts of harm, CR-44) shows to the crew medic at once, without a case being sent.
+    const urgentPathways = statuses
+      .filter((s) => (s.level === 'red' && sentPathways.has(s.pathway.id)) || (s.pathway.share_now && (s.level === 'amber' || s.level === 'red')))
+      .map((s) => ({ pathwayId: s.pathway.id, checkFor: s.pathway.region }));
     const done = daily.filter((i) => state.readings.some((r) => r.crewId === c.id && r.indicatorId === i.id && r.day === seed.missionDay)).length;
     let topTier = caseTier;
     if (confirmedUrgent.length || urgentPathways.length) topTier = 'red';

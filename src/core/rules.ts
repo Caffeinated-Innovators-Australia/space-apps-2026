@@ -39,6 +39,12 @@ export interface PathwayRule extends Signed {
   pain_repeat?: { every_minutes: number; settled_below: number; settled_count: number; next: string; due: string; settled: string };
   /** A line on the countdown to Earth's reply once the case is sent (CR-26). */
   while_waiting?: string;
+  /** Shown to the crew medic at once, without waiting for a case to be sent (CR-44). */
+  share_now?: boolean;
+  /** Who else is told, shown on the alert. */
+  privacy_note?: string;
+  /** A yes/no question asked after a low reading of an indicator, such as mood at 2 or below (CR-44). */
+  ask_after?: { indicator: string; at_or_below: number; ask: string };
   tests: { id: string; label: string; options: string[] }[];
   /** A plain line shown when the test results match exactly. Clinician wording; a placeholder until signed off. */
   test_notes?: { when: Record<string, string>; text: string; crew_medic?: string; steps?: string[] }[];
@@ -102,7 +108,9 @@ export interface RuleFile {
   combined: CombinedRule;
   prompts: PromptRule[];
   pathways: PathwayRule[];
-  steps: Record<Tier, string[]>;
+  steps: Record<Tier, string[]> & { amber_unconfirmed?: string[] };
+  /** Runs of logged days below a fixed amount that are Act now whatever the person's own range (CR-44). */
+  absolute_runs: AbsoluteRun[];
   /** Rules that read one set of vital signs. Empty when the file has none. */
   monitor_alerts: MonitorAlertRule[];
   /** Absent when the file has none. */
@@ -110,6 +118,8 @@ export interface RuleFile {
   /** Symptoms that ask for a set of vital signs when logged without one taken since (CR-58). */
   vitals_prompt?: Signed & { id: string; symptoms: string[]; title: string; why: string };
 }
+
+export interface AbsoluteRun extends Signed { id: string; indicator: string; below: number; count: number; title: string; why: string; steps: string[] }
 
 export interface Band { low: number; high: number; mean: number; sd: number }
 export interface Finding { ruleId: string; tier: Tier; why: string; source: string; confidence: string; placeholder: boolean; reviewedBy: string | null }
@@ -247,6 +257,11 @@ export function parseRules(text: string): RuleFile {
       if (!e.symptoms.includes(s)) throw new Error(`Emergency symptoms: the checklist for "${s}" names a symptom that is not on the list.`);
       if (!Number.isInteger(c?.construct) || !c?.label) throw new Error(`Emergency symptoms: the checklist for "${s}" needs a pathway number as construct and a label.`);
     }
+  }
+  f.absolute_runs = f.absolute_runs ?? [];
+  for (const a of f.absolute_runs) {
+    signed(a, a?.id ?? 'absolute run');
+    if (!a.indicator || typeof a.below !== 'number' || !(a.count >= 1) || !a.title || !a.why || !Array.isArray(a.steps) || a.steps.length === 0) throw new Error(`Absolute run ${a.id}: needs an indicator, below, count, title, why and steps.`);
   }
   f.monitor_alerts = f.monitor_alerts ?? [];
   if (!Array.isArray(f.monitor_alerts)) throw new Error('monitor_alerts must be a list of rules.');

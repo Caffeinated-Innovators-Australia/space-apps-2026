@@ -19,6 +19,10 @@ export interface Indicator {
   evidence?: 'established' | 'emerging' | 'experimental';
   /** The highest tier this signal may raise on its own. Set by clinicians for signals that should only ever ask the crew to watch. */
   maxTier?: 'amber';
+  /** Made to stand out in some gravity bands, such as the eye check at 0 g (CR-17). Display only. */
+  standout?: { gravity: string[]; short: string; note: string };
+  /** A daily target shown beside the reading, never an alert (CR-45). perEvaHour adds to it for each EVA hour. */
+  target?: { low: number; high: number; perEvaHour?: number; label: string; source: string };
   /** True for a reading of the shared habitat, such as cabin air. It is worded as the cabin's, never as the person's own. */
   environment?: boolean;
   /** 'cumulative' marks a running total, such as radiation dose, which is judged against a limit and not a personal band. */

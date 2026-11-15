@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { acknowledge, applySlip, assessValue, limitsFor, casePackContent, confirmation, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, initialState, parseRules, plan, recordReading, reportNothing, sendCase, streak, toggleStep, toggleSymptom, type Seed, type State } from './index.ts';
+import { acknowledge, adaptationFor, applySlip, assessValue, awaitingRepeat, indicatorById, limitsFor, casePackContent, confirmation, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, initialState, parseRules, plan, recordReading, reportNothing, sendCase, streak, toggleStep, toggleSymptom, type Seed, type State } from './index.ts';
 
 const rules = parseRules(readFileSync('rules/rules.yaml', 'utf8'));
 const seed = JSON.parse(readFileSync('src/data/seed.json', 'utf8')) as Seed;
@@ -195,5 +195,40 @@ describe('cabin readings are worded as the cabin\'s, not the person\'s', () => {
   it('keeps personal wording for a personal reading', () => {
     const a = assessValue(seed, rules, 'crew-1', 'sleep', 6.2);
     expect(a.why).toMatch(/your baseline|your own/);
+  });
+});
+
+describe('clinical lead decisions, 15 Nov 2026 (CR-17, CR-35, CR-44)', () => {
+  const rulesFile = parseRules(readFileSync(new URL('../../rules/rules.yaml', import.meta.url), 'utf8'));
+  const DAY = 86_400_000;
+  it('caps Act now from the own range at Watch for 7 days after a gravity change, then resets the range from those days (CR-17)', () => {
+    let s: State = { ...initialState(seed), ui: { ...initialState(seed).ui, settingId: 'mars-base', gravityChange: { from: 'zero', at: 1000 } } };
+    const during = adaptationFor(s, seed, 'crew-1', 'resting-hr', 1000 + 2 * DAY);
+    expect(during).toEqual({ capWatch: true });
+    for (const [i, v] of [70, 72, 74].entries()) s = recordReading(s, seed, rulesFile, { crewId: 'crew-1', indicatorId: 'resting-hr', value: v, at: 1000 + (i + 1) * DAY }).state;
+    const after = adaptationFor(s, seed, 'crew-1', 'resting-hr', 1000 + 8 * DAY);
+    expect(after.capWatch).toBe(false);
+    expect(after.baseline).toEqual([70, 72, 74]);
+    expect(adaptationFor({ ...s, ui: { ...s.ui, gravityChange: undefined } }, seed, 'crew-1', 'resting-hr', 1000 + 8 * DAY)).toEqual({ capWatch: false });
+  });
+  it('never caps a sourced limit while adapting', () => {
+    const a = assessValue(seed, rulesFile, 'crew-1', 'grip', 1, [], { capWatch: true });
+    expect(a.tier).toBe('red');
+    expect(a.findings.map((f) => f.ruleId)).toContain('LM-01');
+  });
+  it('holds back the crew medic and Earth steps for a Watch from one reading (CR-35)', () => {
+    const ind = indicatorById(seed, 'sleep');
+    const a = { ...assessValue(seed, rulesFile, 'crew-1', 'sleep', 7), tier: 'amber' as const };
+    expect(awaitingRepeat(rulesFile, ind, a, 'unconfirmed')).toBe(true);
+    expect(awaitingRepeat(rulesFile, ind, a, 'confirmed')).toBe(false);
+    expect(awaitingRepeat(rulesFile, ind, { ...a, tier: 'red' }, 'unconfirmed')).toBe(false);
+    expect(rulesFile.steps.amber_unconfirmed).toEqual(['Repeat the reading to confirm.', 'If the repeat is also outside your range, tell your crew medic and send the case to Earth.']);
+  });
+  it('rates fluid under 1 L for 3 logged days as Act now, even though fluid is capped at Watch (CR-44)', () => {
+    const a = assessValue(seed, rulesFile, 'crew-3', 'fluid', 0.8, [0.9, 0.7]);
+    expect(a.tier).toBe('red');
+    expect(a.ruleId).toBe('FL-01');
+    expect(a.why).toContain('under 1 L for 3 logged days in a row: 0.9, 0.7, 0.8 L');
+    expect(assessValue(seed, rulesFile, 'crew-3', 'fluid', 1.2, [0.9, 0.7]).ruleId).not.toBe('FL-01');
   });
 });
