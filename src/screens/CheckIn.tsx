@@ -124,7 +124,7 @@ export function CheckIn({ state, commit, setting, crewId, seed, rules, go, say, 
       {context}
       <h1 className="display">Daily check-in</h1>
       <ChecklistSuggestion checklist={suggested} onOpen={(c) => go('astra', String(c))} />
-      <VoiceTalk what="daily check-in" questions={questions} understand={aiUnderstand(understand, { fields: rows.map((r) => ({ id: r.id, name: r.name, unit: r.unit, min: r.input.min, max: r.input.max })), symptoms: seed.symptoms.options }, (i) => ({ ...i.values, ...(i.symptoms.length ? { [SYMPTOMS]: i.symptoms.join(', ') } : {}) }), setSuggested)} readBack={readBack} onFill={voiceFill} onFinish={finish} />
+      <VoiceTalk what="daily check-in" questions={questions} understand={aiUnderstand(understand, { fields: rows.map((r) => ({ id: r.id, name: r.name, unit: r.unit, min: r.input.min, max: r.input.max, labels: r.input.labels })), symptoms: seed.symptoms.options, suggestChecklist: false }, (i) => ({ ...i.values, ...(i.symptoms.length ? { [SYMPTOMS]: i.symptoms.join(', ') } : {}) }), setSuggested)} readBack={readBack} onFill={voiceFill} onFinish={finish} />
       <form className="stack" onSubmit={(e) => { e.preventDefault(); finish(); }} noValidate>
         <section className="card" aria-labelledby="x-ci-rows">
           <div className="card-head"><h2 className="title" id="x-ci-rows">Today's numbers</h2><SyntheticTag /></div>

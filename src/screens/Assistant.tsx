@@ -3,19 +3,29 @@
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { useState } from 'react';
 import { AI_LABEL, askAssistant, assistantRoute, assistantSystem, loadAi, type ChatTurn } from '../core/ai.ts';
-import { crewById, latestVitals, vitalsLine, type Seed, type Setting, type State } from '../core/index.ts';
+import { crewById, latestVitals, pathwayStatuses, vitalsAlerts, vitalsLine, type RuleFile, type Seed, type Setting, type State } from '../core/index.ts';
 
 const REASONS = ['No link to Earth', 'Waiting for Earth to reply', 'The flight surgeon cannot be reached', 'Second opinion for the crew medic'];
 
 /** What the assistant is told about the person: today's symptoms and the latest vital signs. Nothing else leaves the device. */
-function contextLine(state: State, seed: Seed, crewId: string): string {
+function contextLine(state: State, seed: Seed, rules: RuleFile, crewId: string, setting: Setting): string {
   const crew = crewById(seed, crewId);
   const symptoms = state.symptoms.filter((s) => s.crewId === crewId).map((s) => s.label);
   const v = latestVitals(state, crewId);
-  return [`Crew member: ${crew.name} (SYNTHETIC demo person).`, symptoms.length ? `Symptoms logged: ${symptoms.join(', ')}.` : 'No symptoms logged.', v ? `Latest vital signs: ${vitalsLine(v.values)}.` : 'No vital signs recorded.'].join(' ');
+  // The app's own active alerts and their signed-off first steps, so the assistant builds on them rather than inventing its own.
+  const alerts = [
+    ...vitalsAlerts(state, rules, crewId, setting.gravityBand).map((a) => `${a.title} (first steps: ${a.steps.join(' ')})`),
+    ...pathwayStatuses(state, seed, rules, crewId).filter((p) => p.level === 'amber' || p.level === 'red').map((p) => `${p.title} (first steps: ${p.steps.join(' ')})`),
+  ];
+  return [
+    `Crew member: ${crew.name} (SYNTHETIC demo person).`,
+    symptoms.length ? `Symptoms logged: ${symptoms.join(', ')}.` : 'No symptoms logged.',
+    v ? `Latest vital signs: ${vitalsLine(v.values)}.` : 'No vital signs recorded.',
+    alerts.length ? `Active alerts in the app: ${alerts.join(' | ')}` : 'No active alerts in the app.',
+  ].join(' ');
 }
 
-export function Assistant({ state, seed, setting, crewId, go }: { state: State; seed: Seed; setting: Setting; crewId: string; go: (route: string, arg?: string) => void }) {
+export function Assistant({ state, seed, rules, setting, crewId, go }: { state: State; seed: Seed; rules: RuleFile; setting: Setting; crewId: string; go: (route: string, arg?: string) => void }) {
   const s = (() => { try { return loadAi(window.localStorage); } catch { return loadAi(); } })();
   const route = assistantRoute(s, setting.replySeconds);
   const [reason, setReason] = useState(state.ui.linkDown ? REASONS[0] : REASONS[1]);
@@ -25,7 +35,7 @@ export function Assistant({ state, seed, setting, crewId, go }: { state: State; 
   const [problem, setProblem] = useState('');
   const send = async () => {
     if (!text.trim() || busy) return;
-    const intro = turns.length === 0 ? `${contextLine(state, seed, crewId)}\n\n` : '';
+    const intro = turns.length === 0 ? `${contextLine(state, seed, rules, crewId, setting)}\n\n` : '';
     const next: ChatTurn[] = [...turns, { role: 'user', content: `${intro}${text.trim()}` }];
     setTurns(next); setText(''); setBusy(true); setProblem('');
     try {
@@ -45,7 +55,7 @@ export function Assistant({ state, seed, setting, crewId, go }: { state: State; 
         </div>
       ) : (
         <div className="card stack">
-          <p className="caption">Using: {route.use === 'cloud' ? `cloud model (${s.cloud.model})` : `computer at this location (${s.onLocation.model})`}. It is sent today's symptoms and the latest vital signs, and nothing else from the record.</p>
+          <p className="caption">Using: {route.use === 'cloud' ? `cloud model (${s.cloud.model})` : `computer at this location (${s.onLocation.model})`}. It is sent today's symptoms, the latest vital signs and the app's active alerts with their first steps, and nothing else from the record.</p>
           <label className="field">Why the assistant is needed
             <select value={reason} onChange={(e) => setReason(e.target.value)}>{REASONS.map((r) => <option key={r}>{r}</option>)}</select>
           </label>

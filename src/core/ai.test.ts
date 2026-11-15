@@ -1,7 +1,7 @@
 // Tests for the AI connections (FR-60 to FR-62). No real network: every server here is a stand-in.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { describe, expect, it } from 'vitest';
-import { askAssistant, assistantRoute, assistantSystem, checkInterpretation, CHECKLISTS, DEFAULT_AI, interpret, interpretMessages, keywordChecklist, loadAi, saveAi, type AiSettings, type InterpretContext } from './ai.ts';
+import { askAssistant, assistantRoute, assistantSystem, builtInInterpretation, checkInterpretation, CHECKLISTS, DEFAULT_AI, interpret, interpretMessages, keywordChecklist, loadAi, redFlagSymptoms, saveAi, type AiSettings, type InterpretContext } from './ai.ts';
 
 const ctx: InterpretContext = {
   fields: [{ id: 'sleep', name: 'Sleep', unit: 'h', min: 0, max: 16 }, { id: 'resting-hr', name: 'Resting heart rate', unit: 'bpm', min: 30, max: 200 }],
@@ -90,5 +90,53 @@ describe('settings kept on this device', () => {
     expect(loadAi({ getItem: () => { throw new Error('blocked'); } })).toEqual(DEFAULT_AI);
     expect(DEFAULT_AI.interpreter).toBe('built-in');
     expect(DEFAULT_AI.assistant).toBe('off');
+  });
+});
+
+describe('fixes from testing against a real small model (Gemma 4 E2B)', () => {
+  const all = ['Thoughts of suicide', 'Thoughts of harming myself', 'Have harmed myself', 'Thoughts of harming someone else', 'Collapse', 'Short of breath', 'Headache'];
+  it('reads a reply that copied "| null" from the instruction', () => {
+    const got = checkInterpretation('{"values": {}, "symptoms": ["Headache"], "checklist": {"construct": 6, "reason": "x"} | null}', { fields: [], symptoms: all })!;
+    expect(got.symptoms).toEqual(['Headache']);
+    expect(got.checklist?.construct).toBe(6);
+  });
+  it('always catches red-flag phrases, with or without a model', async () => {
+    expect(redFlagSymptoms("I've been having thoughts of ending my life", all)).toEqual(['Thoughts of suicide']);
+    expect(redFlagSymptoms('I want to hurt someone', all)).toEqual(['Thoughts of harming someone else']);
+    expect(redFlagSymptoms('I hurt my knee', all)).toEqual([]);
+    expect(builtInInterpretation('I keep thinking about killing myself', { fields: [], symptoms: all }).symptoms).toContain('Thoughts of suicide');
+    const missed = await interpret(slmOn, { fields: [], symptoms: all }, 'I have been thinking of ending it all', server(openAiReply('{"values":{},"symptoms":[],"checklist":null}')));
+    expect(missed.symptoms).toEqual(['Thoughts of suicide']);
+  });
+  it('lets a cardiac arrest the keywords catch win over a different model suggestion', async () => {
+    const got = await interpret(slmOn, { fields: [], symptoms: all }, "He's collapsed and he's not breathing!", server(openAiReply('{"values":{},"symptoms":["Collapse"],"checklist":{"construct":2,"reason":"breathing"}}')));
+    expect(got.checklist?.construct).toBe(1);
+  });
+  it('never suggests a checklist on a routine form, and gives scale words to the model', async () => {
+    const form: InterpretContext = { fields: [{ id: 'mood', name: 'Mood', unit: 'of 5', min: 1, max: 5, labels: ['Very low', 'Low', 'Neutral', 'Good', 'Very good'] }], symptoms: [], suggestChecklist: false };
+    expect(interpretMessages(form, 'x')[0].content).toContain('1 = Very low, 2 = Low, 3 = Neutral');
+    expect(interpretMessages(form, 'x')[0].content).toContain('Always reply with "checklist": null');
+    const got = await interpret(slmOn, form, 'mood is low, breathing fine', server(openAiReply('{"values":{"mood":2},"symptoms":[],"checklist":{"construct":2,"reason":"breathing"}}')));
+    expect(got).toMatchObject({ values: { mood: 2 }, checklist: null });
+  });
+});
+
+describe('layouts a small model actually used', () => {
+  it('reads values at the top level and symptoms inside "values"', () => {
+    const flat = checkInterpretation('{"sleep": 6.5, "resting-hr": 62, "mood": null}', ctx)!;
+    expect(flat.values).toEqual({ sleep: 6.5, 'resting-hr': 62 });
+    const nested = checkInterpretation('{"values": {"symptoms": ["Headache", "Nauseous"]}, "checklist": null}', ctx)!;
+    expect(nested.symptoms).toEqual(['Headache', 'Nauseous']);
+  });
+});
+
+describe('more slips a small model made', () => {
+  it('reads a bare checklist number, a missing closing brace, and keeps a hazardous atmosphere in the safety net', async () => {
+    expect(checkInterpretation('{"values": {"symptoms": ["Headache"]}, "checklist": 7}', ctx)!.checklist?.construct).toBe(7);
+    const unclosed = checkInterpretation('{"values": {"symptoms": ["Headache", "Nauseous"]}, "checklist": 11', ctx)!;
+    expect(unclosed.symptoms).toEqual(['Headache', 'Nauseous']);
+    expect(unclosed.checklist?.construct).toBe(11);
+    const got = await interpret(slmOn, ctx, 'smoke in the module and the ammonia alarm went off', server(openAiReply('{"values":{},"symptoms":[],"checklist":null}')));
+    expect(got.checklist?.construct).toBe(7);
   });
 });

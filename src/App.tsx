@@ -225,7 +225,7 @@ export function App() {
           ) : route.name === 'ai' ? (
             <AiConnections setting={setting} go={go} />
           ) : route.name === 'assistant' ? (
-            <Assistant state={state} seed={seed} setting={setting} crewId={crew.id} go={go} />
+            <Assistant state={state} seed={seed} rules={rules} setting={setting} crewId={crew.id} go={go} />
           ) : route.name === 'vitals' ? (
             <Vitals {...shared} {...extra} rules={rules} onSend={pathwayStatuses(state, seed, rules, crew.id).some((x) => x.pathway.id === 'KS-01' && (x.level === 'amber' || x.level === 'red')) ? () => { if (!state.outbox.some((k) => k.pathwayId === 'KS-01' && k.crewId === crew.id && k.status === 'queued')) commit(sendPathwayCase(state, seed, rules, { crewId: crew.id, pathwayId: 'KS-01', settingId: setting.id, at: nowMs() }).state); go('pathway', 'KS-01'); } : undefined} />
           ) : route.name === 'ultrasound' ? (
