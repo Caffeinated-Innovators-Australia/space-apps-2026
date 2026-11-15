@@ -30,6 +30,18 @@ export function FeelingOff({ state, commit, setting, crewId, seed, rules, go, sa
   const has = (label: string) => mine.some((s) => s.label === label);
   const pickedHere = zone ? zone.symptoms.filter(has) : [];
   const open = pathwayStatuses(state, seed, rules, crewId).slice().sort((a, b) => LEVEL_RANK[b.level] - LEVEL_RANK[a.level])[0];
+  // Yes/no questions that open an area, from the rules file (CR-54). "Yes" logs the symptom; "No" takes it off.
+  const qPathway = zone ? rules.pathways.find((w) => w.questions?.zone === zone.id) : undefined;
+  const questions = qPathway?.questions;
+  const [answers, setAnswers] = useState<Record<number, 'yes' | 'no'>>({});
+  useEffect(() => { setAnswers({}); }, [zoneId]);
+  const asked = new Set([...(questions ? qPathway!.core : []), ...(questions?.items.map((x) => x.symptom).filter((x): x is string => Boolean(x)) ?? [])]);
+  const answer = (i: number, yes: boolean) => {
+    const sym = questions!.items[i].symptom;
+    setAnswers((a) => ({ ...a, [i]: yes ? 'yes' : 'no' }));
+    if (sym && has(sym) !== yes) commit(toggleSymptom(state, crewId, sym, Date.now()));
+  };
+  const painYes = questions ? questions.items.some((x, i) => !x.symptom && answers[i] === 'yes') || qPathway!.core.some(has) : false;
 
   const title = step === 1 ? 'Where?' : step === 2 ? 'What is it like?' : 'Result';
   return (
@@ -56,9 +68,35 @@ export function FeelingOff({ state, commit, setting, crewId, seed, rules, go, sa
       {step === 2 && zone ? (
         <section className="card">
           <div className="card-head"><h2 className="title">{zone.label}</h2><SyntheticTag /></div>
-          <p>Tap everything that fits. Tap again to take it off.</p>
+          {questions ? (
+            <div className="stack">
+              {questions.items.map((x, i) => {
+                const yes = x.symptom ? has(x.symptom) || answers[i] === 'yes' : painYes;
+                const no = !yes && answers[i] === 'no';
+                return (
+                  <div key={x.ask} role="group" aria-label={x.ask}>
+                    <p><strong>{say(x.ask, setting)}</strong></p>
+                    <div className="chips">
+                      <button type="button" className="chip chip-toggle" aria-pressed={yes} onClick={() => answer(i, true)}>Yes</button>
+                      <button type="button" className="chip chip-toggle" aria-pressed={no} onClick={() => answer(i, false)}>No</button>
+                    </div>
+                    {!x.symptom && painYes ? (
+                      <>
+                        <p className="caption">{questions.pain_where}</p>
+                        <div className="chips">
+                          {qPathway!.core.map((o) => <button key={o} type="button" className="chip chip-toggle" aria-pressed={has(o)} onClick={() => commit(toggleSymptom(state, crewId, o, Date.now()))}>{o}</button>)}
+                        </div>
+                        <p className="caption">Pain somewhere else? Go back and choose that area.</p>
+                      </>
+                    ) : null}
+                  </div>
+                );
+              })}
+              <p><strong>Anything else?</strong></p>
+            </div>
+          ) : <p>Tap everything that fits. Tap again to take it off.</p>}
           <div className="chips" role="group" aria-label={`Symptoms: ${zone.label}`}>
-            {zone.symptoms.map((o) => (
+            {zone.symptoms.filter((o) => !asked.has(o)).map((o) => (
               <button key={o} type="button" className="chip chip-toggle" aria-pressed={has(o)} onClick={() => commit(toggleSymptom(state, crewId, o, Date.now()))}>{o}</button>
             ))}
           </div>

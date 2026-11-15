@@ -15,7 +15,7 @@ import { AdvisoryPill, AlertCard, LimitArrow, More, ReadingTile, Ring, Synthetic
 import {
   acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
   fromMin, initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
-  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, lifeThreats, toMin, vitalsPrompt,
+  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, lifeThreats, toMin, vitalsPrompt, painDue, painSchedule, fluidVitalsCheck,
   type Assessment, type DaySummary, type Indicator, type PathwayStatus, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
 import osd from './data/osd569_cbc.json';
@@ -553,6 +553,8 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
     ...day.flagged.filter((x) => !(setting.habitat === false && x.indicator.environment)).map((x) => ({ key: x.reading!.id, tier: x.assessment!.tier as Tier | 'advisory', name: x.indicator.name, sub: x.indicator.environment ? 'Cabin reading' : x.assessment!.deltaText, val: `${shown(x.indicator, x.reading!.value)} ${x.indicator.unit}`, arrow: <LimitArrow tier={x.assessment!.tier} delta={x.assessment!.delta} />, go: () => go('result', x.reading!.id) })),
     ...pathways.map((p) => ({ key: p.key, tier: (pathwayTier(p) ?? 'advisory') as Tier | 'advisory', name: p.pathway.region, sub: p.level === 'check' ? '3 quick questions' : p.title.includes(': ') ? cap(p.title.split(': ')[1]) : p.title, val: '', arrow: null, go: () => go('pathway', p.pathway.id) })),
     ...vitalsAlerts(state, rules, crewId, setting.gravityBand).map((v) => ({ key: v.key, tier: 'red' as Tier | 'advisory', name: 'Vital signs', sub: v.title, val: '', arrow: null, go: () => go('vitals') })),
+    ...(fluidVitalsCheck(state, seed, rules, crewId) ? [{ key: 'fluid-vitals', tier: 'advisory' as const, name: 'Vital signs', sub: fluidVitalsCheck(state, seed, rules, crewId)!.title, val: '', arrow: null, go: () => go('vitals') }] : []),
+    ...(painDue(state, seed, rules, crewId, nowMs()) ? [{ key: 'pain-due', tier: 'advisory' as const, name: painDue(state, seed, rules, crewId, nowMs())!.region, sub: painDue(state, seed, rules, crewId, nowMs())!.title, val: '', arrow: null, go: () => go('pathway', painDue(state, seed, rules, crewId, nowMs())!.pathwayId) }] : []),
     ...(vitalsPrompt(state, rules, crewId) ? [{ key: 'vitals-prompt', tier: 'advisory' as const, name: 'Vital signs', sub: vitalsPrompt(state, rules, crewId)!.title, val: '', arrow: null, go: () => go('vitals') }] : []),
     ...(promptOpen ? [{ key: 'prompt', tier: 'advisory' as const, name: indicatorById(seed, day.prompt!.indicatorId).name, sub: 'Asked for today', val: '', arrow: null, go: () => go('reading', day.prompt!.indicatorId) }] : []),
   ].sort((a, b) => (b.tier === 'advisory' ? -1 : RANK[b.tier]) - (a.tier === 'advisory' ? -1 : RANK[a.tier]));
@@ -989,6 +991,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
   const stepsCard = active ? (
     <div className={`card steps-card steps-${tier}`}>
       <div className="card-head"><span className="why-label">{pack ? 'Meanwhile: do these now' : 'What to do now'}</span><TierPill tier={tier!} /></div>
+      {pack && pathway.while_waiting ? <p><strong>{say(pathway.while_waiting, setting)}</strong></p> : null}
       <ul className="checks">
         {meanwhile.map((st) => (
           <li key={st}>
@@ -1025,6 +1028,12 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
     <>
       <Context setting={setting} crewId={crewId} />
       <VitalsPromptNote state={state} rules={rules} crewId={crewId} />
+      {fluidVitalsCheck(state, seed, rules, crewId) ? (
+        <p className="confirm" role="note">
+          <strong>{fluidVitalsCheck(state, seed, rules, crewId)!.title}.</strong> {fluidVitalsCheck(state, seed, rules, crewId)!.why}{' '}
+          <button className="btn secondary" onClick={() => go('vitals')}>Open vital signs</button>
+        </p>
+      ) : null}
       {vitalsAlerts(state, rules, crewId, setting.gravityBand).map((v) => (
         <p key={v.key} className="confirm" role="note">
           <TierPill tier="red" /> A vital signs alert is also active: {v.title}. It is a separate alert; only a fever in it counts toward this pattern.{' '}
@@ -1036,6 +1045,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
           <div className="card-head"><TierPill tier={tier!} /><SyntheticTag /></div>
           <h1 className="title">{say(active.title, setting)}</h1>
           <p>Not a diagnosis. A pattern to check.</p>
+          {active.crewMedic ? <p className="confirm" role="note"><strong>{say(active.crewMedic, setting)}</strong></p> : null}
           {active.earlier ? <p className="confirm" role="note">This adds to the earlier warning. It does not replace it: {active.earlier.title} (rule {active.earlier.ruleId}).</p> : null}
           {active.level === 'early' && active.matched.core.length > 0 ? <p className="confirm" role="note">You logged {active.matched.core.join(', ').toLowerCase()}. This warning still stands. Tap anything else that applies below.</p> : null}
           <More label="Why this alert?">
@@ -1069,6 +1079,11 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
                   {Array.from({ length: 11 }, (_, n) => <button key={n} className="chip chip-toggle" aria-pressed={lastPain === n} onClick={() => commit(logPain(state, { crewId, pathwayId, score: n, at: nowMs() }))}>{n}</button>)}
                 </div>
                 {pain.length > 0 ? <p aria-live="polite">Logged: {pain.map((x) => `${x.score} at ${hhmm(x.at)}`).join(', ')}.</p> : <p className="muted">0 none · 10 worst</p>}
+                {(() => {
+                  const sch = active && active.level !== 'early' ? painSchedule(state, pathway, crewId) : null;
+                  if (!sch || !pathway.pain_repeat) return null;
+                  return <p className="confirm" role="status">{sch.settled ? pathway.pain_repeat.settled : pathway.pain_repeat.next.replace('{time}', hhmm(sch.dueAt))}</p>;
+                })()}
               </div>
             ) : null}
             <h2 className="title">Also?</h2>

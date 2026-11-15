@@ -14498,6 +14498,7 @@
    "Blood in urine",
    "Pain passing urine",
    "Cannot pass urine",
+   "Urine looks unusual",
    "Rash",
    "Itchy skin",
    "Cut slow to heal",
@@ -14560,7 +14561,8 @@
      "Pain in side or lower back",
      "Blood in urine",
      "Pain passing urine",
-     "Cannot pass urine"
+     "Cannot pass urine",
+     "Urine looks unusual"
     ]
    },
    {

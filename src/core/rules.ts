@@ -32,10 +32,16 @@ export interface PathwayRule extends Signed {
   why: Record<'amber' | 'red', string>;
   steps: Record<'amber' | 'red', string[]>;
   background: { text: string; source: string; link: string }[];
-  early?: Signed & { id: string; indicator: string; count: number; shift_sd: number; title: string; why: string; steps: string[] };
+  early?: Signed & { id: string; indicator: string; count: number; shift_sd: number; title: string; why: string; steps: string[]; vitals_check?: { title: string; why: string; fields: MonitorField[] } };
+  /** Yes/no questions that open a "Feeling off?" area (CR-54). */
+  questions?: { zone: string; pain_where: string; items: { ask: string; symptom?: string }[] };
+  /** Repeat pain scores until they settle (CR-27). */
+  pain_repeat?: { every_minutes: number; settled_below: number; settled_count: number; next: string; due: string; settled: string };
+  /** A line on the countdown to Earth's reply once the case is sent (CR-26). */
+  while_waiting?: string;
   tests: { id: string; label: string; options: string[] }[];
   /** A plain line shown when the test results match exactly. Clinician wording; a placeholder until signed off. */
-  test_notes?: { when: Record<string, string>; text: string }[];
+  test_notes?: { when: Record<string, string>; text: string; crew_medic?: string; steps?: string[] }[];
   /**
    * Supporting or red-flag symptoms that a measured vital sign also counts as (CR-58), for example a temperature
    * at or above a set value counts as "Fever or chills". Read from the latest set of vital signs; a newer set clears it.
@@ -203,6 +209,20 @@ export function parseRules(text: string): RuleFile {
     if (w.early) {
       signed(w.early, w.early.id ?? `${id} early warning`);
       if (!w.early.indicator || !(Number(w.early.count) >= 2) || !(Number(w.early.shift_sd) > 0) || !w.early.title || !w.early.why || !Array.isArray(w.early.steps) || w.early.steps.length === 0) throw new Error(`Pathway ${id}: the early warning needs an indicator, a count of 2 or more, a shift, a title, an explanation and at least one step.`);
+    }
+    for (const n of w.test_notes) if (n.crew_medic !== undefined && (!n.crew_medic || !Array.isArray(n.steps) || n.steps.length === 0)) throw new Error(`Pathway ${id}: a test note with a crew medic line needs its steps.`);
+    if (w.questions) {
+      const q = w.questions;
+      if (!q.zone || !q.pain_where || !Array.isArray(q.items) || q.items.length === 0 || !q.items.every((x) => x?.ask)) throw new Error(`Pathway ${id}: questions need a zone, the "where" wording and at least one question.`);
+      for (const x of q.items) if (x.symptom && ![...w.core, ...w.supporting, ...w.urgent].includes(x.symptom)) throw new Error(`Pathway ${id}: the question "${x.ask}" logs "${x.symptom}", which is not one of its symptoms.`);
+    }
+    if (w.pain_repeat) {
+      const r = w.pain_repeat;
+      if (!(r.every_minutes > 0) || !(r.settled_count >= 1) || typeof r.settled_below !== 'number' || !r.next || !r.due || !r.settled) throw new Error(`Pathway ${id}: pain_repeat needs every_minutes, settled_below, settled_count and its three lines.`);
+    }
+    if (w.early?.vitals_check) {
+      const v = w.early.vitals_check;
+      if (!v.title || !v.why || !Array.isArray(v.fields) || v.fields.length === 0 || !v.fields.every((x) => MONITOR_FIELDS.includes(x))) throw new Error(`Pathway ${id}: the early warning's vitals_check needs a title, why and vital-sign fields.`);
     }
     w.min_supporting = Number(w.min_supporting ?? 1);
     if (!w.check?.title || !w.check.why) throw new Error(`Pathway ${id}: missing the check wording.`);
