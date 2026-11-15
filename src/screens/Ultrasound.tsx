@@ -174,7 +174,7 @@ export function Ultrasound({ state, commit, setting, crewId, go, hhmm, returnTo,
         {step.note ? <p className="x-us-note">{step.note}</p> : null}
         {step.example === 'kidney' ? <KidneyExamples /> : null}
         {step.side ? <div className="x-us-image" role="note">{proc.imageNote}</div> : null}
-        <p><span className="placeholder">{proc.status}</span></p>
+        <p><span className={proc.status.startsWith('Placeholder') ? 'placeholder' : 'source'}>{proc.status}</span></p>
         <p className="source">Source: {proc.source}</p>
         {isDone ? (
           <button type="button" className="chip chip-toggle x-us-undo" aria-pressed={true} onClick={toggle}>Step done. Tap to mark it not done</button>

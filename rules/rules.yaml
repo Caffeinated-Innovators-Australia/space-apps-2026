@@ -225,7 +225,7 @@ monitor_alerts:
       - { text: "Keep the person warm unless they already feel hot.", gravity: [zero] }
       - { text: "Strap the person down so you can start CPR if needed.", gravity: [zero] }
       - "Control any bleeding straight away."
-      - "Give oxygen if it is available and you are trained to."
+      - "Give oxygen if it is available and you are trained to. Oxygen is a fire risk: keep sparks and flames away."
       - "Record vitals from the monitor."
       - "If they stop responding and are not breathing normally, press Emergency."
       - "Stay with them, reassure them, and re-check them often."

@@ -142,7 +142,7 @@ describe('first steps that depend on gravity (CR-38)', () => {
     const screen = shk.steps.find((x) => x.checklist)!;
     expect(screen.checklist!.map((h) => h.heading)).toEqual(['Blood or fluid loss', 'Heart', 'Widened blood vessels', 'Blockage']);
     const shock = vitalsAlerts(after({ sbp: 82, dbp: 50, hr: 124, temp: 37 }), rules, crew, 'martian').find((a) => a.id === 'SHK-01')!;
-    expect(shock.steps).toContain('Give oxygen if it is available and you are trained to.');
+    expect(shock.steps).toContain('Give oxygen if it is available and you are trained to. Oxygen is a fire risk: keep sparks and flames away.');
     expect(shock.checklists[screen.text]).toHaveLength(4);
     expect(shock.steps.join(' ')).not.toMatch(/\d+ ?(mg|mL|L\/min)/);
   });
