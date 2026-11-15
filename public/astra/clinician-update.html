@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Clinician update, 15 Nov 2026</title>
+<style>
+:root { --bg:#f5f5f7; --card:#fff; --ink:#1d1d1f; --muted:#6e6e73; --line:#d2d2d7; --accent:#0071e3; --green:#1d7a3a; --greenbg:#e6f4ea; --amber:#8a5a00; --amberbg:#fff4d6; --blue:#0058b0; --bluebg:#e5f0fc; }
+@media (prefers-color-scheme: dark) { :root { --bg:#000; --card:#1c1c1e; --ink:#f5f5f7; --muted:#a1a1a6; --line:#38383a; --accent:#2997ff; --green:#5fd27f; --greenbg:#12301c; --amber:#ffd060; --amberbg:#3a2c05; --blue:#7ab8ff; --bluebg:#0d2540; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:17px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 32px; line-height:1.15; margin: 0 0 8px; letter-spacing:-0.01em; }
+h2 { font-size: 22px; margin: 36px 0 12px; }
+p.lead { color: var(--muted); margin: 0 0 20px; }
+.card { background: var(--card); border-radius: 14px; padding: 4px 18px; border: 1px solid var(--line); }
+.row { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.row h3 { font-size: 17px; margin: 0 0 4px; }
+.row p { margin: 0; color: var(--ink); }
+.tag { display:inline-block; font-size: 13px; font-weight: 600; padding: 2px 9px; border-radius: 999px; margin-right: 8px; vertical-align: 2px; }
+.ok { color: var(--green); background: var(--greenbg); }
+.open { color: var(--amber); background: var(--amberbg); }
+.ask { color: var(--blue); background: var(--bluebg); }
+.id { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.stats { display:grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 20px 0 0; }
+.stat { background: var(--card); border:1px solid var(--line); border-radius: 14px; padding: 14px; text-align:center; }
+.stat b { display:block; font-size: 28px; }
+.stat span { color: var(--muted); font-size: 14px; }
+a { color: var(--accent); }
+.btns { display:flex; flex-wrap:wrap; gap:10px; margin: 16px 0 0; }
+.btn { display:inline-block; background: var(--accent); color:#fff; text-decoration:none; padding: 11px 18px; border-radius: 999px; font-weight:600; }
+.btn.alt { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+ul { margin: 6px 0 0; padding-left: 20px; }
+footer { margin-top: 40px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Clinician update</h1>
+<p class="lead">Caffeinated Innovators Australia · NASA Space Apps Challenge 2026 · 15 Nov 2026. What went live from the clinical lead's review, and what still needs a clinician. Assessment and next steps only. Nothing in the app is a diagnosis.</p>
+
+<div class="stats">
+<div class="stat"><b>11</b><span>items decided and live</span></div>
+<div class="stat"><b>1</b><span>part still open on shock</span></div>
+<div class="stat"><b>2</b><span>requests for the team lead</span></div>
+</div>
+
+<div class="btns">
+<a class="btn" href="../">Open the live app</a>
+<a class="btn alt" href="clinician-questions.html">Answer the open questions</a>
+</div>
+
+<h2>Live now, from the clinical lead's review</h2>
+<div class="card">
+<div class="row"><h3><span class="tag ok">Signed off</span>Possible sepsis alert <span class="id">CR-36 · SEP-01</span></h3><p>Thresholds kept. The wording now says breathing "at rest".</p></div>
+<div class="row"><h3><span class="tag ok">Signed off</span>Kidney stone pathway <span class="id">CR-25, CR-43 · KS-01</span></h3><p>Symptoms, tiers and step wording kept as they are.</p></div>
+<div class="row"><h3><span class="tag ok">Signed off</span>Low fluid early warning <span class="id">CR-29 · KS-00</span></h3><p>Kept at 3 logged days and 1 standard deviation. Two days was tried and set back: on the demo data it fired 33 times in 820 person-days on unchanged series, against 10 with three days.</p></div>
+<div class="row"><h3><span class="tag ok">Signed off</span>Emergency steps <span class="id">CR-32</span></h3><p>Seven DRSABCD steps, 30 compressions to 2 breaths, 100 to 120 a minute, pace marker at 110. At 0 g the CPR step also says "Strap the person down before you start CPR."</p></div>
+<div class="row"><h3><span class="tag ok">Changed</span>First steps follow gravity <span class="id">CR-38</span></h3><p>At 0 g "Lie the person flat" is not shown. "Keep the person warm" and "Strap the person down so you can start CPR if needed" are shown in its place.</p></div>
+<div class="row"><h3><span class="tag ok">Approved</span>Possible shock: first steps and systems screen <span class="id">CR-37 · SHK-01</span></h3><p>New steps in our own words after ANZCOR Guideline 9.2.3: lie flat and keep warm unless already hot, control bleeding, oxygen if available and trained with a fire-risk caution, record vitals, press Emergency if not responding and not breathing normally, reassure and re-check. The crew medic gets a four-heading checklist (blood or fluid loss, heart, widened blood vessels, blockage) and a RUSH scan step if trained.</p></div>
+<div class="row"><h3><span class="tag ok">Signed off</span>Measured fever counts as a red flag <span class="id">CR-58 · VP-01</span></h3><p>A temperature of 38.0 °C or more in the latest vital signs counts as "Fever or chills" in the kidney pathway. Logging fever or chills with no vital signs since shows "Record your vital signs".</p></div>
+<div class="row"><h3><span class="tag ok">Signed off</span>Urine strip notes <span class="id">CR-41</span></h3><p>Blood, nitrite and leucocytes present: "possible infection". Nitrite and leucocytes present: "possible infection". The blood-only line is kept.</p></div>
+<div class="row"><h3><span class="tag ok">Signed off</span>Guided ultrasound <span class="id">CR-42</span></h3><p>New "look for" wording, a rescan after emptying the bladder if both sides look swollen, and five drawn kidney examples in the long view: normal, then grades 1 to 4. The drawings are simple shapes made in code. The app never reads a real image.</p></div>
+<div class="row"><h3><span class="tag ok">Signed off</span>"Press Emergency now" symptoms <span class="id">CR-59 · EMS-01</span></h3><p>Chest pain, short of breath and collapse, with the wording and checklists as they are.</p></div>
+</div>
+
+<h2>Still needs a clinician</h2>
+<div class="card">
+<div class="row"><h3><span class="tag open">Open</span>Possible shock thresholds <span class="id">CR-37 · SHK-01</span></h3><p>Upper blood pressure below 90 mmHg with pulse above 110 a minute. This stays marked as a placeholder until another team clinician confirms it.</p></div>
+<div class="row"><h3><span class="tag open">Open</span>The rest of the review list</h3><p>These have not had a clinician decision yet and stay marked as placeholders in the app:</p>
+<ul>
+<li><strong>Daily check-in and rules:</strong> CR-01 to CR-17, CR-24, CR-30, CR-35, CR-44, CR-45</li>
+<li><strong>Kidney pathway extras:</strong> CR-26, CR-27, CR-28, CR-31, CR-54, CR-57</li>
+<li><strong>Vital signs and cabin:</strong> CR-39 oxygen saturation bands, CR-40 cabin pressure bands</li>
+<li><strong>Individual checks:</strong> CR-19 to CR-23, CR-46, CR-55, CR-56</li>
+<li><strong>Gravity and place:</strong> CR-48, CR-49</li>
+<li><strong>Body areas and symptoms:</strong> CR-33, CR-51, CR-52, CR-53</li>
+<li><strong>Crew check-in and emergency module:</strong> CR-47, CR-50</li>
+</ul>
+<p style="margin-top:8px">The <a href="clinician-questions.html">question form</a> covers every one of these. Tick OK as is, Change it or Not sure, then copy your answers back to the team lead.</p></div>
+</div>
+
+<h2>Asked for by the clinical lead, with the team lead to decide</h2>
+<div class="card">
+<div class="row"><h3><span class="tag ask">Proposed</span>Personal baseline for vital signs, with drift alerts as Act now</h3>
+<ul>
+<li>Breathing at rest more than 6 a minute above or below baseline</li>
+<li>Upper blood pressure down more than 15 mmHg from baseline</li>
+<li>Pulse up more than 20 a minute from baseline</li>
+</ul>
+<p style="margin-top:8px">This adds new Act now thresholds, so it needs a requirement, a sign-off on each number and a rerun of the alarm replay before it can go in.</p></div>
+<div class="row"><h3><span class="tag ask">Proposed</span>Send the shock systems screen results with the case</h3><p>Today the checklist is guidance on screen. The request is to record what was ticked and include it in the case pack for the remote doctor.</p></div>
+</div>
+
+<footer>Sign-offs are recorded by role only. All crew values in the app are SYNTHETIC. This page is a team working note and is not clinical advice.</footer>
+</main>
+</body>
+</html>
