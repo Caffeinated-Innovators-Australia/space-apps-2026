@@ -107,6 +107,8 @@ export interface Seed {
   clockOptions: string[];
   slipMinutes: number;
   radiationDays: number[];
+  /** A SYNTHETIC solar radiation storm forecast for the drill (CR-09): its NOAA S level and when each wave arrives. */
+  radiationForecast?: { synthetic: true; level: string; note: string; waves: { label: string; afterMin: number }[]; allClearAfterMin: number };
   /** `followUps` are questions about a symptom, asked only inside a pathway once that symptom is logged. They are not on the general list. */
   symptoms: { status: string; options: string[]; followUps?: string[] };
   /** Symptoms grouped by where on the body they are felt, for the "Feeling off?" flow. */
@@ -190,6 +192,8 @@ export interface State {
   pathwayTests?: Record<string, Record<string, string>>;
   replies?: EarthReply[];
   emergencies?: EmergencyRun[];
+  /** A solar radiation storm drill in progress (CR-09): when it started and when the alarm was acknowledged. */
+  storm?: { startedAt: number; ackAt?: number };
   wounds?: Wound[];
   vitals?: VitalsEntry[];
   /** Guided ultrasound steps saved, keyed by crew member. No image is kept. */

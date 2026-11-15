@@ -15,7 +15,7 @@ import { AdvisoryPill, AlertCard, LimitArrow, More, ReadingTile, Ring, Synthetic
 import {
   acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
   fromMin, initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
-  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, lifeThreats, toMin, vitalsPrompt, painDue, painSchedule, fluidVitalsCheck, awaitingRepeat,
+  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, lifeThreats, toMin, vitalsPrompt, painDue, painSchedule, fluidVitalsCheck, awaitingRepeat, stormStatus, acknowledgeStorm,
   type Assessment, type DaySummary, type Indicator, type PathwayStatus, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
 import osd from './data/osd569_cbc.json';
@@ -23,6 +23,7 @@ import seedJson from './data/seed.json';
 import { doctorSay, HandoverCard, LinkBanner, ReplyCard } from './components/Handover';
 import { acceptReply, arrivedReplies, changePlace, linkStatus, type CasePack } from './core/index.ts';
 import { EmergencyBanner } from './components/EmergencyBanner.tsx';
+import { StormAlarm, useTick as useStormTick } from './components/StormAlarm.tsx';
 import { EmergencyButton } from './components/EmergencyButton';
 import { CheckIn } from './screens/CheckIn';
 import { Emergency } from './screens/Emergency';
@@ -182,6 +183,7 @@ export function App() {
         {rules ? (
           <div className="sticky-top">
             <StatusBar state={state} commit={commit} rules={rules} crewId={crew.id} setting={setting} />
+            <StormShell state={state} commit={commit} rules={rules} setting={setting} />
             {route.name === 'emergency' || route.name === 'astra' ? null : <EmergencyBanner threats={lifeThreats(state, seed as Seed, rules, crew.id)} go={go} />}
           </div>
         ) : null}
@@ -266,6 +268,13 @@ function VitalsPromptNote({ state, rules, crewId }: { state: State; rules: RuleF
       {p.placeholder ? <> <span className="placeholder">Placeholder wording, awaiting clinician sign-off</span></> : null}
     </p>
   );
+}
+
+/** The solar radiation storm alarm over every screen (CR-09). */
+function StormShell({ state, commit, rules, setting }: { state: State; commit: (s: State) => void; rules: RuleFile; setting: Setting }) {
+  const now = useStormTick(Boolean(state.storm), nowMs);
+  const status = stormStatus(state, seed, rules, setting, now);
+  return <StormAlarm status={status} now={now} onAcknowledge={() => commit(acknowledgeStorm(state, nowMs()))} />;
 }
 
 /** Always on screen: mission time and the alert that most needs attention (NASA display standard, Appendix F.4.2 and F.6.1). */

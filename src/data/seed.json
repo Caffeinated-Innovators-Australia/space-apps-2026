@@ -635,7 +635,7 @@
    "card": {
     "how": "Read the running total from your personal dosimeter. It can only go up.",
     "why": "Radiation is one of the five hazards of spaceflight. Dose adds up over a career, so the total matters more than any one day.",
-    "what": "The tool shows how much of the career limit you have used. After a solar particle event, log the reading so the flight surgeon can see the step.",
+    "what": "The tool shows how much of the career limit you have used. After a solar particle event, log the reading so the flight surgeon can see the step. If a dangerous solar radiation storm is forecast, a red alarm tells you to go to the storm shelter, with a countdown to each wave.",
     "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
@@ -14481,6 +14481,16 @@
   "21:10"
  ],
  "slipMinutes": 45,
+ "radiationForecast": {
+  "synthetic": true,
+  "level": "S3",
+  "note": "SYNTHETIC forecast for the drill. A real one would come from a space weather forecast service.",
+  "waves": [
+   { "label": "First particles", "afterMin": 42 },
+   { "label": "Second wave (shock front)", "afterMin": 1860 }
+  ],
+  "allClearAfterMin": 4320
+ },
  "radiationDays": [
   107,
   128,

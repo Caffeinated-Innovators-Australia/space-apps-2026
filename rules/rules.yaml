@@ -330,6 +330,24 @@ absolute_runs:
     confidence: Low
     signed_off_by: clinical lead
 
+# A forecast solar radiation storm at or above alarm_at on the NOAA solar radiation storm scale (S1 to S5) raises a red
+# pop-up on every screen until acknowledged, then a banner until the all-clear (CR-09). Not shown where there is no
+# habitat (the Earth twin), where the atmosphere and magnetic field protect people. Wave times come from the forecast.
+radiation_storm:
+  id: RS-01
+  alarm_at: S3
+  title: "Solar radiation storm: go to shelter"
+  lines:
+    - "A dangerous solar particle event is forecast."
+    - "Go to the storm shelter now and stay there until the all-clear."
+    - "Stop or postpone any EVA."
+    - "Wear your personal dosimeter."
+  acknowledge: "I have read this"
+  banner: "Solar radiation storm: stay in the storm shelter until the all-clear."
+  source: "Wording and behaviour approved by the clinical lead on 15 Nov 2026 (CR-09). The trigger level S3 is where the NOAA Space Weather Prediction Center solar radiation storm scale advises radiation hazard avoidance for astronauts on EVA; awaiting the clinical lead's confirmation of the level."
+  confidence: Low
+  signed_off_by: placeholder
+
 # Symptoms that ask for a set of vital signs when logged with no set taken since (CR-58), so the monitor alerts
 # (such as SEP-01) can run on measured values. Shown on Today and on the pathway screen until a set is recorded.
 vitals_prompt:

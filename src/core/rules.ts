@@ -115,6 +115,8 @@ export interface RuleFile {
   monitor_alerts: MonitorAlertRule[];
   /** Absent when the file has none. */
   emergency_symptoms?: EmergencySymptomRule;
+  /** A forecast solar radiation storm that raises a red pop-up, then a banner until the all-clear (CR-09). */
+  radiation_storm?: Signed & { id: string; alarm_at: string; title: string; lines: string[]; acknowledge: string; banner: string };
   /** Symptoms that ask for a set of vital signs when logged without one taken since (CR-58). */
   vitals_prompt?: Signed & { id: string; symptoms: string[]; title: string; why: string };
 }
@@ -243,6 +245,11 @@ export function parseRules(text: string): RuleFile {
     for (const b of w.background) if (!b.text || !b.source || !b.link) throw new Error(`Pathway ${id}: every background line needs its source and link.`);
   }
   for (const t of TIERS) if (!Array.isArray(f.steps?.[t]) || f.steps[t].length === 0) throw new Error(`Every tier needs at least one next step: none for ${t}.`);
+  if (f.radiation_storm) {
+    const r = f.radiation_storm;
+    signed(r, r.id ?? 'radiation storm');
+    if (!/^S[1-5]$/.test(String(r.alarm_at)) || !r.title || !Array.isArray(r.lines) || r.lines.length === 0 || !r.acknowledge || !r.banner) throw new Error('Radiation storm: needs alarm_at (S1 to S5), a title, lines, the acknowledge wording and the banner.');
+  }
   if (f.vitals_prompt) {
     const v = f.vitals_prompt;
     signed(v, v.id ?? 'vitals prompt');

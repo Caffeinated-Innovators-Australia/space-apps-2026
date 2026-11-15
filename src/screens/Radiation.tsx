@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { SyntheticTag } from '../components/ui';
 import type { RuleFile, Seed, Setting, State } from '../core/index.ts';
 import { doseSummary, eventDays, missionEvents } from '../core/radiation.ts';
+import { endStorm, startStormDrill } from '../core/storm.ts';
 import donki from '../data/donki_sep.json';
 import './x-ri.css';
 
@@ -88,7 +89,7 @@ function DailyChart({ daily, events, unit, dp }: { daily: { day: number; increas
   );
 }
 
-export function Radiation({ state, crewId, seed, go, hhmm }: RadiationProps) {
+export function Radiation({ state, commit, setting, crewId, seed, go, hhmm }: RadiationProps) {
   const dose = doseSummary(state, seed, crewId);
   const evDays = eventDays(seed);
   const start = (seed as Seed & { missionStart?: string }).missionStart;
@@ -106,6 +107,16 @@ export function Radiation({ state, crewId, seed, go, hhmm }: RadiationProps) {
       </div>
       <h1 className="display">Radiation</h1>
       <p className="muted">Know your dose and where it is heading.</p>
+      {seed.radiationForecast && setting.habitat !== false ? (
+        <div className="card">
+          <div className="card-head"><h2 className="title">Solar radiation storm drill</h2><SyntheticTag /></div>
+          <p>Runs a SYNTHETIC forecast of a level {seed.radiationForecast.level} solar radiation storm, so the crew can practise the shelter alarm.</p>
+          <div className="btn-row">
+            <button type="button" className="btn" onClick={() => commit(startStormDrill(state, Date.now() + (state.ui.skipMs ?? 0)))}>{state.storm ? 'Restart the drill' : 'Start the drill'}</button>
+            {state.storm ? <button type="button" className="btn secondary" onClick={() => commit(endStorm(state))}>End the drill</button> : null}
+          </div>
+        </div>
+      ) : null}
 
       <div className="card">
         <div className="card-head">

@@ -19,3 +19,4 @@ export * from './records.ts';
 export * from './threats.ts';
 export * from './speech.ts';
 export * from './devices.ts';
+export * from './storm.ts';
