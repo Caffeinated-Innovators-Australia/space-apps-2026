@@ -12,8 +12,44 @@
     "source": "ANZCOR Basic Life Support flowchart (reviewed August 2023), bottom panel"
   },
   "steps": [
-    { "id": "D", "letter": "D", "name": "Danger", "say": "Check the area is safe for you, others and the person.", "detail": "Deal with any risk before you go closer." },
-    { "id": "R", "letter": "R", "name": "Response", "say": "Check whether the person responds to you.", "detail": "If they do not respond, go on to the next step." },
+    {
+      "id": "D", "letter": "D", "name": "Danger", "say": "Check the area is safe for you, others and the person.", "detail": "Deal with any risk before you go closer.",
+      "question": {
+        "ask": "Is it safe for you to go closer?", "yes": "Yes, it is safe", "no": "No",
+        "record": { "yes": "Area safe: yes", "no": "Area safe: no" },
+        "onNo": {
+          "title": "Make it safe first",
+          "lines": [
+            { "text": "Cabin pressure or air alarm: put on your suit or mask first.", "habitat": true },
+            { "text": "Fire or smoke: follow the fire procedure first." },
+            { "text": "Power or equipment hazard: switch it off before you touch the person." },
+            { "text": "At 0 g: secure yourself before you move in.", "gravity": ["zero"] },
+            { "text": "If you cannot make it safe, call for help and wait." }
+          ],
+          "done": "It is safe now",
+          "record": "Area made safe"
+        }
+      }
+    },
+    {
+      "id": "R", "letter": "R", "name": "Response", "say": "Check whether the person responds to you.", "detail": "If they do not respond, go on to the next step.",
+      "question": {
+        "ask": "Does the person respond to you?", "yes": "Yes", "no": "No",
+        "record": { "yes": "Responds: yes", "no": "Responds: no" },
+        "onYes": {
+          "title": "They respond. What next?",
+          "checklists": "Open emergency checklists",
+          "priority": {
+            "say": "Send for help: priority call to Earth",
+            "earth": "Send for help: priority call to the RFDS base",
+            "note": "Urgent, not yet life-threatening: like a Pan-Pan call in aviation.",
+            "sent": "Priority call sent. SYNTHETIC: no real call is made in this demo.",
+            "record": "Priority call sent (Pan-Pan)"
+          },
+          "carryOn": "Keep going with these steps"
+        }
+      }
+    },
     { "id": "S", "letter": "S", "name": "Send for help", "say": "Call for help now.", "detail": "If someone else is there, one calls while another fetches the defibrillator." },
     { "id": "A", "letter": "A", "name": "Airway", "say": "Open the person's airway.", "detail": "How to open it: placeholder, awaiting clinician review." },
     { "id": "B", "letter": "B", "name": "Breathing", "say": "Check whether the person is breathing normally.", "detail": "Not breathing, or only an odd gasp: go on and start CPR." },

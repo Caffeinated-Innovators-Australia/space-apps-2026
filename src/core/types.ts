@@ -155,7 +155,11 @@ export interface PainEntry { crewId: string; pathwayId: string; score: number; a
 export interface EarthReply { id: string; caseId: string; at: number; decision: 'agree' | 'add' | 'change' | 'escalate'; note: string; steps: string[]; acceptedAt?: number }
 
 /** One run of the emergency screen: which steps were reached, and when. */
-export interface EmergencyRun { id: string; crewId: string; startedAt: number; endedAt?: number; steps: { id: string; at: number }[] }
+export interface EmergencyRun {
+  id: string; crewId: string; startedAt: number; endedAt?: number; steps: { id: string; at: number }[];
+  /** Answers and actions on the way, for the handover: such as "Area safe: yes" or a priority call sent. */
+  answers?: { id: string; text: string; at: number }[];
+}
 
 /** A wound or skin problem being watched as it heals. No photo is kept. */
 export interface Wound { id: string; crewId: string; label: string; startedAt: number; checks: { at: number; status: 'better' | 'same' | 'worse' }[] }
