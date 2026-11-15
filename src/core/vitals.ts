@@ -150,6 +150,35 @@ export function vitalsAlerts(state: State, rules: RuleFile, crewId: string, grav
       at: entry.at,
     });
   }
+  return [...out, ...driftAlerts(state, rules, crewId, entry)];
+}
+
+/**
+ * Drift from the person's own usual vital signs (FR-64): the latest set against the average of their earlier sets, counting
+ * only sets since the last change of gravity, and only once there are enough of them. Act now, with the general Act now steps.
+ */
+export function driftAlerts(state: State, rules: RuleFile, crewId: string, entry: VitalsEntry): VitalsAlert[] {
+  const d = rules.drift_alerts;
+  if (!d) return [];
+  const since = state.ui.gravityChange?.at ?? -Infinity;
+  const earlier = (state.vitals ?? []).filter((e) => e.crewId === crewId && e.id !== entry.id && e.at < entry.at && e.at >= since);
+  const out: VitalsAlert[] = [];
+  for (const r of d.rules) {
+    const now = entry.values[r.field];
+    const past = earlier.map((e) => e.values[r.field]).filter((v): v is number => v !== undefined);
+    if (now === undefined || past.length < d.min_sets) continue;
+    const usual = past.reduce((a, b) => a + b, 0) / past.length;
+    const diff = now - usual;
+    const hit = r.either_way_more_than !== undefined ? Math.abs(diff) > r.either_way_more_than : r.down_more_than !== undefined ? -diff > r.down_more_than : diff > (r.up_more_than ?? Infinity);
+    if (!hit) continue;
+    const info = vitalField(r.field);
+    out.push({
+      id: r.id, key: `drift:${crewId}:${r.id}:${entry.id}`, tier: 'red', emergency: true, title: r.title, checksFor: r.checks_for, construct: r.construct,
+      reasons: [`${info.label} ${fmt(r.field, now)} ${info.unit}, against your usual ${fmt(r.field, usual)} ${info.unit} from ${past.length} earlier sets`],
+      steps: rules.steps.red, checklists: {}, source: d.source, confidence: d.confidence,
+      placeholder: d.signed_off_by.trim().toLowerCase() === 'placeholder', at: entry.at,
+    });
+  }
   return out;
 }
 

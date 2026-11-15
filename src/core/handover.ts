@@ -76,6 +76,7 @@ export function isbar(content: CaseContent, opts: IsbarOptions = {}): IsbarSecti
     `Tests: ${list(content.tests.map((x) => `${x.test}: ${x.result}`), 'none')}`,
     ...(content.vitals ? [`Vital signs: ${content.vitals}`] : []),
     ...(content.ultrasound ? [content.ultrasound] : []),
+    ...('systemsScreen' in content && content.systemsScreen ? [`Systems screen (crew medic): ${content.systemsScreen}`] : []),
     `Other signals today: ${list(others, 'none')}`,
     ...(content.records.length ? [`Logged for the record, not scored: ${list(content.records, 'none')}`] : []),
   ];

@@ -2,6 +2,7 @@
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { useState } from 'react';
 import type { RuleFile, Seed, Setting, State, VitalSigns, VitalSource } from '../core/index.ts';
+import { markScreen } from '../core/screening.ts';
 import { checkVitals, latestVitals, recordVitals, VITAL_FIELDS, vitalsAlerts, vitalsLine, vitalsSourceLine, type VitalField, type VitalFieldInfo, type VitalsAlert } from '../core/vitals.ts';
 import { More, SyntheticTag, TierPill } from '../components/ui.tsx';
 import { alertSpeech, parseVitalsUtterance, VITAL_QUESTIONS, vitalReadBack, vitalSpokenProblem } from '../core/speech.ts';
@@ -41,6 +42,9 @@ export interface MonitorAlertCardProps {
   /** Ticked first steps. When not given, ticks are kept on this card only. */
   stepsDone?: string[];
   onToggleStep?: (step: string) => void;
+  /** Systems screen results by "heading: check", and how to mark one (FR-65). Without them the checklist is read-only. */
+  screen?: Record<string, 'found' | 'not found'>;
+  onScreen?: (heading: string, check: string, result: 'found' | 'not found') => void;
 }
 
 type Texts = Record<VitalField, string>;
@@ -61,7 +65,7 @@ function fieldError(f: VitalFieldInfo, text: string): string | undefined {
 const sameSet = (a: VitalSigns, b: VitalSigns) => VITAL_FIELDS.every((f) => a[f.id] === b[f.id]);
 
 /** An Act now alert from one set of vital signs. Calm on purpose: no flashing and no sound. */
-export function MonitorAlertCard({ alert, onEmergency, onSend, setting, say, synthetic, hhmm, stepsDone, onToggleStep }: MonitorAlertCardProps) {
+export function MonitorAlertCard({ alert, onEmergency, onSend, setting, say, synthetic, hhmm, stepsDone, onToggleStep, screen, onScreen }: MonitorAlertCardProps) {
   const [localDone, setLocalDone] = useState<string[]>([]);
   const done = stepsDone ?? localDone;
   const toggle = (st: string) => {
@@ -103,9 +107,25 @@ export function MonitorAlertCard({ alert, onEmergency, onSend, setting, say, syn
                   {alert.checklists[st].map((h) => (
                     <div key={h.heading}>
                       <p className="why-label">{h.heading}</p>
-                      <ul>{h.checks.map((c) => <li key={c}>{say(c, setting)}</li>)}</ul>
+                      <ul>
+                        {h.checks.map((c) => {
+                          const r = screen?.[`${h.heading}: ${c}`];
+                          return (
+                            <li key={c}>
+                              {say(c, setting)}
+                              {onScreen ? (
+                                <span className="chips">
+                                  <button type="button" className="chip chip-toggle" aria-pressed={r === 'found'} onClick={() => onScreen(h.heading, c, 'found')}>Found</button>
+                                  <button type="button" className="chip chip-toggle" aria-pressed={r === 'not found'} onClick={() => onScreen(h.heading, c, 'not found')}>Not found</button>
+                                </span>
+                              ) : null}
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </div>
                   ))}
+                  {onScreen ? <p className="caption">Results are kept with the time and sent with the case. They never change the alert.</p> : null}
                 </details>
               ) : null}
             </li>
@@ -273,7 +293,7 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
           {alerts.length === 0 ? (
             <p className="x-vt-quiet">No alert from these vital signs.</p>
           ) : alerts.map((a) => (
-            <MonitorAlertCard key={a.key} alert={a} setting={setting} say={say} hhmm={hhmm} synthetic={latestIsDemo} onEmergency={() => go('astra', String(a.construct))} onSend={onSend ? () => onSend(a) : undefined} />
+            <MonitorAlertCard key={a.key} alert={a} screen={state.systemsScreen?.[crewId]?.results} onScreen={(heading, check, result) => commit(markScreen(state, { crewId, heading, check, result, at: Date.now() }))} setting={setting} say={say} hhmm={hhmm} synthetic={latestIsDemo} onEmergency={() => go('astra', String(a.construct))} onSend={onSend ? () => onSend(a) : undefined} />
           ))}
         </div>
       ) : null}

@@ -15,7 +15,7 @@ import { AdvisoryPill, AlertCard, LimitArrow, More, ReadingTile, Ring, Synthetic
 import {
   acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
   fromMin, initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
-  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, lifeThreats, toMin, vitalsPrompt, painDue, painSchedule, fluidVitalsCheck, awaitingRepeat, stormStatus, acknowledgeStorm,
+  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, lifeThreats, toMin, vitalsPrompt, painDue, painSchedule, fluidVitalsCheck, awaitingRepeat, stormStatus, acknowledgeStorm, markScreen,
   type Assessment, type DaySummary, type Indicator, type PathwayStatus, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
 import osd from './data/osd569_cbc.json';
@@ -598,7 +598,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
         {setting.away ? <button className="fact" onClick={() => go('location')}><span className="fact-k">{setting.id === 'earth' ? 'Nearest doctor' : 'Earth, one way'}</span><span className="mono">{setting.away}</span></button> : null}
       </div>
       <ReplyNotice state={state} crewId={crewId} setting={setting} />
-      {vitalsAlerts(state, rules, crewId, setting.gravityBand).map((v) => <MonitorAlertCard key={v.key} alert={v} setting={setting} say={say} hhmm={hhmm} synthetic onEmergency={() => emergencyFor(v.construct)} />)}
+      {vitalsAlerts(state, rules, crewId, setting.gravityBand).map((v) => <MonitorAlertCard key={v.key} alert={v} setting={setting} say={say} hhmm={hhmm} synthetic onEmergency={() => emergencyFor(v.construct)} screen={state.systemsScreen?.[crewId]?.results} onScreen={(heading, check, result) => commit(markScreen(state, { crewId, heading, check, result, at: nowMs() }))} />)}
       <div className="today">
         <div className="stack">
           <div className={`status-big ${worst}`} role="status">

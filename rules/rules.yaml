@@ -426,6 +426,34 @@ vitals_prompt:
   confidence: Medium
   signed_off_by: clinical lead
 
+# Drift from the person's own usual vital signs (FR-64, CR-36, CR-37): the usual level is the average of their earlier
+# recorded sets (at least min_sets, and only sets since the last change of gravity). Act now, with the general Act now
+# steps. Readings should be taken at rest. construct is the emergency module's checklist the alert's emergency button opens.
+drift_alerts:
+  min_sets: 3
+  rules:
+    - id: VD-01
+      field: rr
+      either_way_more_than: 6
+      construct: 2
+      title: "Breathing has changed from your usual: act now"
+      checks_for: "Checks for a breathing rate at rest more than 6 a minute above or below your own usual. Fast breathing and slow breathing point to different causes."
+    - id: VD-02
+      field: sbp
+      down_more_than: 15
+      construct: 4
+      title: "Blood pressure has dropped from your usual: act now"
+      checks_for: "Checks for an upper blood pressure at rest more than 15 mmHg below your own usual."
+    - id: VD-03
+      field: hr
+      up_more_than: 20
+      construct: 5
+      title: "Pulse has risen from your usual: act now"
+      checks_for: "Checks for a pulse at rest more than 20 a minute above your own usual."
+  source: "Numbers set by the clinical lead on 15 Nov 2026 (CR-36, CR-37), accepted as a requirement by the clinical lead acting for the team lead (FR-64). The usual level from at least three earlier sets is the build assistant's method, approved by the clinical lead."
+  confidence: Low
+  signed_off_by: clinical lead
+
 # Symptoms that mean "press Emergency now" the moment one is logged. No pattern, no second symptom, no wait.
 # The app shows a red banner on every screen until the symptom is cleared. It names no condition.
 emergency_symptoms:

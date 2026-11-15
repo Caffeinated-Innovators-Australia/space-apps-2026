@@ -194,6 +194,8 @@ export interface State {
   emergencies?: EmergencyRun[];
   /** A solar radiation storm drill in progress (CR-09): when it started and when the alarm was acknowledged. */
   storm?: { startedAt: number; ackAt?: number };
+  /** The crew medic's systems screen results on a monitor alert, by person (FR-65). */
+  systemsScreen?: Record<string, { at: number; results: Record<string, 'found' | 'not found'> }>;
   wounds?: Wound[];
   vitals?: VitalsEntry[];
   /** Guided ultrasound steps saved, keyed by crew member. No image is kept. */
