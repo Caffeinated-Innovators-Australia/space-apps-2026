@@ -85,11 +85,16 @@ describe('yes/no questions on Danger and Response (CR-32)', () => {
     const lines = d.question!.onNo!.lines;
     const station = linesFor(lines, 'zero', true);
     expect(station).toContain('Cabin pressure or air alarm: put on your suit or mask first.');
-    expect(station).toContain('At 0 g: secure yourself before you move in.');
+    expect(station).toContain('At 0 g: secure yourself, and stop loose objects or floating liquid, before you move in.');
     const mars = linesFor(lines, 'martian', true);
-    expect(mars).not.toContain('At 0 g: secure yourself before you move in.');
+    expect(mars.join(' ')).not.toContain('At 0 g');
     const earth = linesFor(lines, 'earth', false);
-    expect(earth).toEqual(['Fire or smoke: follow the fire procedure first.', 'Power or equipment hazard: switch it off before you touch the person.', 'If you cannot make it safe, call for help and wait.']);
+    expect(earth).toContain('Snake nearby: keep clear, and keep the person still.');
+    expect(earth).toContain('Fallen power lines: stay well back. Do not touch the person until the power is off.');
+    expect(earth).not.toContain('Cabin pressure or air alarm: put on your suit or mask first.');
+    expect(earth.join(' ')).not.toMatch(/airlock|0 g|Moon or Mars/);
+    expect(mars).toContain("Moon or Mars dust brought inside: keep it away from the person's eyes, nose and mouth.");
+    expect(mars.join(' ')).not.toMatch(/Snake|Fallen power lines/);
   });
   it('offers the checklists, a priority call and carrying on when the person responds', () => {
     const y = r.question!.onYes!;

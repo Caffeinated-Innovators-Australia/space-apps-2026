@@ -201,7 +201,7 @@ export function Radiation({ state, commit, setting, crewId, seed, go, hhmm }: Ra
 
       <div className="card">
         <h2 className="title">If a solar storm is announced</h2>
-        <span className="placeholder">Shelter steps are written by the mission, not by this app. Placeholder, awaiting the team's review.</span>
+        <p>The storm alarm tells you to go to the storm shelter when a dangerous solar radiation storm is forecast (rule RS-01). Follow your mission's shelter plan.</p>
         <div className="btn-row">
           <button className="btn" onClick={() => go('reading', 'radiation')}>Log today's dosimeter reading</button>
         </div>

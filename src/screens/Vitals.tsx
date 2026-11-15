@@ -245,7 +245,7 @@ export function Vitals({ state, commit, setting, crewId, seed, rules, go, say, h
                 {f.id === 'spo2' ? (
                   <div className="x-vt-note" id="x-vt-spo2-note">
                     <p>Readings run lower and are less reliable at low cabin pressure, so oxygen saturation never raises an alert by itself.{setting.cabinKPa ? <> Cabin pressure here: <span className="mono">{setting.cabinKPa}</span> kPa.</> : null}</p>
-                    <p className="source">Source: the team's clinical lead, build pack v3.3. <span className="placeholder">Placeholder wording, awaiting sign-off</span></p>
+                    <p className="source">Source: the team's clinical lead, build pack v3.3. Reviewed by our clinical lead, 15 Nov 2026 (CR-39).</p>
                   </div>
                 ) : null}
               </div>

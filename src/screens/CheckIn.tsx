@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ScaleInput } from '../components/ScaleInput';
 import { VoiceTalk, type VoiceValues } from '../components/VoiceTalk.tsx';
 import { spokenNumber, spokenSymptoms } from '../core/speech.ts';
-import { AdvisoryPill, SyntheticTag, TierPill } from '../components/ui';
+import { AdvisoryPill, SyntheticTag, TierPill, statusClass } from '../components/ui';
 import {
   crewById, daySummary, demoValue, pathwayStatuses, pathwayTier, plausible, recordReading, reportNothing, toggleSymptom,
   type Indicator, type RuleFile, type Seed, type Setting, type State,
@@ -180,7 +180,7 @@ export function CheckIn({ state, commit, setting, crewId, seed, rules, go, say, 
             <p aria-live="polite">Logged: {mine.map((x) => `${x.label.toLowerCase()} at ${hhmm(x.at)}`).join(', ')}.</p>
           ) : nothing ? <p aria-live="polite">Logged: nothing to report.</p> : null}
           <p className="caption">Only you see this unless you send it.</p>
-          <span className="placeholder">{seed.symptoms.status}</span>
+          <span className={statusClass(seed.symptoms.status)}>{seed.symptoms.status}</span>
         </section>
 
         {question ? (

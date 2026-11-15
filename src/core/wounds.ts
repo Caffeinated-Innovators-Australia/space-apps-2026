@@ -2,7 +2,7 @@
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import type { State, Wound } from './types.ts';
 
-export const WOUND_LABELS = ['Cut', 'Graze', 'Rash', 'Cold sore', 'Other skin problem'] as const;
+export const WOUND_LABELS = ['Cut', 'Graze', 'Burn', 'Blister', 'Rash', 'Cold sore', 'Hand or fingernail injury from gloves', 'Rubbing or pressure sore', 'Other skin problem'] as const;
 export type WoundStatus = Wound['checks'][number]['status'];
 export const WOUND_STATUSES: WoundStatus[] = ['better', 'same', 'worse'];
 

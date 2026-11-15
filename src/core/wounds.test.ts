@@ -11,11 +11,11 @@ const t0 = new Date(2026, 10, 10, 9, 0).getTime();
 
 describe('healing tracker', () => {
   it('starts tracking only the fixed labels', () => {
-    expect(WOUND_LABELS).toEqual(['Cut', 'Graze', 'Rash', 'Cold sore', 'Other skin problem']);
+    expect(WOUND_LABELS).toEqual(['Cut', 'Graze', 'Burn', 'Blister', 'Rash', 'Cold sore', 'Hand or fingernail injury from gloves', 'Rubbing or pressure sore', 'Other skin problem']);
     const { state, wound } = startWound(initialState(seed), { crewId: 'crew-1', label: 'Cut', at: t0 });
     expect(woundsFor(state, 'crew-1')).toEqual([wound]);
     expect(woundsFor(state, 'crew-2')).toEqual([]);
-    expect(() => startWound(state, { crewId: 'crew-1', label: 'Burn', at: t0 })).toThrow(/not on the list/);
+    expect(() => startWound(state, { crewId: 'crew-1', label: 'Sunburn', at: t0 })).toThrow(/not on the list/);
   });
   it('logs checks in order, one per day, and replaces a same-day check', () => {
     let { state, wound } = startWound(initialState(seed), { crewId: 'crew-1', label: 'Graze', at: t0 });

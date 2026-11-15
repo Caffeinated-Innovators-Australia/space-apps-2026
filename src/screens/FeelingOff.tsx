@@ -1,7 +1,7 @@
 // "Feeling off?": log a symptom the moment it happens, in three steps (where, what it is like, what the rules make of it).
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { useEffect, useRef, useState } from 'react';
-import { AdvisoryPill, SyntheticTag, TierPill } from '../components/ui';
+import { AdvisoryPill, SyntheticTag, TierPill, statusClass } from '../components/ui';
 import { crewById, pathwayStatuses, pathwayTier, toggleSymptom, type PathwayStatus, type RuleFile, type Seed, type Setting, type State } from '../core/index.ts';
 import { VoiceTalk, type VoiceValues } from '../components/VoiceTalk.tsx';
 import { spokenSymptoms } from '../core/speech.ts';
@@ -82,7 +82,7 @@ export function FeelingOff({ state, commit, setting, crewId, seed, rules, go, sa
               <button key={z.id} type="button" className="x-ci-zone" aria-pressed={z.id === zoneId} onClick={() => { setZoneId(z.id); setStep(2); }}>{z.label}</button>
             ))}
           </div>
-          <span className="placeholder">{status}</span>
+          <span className={statusClass(status)}>{status}</span>
         </section>
       ) : null}
 

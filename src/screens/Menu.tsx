@@ -1,5 +1,6 @@
 // Menu: settings people rarely change, as cards of standard list rows. Privacy, thresholds, inputs, accessibility, sources and demo controls.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
+import { statusClass } from '../components/ui.tsx';
 import { useState } from 'react';
 import { PrivacyTable } from '../components/PrivacyTable';
 import { initialState, type Indicator, type RuleFile, type Seed, type Setting, type State } from '../core/index.ts';
@@ -108,7 +109,7 @@ export function Menu({ state, commit, ui, setting, seed, go, say }: MenuProps) {
             </li>
           ))}
         </ul>
-        {seed.evidenceStatus ? <span className="placeholder">{seed.evidenceStatus}</span> : null}
+        {seed.evidenceStatus ? <span className={statusClass(seed.evidenceStatus)}>{seed.evidenceStatus}</span> : null}
         <div className="btn-row">
           <button className="btn secondary" onClick={() => go('crew')}>Real crew data</button>
           <button className="btn secondary" onClick={() => go('about')}>Limits of this app</button>

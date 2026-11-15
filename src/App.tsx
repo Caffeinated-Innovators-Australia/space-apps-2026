@@ -11,7 +11,7 @@ import { ScaleInput } from './components/ScaleInput';
 import { StreakCard } from './components/StreakCard';
 import { Timeline } from './components/Timeline';
 import { VisionTest } from './components/VisionTest';
-import { AdvisoryPill, AlertCard, LimitArrow, More, ReadingTile, Ring, SyntheticTag, TierPill, TierShape, TIER_WORD, TierWords } from './components/ui';
+import { AdvisoryPill, AlertCard, LimitArrow, More, ReadingTile, Ring, SyntheticTag, TierPill, TierShape, TIER_WORD, TierWords, statusClass } from './components/ui';
 import {
   acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
   fromMin, initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
@@ -442,7 +442,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
               <dt>What changes</dt><dd>{setting.twist}</dd>
               <dt>If you need help</dt><dd>{setting.advice}</dd>
             </dl>
-            <span className="placeholder">{seed.settingStatus}</span>
+            <span className={statusClass(seed.settingStatus)}>{seed.settingStatus}</span>
           </div>
             {back}
           </div>
@@ -913,7 +913,7 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
             <p>{setting.detail}</p>
             <p className="caption">{setting.basis}</p>
             <p className="gap-problem">{problem.text} <span className="caption">Source: <a href={problem.link}>{problem.source}</a>.</span></p>
-            <span className="placeholder">{seed.settingStatus}</span>
+            <span className={statusClass(seed.settingStatus)}>{seed.settingStatus}</span>
           </More>
           <More label={`Demo: ${setting.label}`}>
             <Where setting={setting} onPick={(id) => { const t = nowMs(); commit(place(state, id, t)); setStartAt(t); }} />

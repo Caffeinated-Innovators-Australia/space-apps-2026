@@ -1,7 +1,7 @@
 // The weekly crew check-in: five statements answered 1 to 5, kept for the flight psychologist only. No tier is ever shown for it.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { useState } from 'react';
-import { SyntheticTag } from '../components/ui';
+import { SyntheticTag, statusClass } from '../components/ui';
 import { crewById } from '../core/actions.ts';
 import { crewCheckDue, crewCheckShare, recordCrewCheck, weekOf } from '../core/crewcheck.ts';
 import type { RuleFile } from '../core/rules.ts';
@@ -70,7 +70,7 @@ export function CrewCheckIn({ state, commit, setting, crewId, seed, go, say, hhm
     <>
       <p className="caption">{say('Your answers go to the flight psychologist only. Never to crewmates or the crew medic.', setting)}</p>
       <p className="caption">{say(cc.label, setting)}</p>
-      <span className="placeholder">{cc.status}</span>
+      <span className={statusClass(cc.status)}>{cc.status}</span>
     </>
   );
 

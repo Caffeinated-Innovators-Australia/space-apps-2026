@@ -21,9 +21,16 @@
           "title": "Make it safe first",
           "lines": [
             { "text": "Cabin pressure or air alarm: put on your suit or mask first.", "habitat": true },
+            { "text": "Toxic leak alarm: put on your mask, and move the person to clean air if you can.", "habitat": true },
             { "text": "Fire or smoke: follow the fire procedure first." },
             { "text": "Power or equipment hazard: switch it off before you touch the person." },
-            { "text": "At 0 g: secure yourself before you move in.", "gravity": ["zero"] },
+            { "text": "Person outside in a suit: get them into the airlock and pressurised before you start.", "habitat": true },
+            { "text": "At 0 g: secure yourself, and stop loose objects or floating liquid, before you move in.", "gravity": ["zero"] },
+            { "text": "Moon or Mars dust brought inside: keep it away from the person's eyes, nose and mouth.", "gravity": ["lunar", "martian"] },
+            { "text": "Vehicles or machinery: stop them, or move away from them, first.", "habitat": false },
+            { "text": "Fallen power lines: stay well back. Do not touch the person until the power is off.", "habitat": false },
+            { "text": "Snake nearby: keep clear, and keep the person still.", "habitat": false },
+            { "text": "Heat or a dust storm: get the person into shade or shelter if you can do it safely.", "habitat": false },
             { "text": "If you cannot make it safe, call for help and wait." }
           ],
           "done": "It is safe now",

@@ -14419,7 +14419,7 @@
    "away": "640 km"
   }
  ],
- "settingStatus": "Draft guidance lines, environment profiles and Earth-mode wording, awaiting clinician review (CR-11). The rules do not yet change by environment; that is a clinician decision.",
+ "settingStatus": "Reviewed by our clinical lead, 15 Nov 2026 (CR-11). The rules change by place only for the gravity adaptation (CR-17).",
  "timeline": [
   {
    "start": "06:30",
@@ -14698,8 +14698,8 @@
   }
  ],
  "crewCheck": {
-  "status": "Placeholder items, awaiting clinician review",
-  "label": "Modelled on NASA's APEX team constructs. Not a validated scale.",
+  "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-47)",
+  "label": "Modelled on NASA's APEX team constructs. Not a tested or published scale.",
   "visibleTo": "the flight psychologist only",
   "scale": "1 strongly disagree to 5 strongly agree",
   "items": [
@@ -14784,5 +14784,5 @@
   "source": "Australian Institute of Health and Welfare, Deaths in Australia",
   "link": "https://www.aihw.gov.au/reports/life-expectancy-deaths/deaths-in-australia/contents/variations-between-population-groups/remoteness-area"
  },
- "evidenceStatus": "Placeholder labels, awaiting clinician review (CR-30)"
+ "evidenceStatus": "Reviewed by our clinical lead, 15 Nov 2026 (CR-30)"
 }
