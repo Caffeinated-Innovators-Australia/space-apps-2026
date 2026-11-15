@@ -173,7 +173,7 @@ export function App() {
     <TierWords.Provider value={tierWords}>
       <div className="app">
         <header className="top">
-          <button className="brand" onClick={() => go('home')}>Crew health check</button>
+          <button className="brand" onClick={() => go('home')} title="Spaceflight Extreme and Remote Environment Nexus – Clinical">S.E.R.E.N. Clinical</button>
           <nav className="nav" aria-label="Main">
             <button aria-current={['home', 'reading', 'result', 'gap', 'pathway', 'checkin', 'feeling', 'radiation', 'immune', 'schedule', 'signals', 'sources', 'area', 'vitals', 'ultrasound'].includes(route.name) ? 'page' : undefined} onClick={() => go('home')}>Today</button>
             <button aria-current={route.name === 'outbox' ? 'page' : undefined} onClick={() => go('outbox')}>Outbox{queued ? ` (${queued})` : ''}</button>

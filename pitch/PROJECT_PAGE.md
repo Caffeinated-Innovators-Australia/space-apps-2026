@@ -6,7 +6,9 @@ For the team before submitting: confirm or change the project name; swap the dem
 
 ## Project name
 
-Crew health check
+S.E.R.E.N. Clinical
+
+Spaceflight Extreme and Remote Environment Nexus – Clinical
 
 ## High-level summary
 

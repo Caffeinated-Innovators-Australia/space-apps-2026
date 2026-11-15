@@ -21,7 +21,7 @@ button.pri{background:var(--acc);border-color:var(--acc);color:#fff}
 ol.how{padding-left:22px}#out{display:none;white-space:pre-wrap;font:14px/1.45 ui-monospace,Menlo,monospace;max-height:260px;overflow:auto}
 @media print{.bar,#tools{display:none}body{background:#fff}.card{break-inside:avoid}main{padding-bottom:0}}
 </style></head><body><main>
-<p class="id">Crew health check · NASA Space Apps Challenge 2026 · 15 Nov 2026</p>
+<p class="id">S.E.R.E.N. Clinical · NASA Space Apps Challenge 2026 · 15 Nov 2026</p>
 <h1>Questions for our clinicians</h1>
 <p>The app uses placeholder rules until a clinician confirms them. This form lists every open question, <b>57 in all</b>. Section 1 holds the twelve that matter most today. The rest can wait.</p>
 <div class="card"><b>How to answer</b>
@@ -56,7 +56,7 @@ role.value=S._role||'';extra.value=S._extra||'';role.oninput=()=>{S._role=role.v
 const all=G.flatMap(g=>g.items);
 function tally(){const n=all.filter(i=>(S[i.id]||{}).a||((S[i.id]||{}).n||'').trim()).length;document.getElementById('count').textContent=n+' of '+all.length+' answered';}
 const W={ok:'OK as is',change:'CHANGE',unsure:'Not sure'};
-function text(){const L=['Clinician answers, Crew health check, '+new Date().toLocaleDateString('en-AU'),'Role: '+(S._role||'not given'),''];
+function text(){const L=['Clinician answers, S.E.R.E.N. Clinical, '+new Date().toLocaleDateString('en-AU'),'Role: '+(S._role||'not given'),''];
  all.forEach(i=>{const s=S[i.id]||{};const n=(s.n||'').trim();if(!s.a&&!n)return;L.push(i.id+': '+(W[s.a]||'Comment')+(n?' | '+n.replace(/\s+/g,' '):''))});
  if((S._extra||'').trim())L.push('','Anything else: '+S._extra.trim());return L.join('\n')}
 document.getElementById('copy').onclick=async()=>{const t=text(),o=document.getElementById('out');o.textContent=t;o.style.display='block';

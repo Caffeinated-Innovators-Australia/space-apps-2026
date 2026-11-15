@@ -4,6 +4,8 @@ Challenge: Create Health Monitoring Software for Astronauts on Space Missions. M
 
 ## What we are building
 
+**S.E.R.E.N. Clinical** (Spaceflight Extreme and Remote Environment Nexus – Clinical) is our app.
+
 On the way to Mars, a question to Earth's doctors can take up to 45 minutes to come back. This tool helps an astronaut who is not a medical expert act in that gap.
 
 The demo is one story. Jo is on Day 214 at a Mars base, 18 light-minutes from Earth. Three days of low fluid raise a Watch early warning that names kidney stone risk, with NASA's evidence report as its source. Then pain starts: three taps, and the matched pattern turns it Act now, with steps that include a urine test strip and a guided ultrasound. A case goes to Earth as a clinical handover, and a countdown shows that no answer can arrive for 36 minutes, so the crew starts the steps. The doctor's reply lands as a step. Later a fever with low blood pressure or fast breathing raises a possible-sepsis alert, which opens emergency mode. Then the same case runs for Sam, a station hand at a Simpson Desert station, 640 km from the nearest hospital.

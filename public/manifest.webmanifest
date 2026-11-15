@@ -1,6 +1,6 @@
 {
-  "name": "Crew health check",
-  "short_name": "Crew health",
+  "name": "S.E.R.E.N. Clinical: Spaceflight Extreme and Remote Environment Nexus – Clinical",
+  "short_name": "S.E.R.E.N.",
   "description": "Health decision support for astronauts. Hackathon prototype. Assessment and next steps only, not a diagnosis.",
   "start_url": ".",
   "scope": ".",
