@@ -35,7 +35,7 @@
     "how": "Enter the hours you slept last night, to the nearest half hour. Count sleep, not time in the sleep station.",
     "why": "Sleep and body-clock disruption is one of the risks of long missions. A slow slide over weeks is easy to miss from the inside.",
     "what": "If your sleep is below your own range, or drifting down, the tool asks for a quick reaction-time check and tells you who to talk to.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -79,8 +79,8 @@
    "card": {
     "how": "Pick the word that fits how you feel right now. There is no right answer, and the first one that comes to mind is usually the true one.",
     "why": "Isolation and confinement wear on everyone. An honest daily check-in shows a trend long before it shows in your work.",
-    "what": "A low day is logged and nothing more. A run of low days is shared with your crew medic, and only with them.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "what": "A low day is logged and nothing more. A run of low days is shared with your crew medic, and only with them. Thoughts of harming yourself or someone else are different: they go to your crew medic and the commander at once.",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -119,8 +119,8 @@
    "card": {
     "how": "Hold the tablet steady. Tap as soon as the counter appears. The full check runs three minutes; the demo runs thirty seconds.",
     "why": "Poor sleep and raised cabin carbon dioxide both slow thinking. A short reaction test shows it when you may not feel it.",
-    "what": "If you are slower than your own range, rest and repeat. If it holds, hand over safety-critical tasks and tell your crew medic.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "what": "If you are slower than your own range, rest and repeat. If it holds, hand over safety-critical tasks and tell your crew medic. A sudden, large slowing can be an early sign of low oxygen or another emergency, so it can be rated Act now.",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -157,7 +157,7 @@
     "how": "Measure soon after waking, before exercise. Stay still for five minutes first, then count for a full minute or use the wrist sensor.",
     "why": "The heart and blood vessels adapt to changed gravity. A resting rate that moves away from your own normal is an early signal.",
     "what": "One odd reading: rest and repeat it. If it stays outside your range, tell your crew medic.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -195,7 +195,7 @@
     "how": "Sit and rest for five minutes. Put the cuff on your upper arm at heart level. Stay still and quiet while it measures.",
     "why": "The heart and blood vessels adapt to changed gravity, and blood pressure shifts with them. Good technique matters: a rushed reading gives a false alarm.",
     "what": "One odd reading: rest five minutes and repeat it. If it stays outside your range, tell your crew medic.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -233,7 +233,7 @@
     "how": "Take it from the same reading as the upper number: seated, rested five minutes, cuff at heart level.",
     "why": "The two blood pressure numbers are read together. A change in either away from your own normal is worth a second look.",
     "what": "One odd reading: rest five minutes and repeat it. If it stays outside your range, tell your crew medic.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -276,7 +276,7 @@
     "how": "Hold the screen 30 cm from your eyes with your usual glasses on. If you cannot measure it, use your own arm's length, the same every time. Cover one eye and read the smallest line you can, then swap eyes. The tool keeps the worse eye.",
     "why": "Changes to the eye and vision are a risk particular to spaceflight, linked to fluid shifting towards the head. A weekly self-check against your own earlier results shows a change early.",
     "what": "If you read fewer lines than your own range, repeat the check in good light. If it holds, tell your crew medic so a proper eye exam can be arranged.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -314,7 +314,7 @@
     "how": "At the end of the day, enter how much of the planned exercise you completed, as a percentage. A missed session is 0, a full day is 100.",
     "why": "Muscle and bone are lost quickly in reduced gravity. Exercise is the main protection, so sticking to the plan is itself a health signal.",
     "what": "A missed day is logged and nothing more. If sessions keep slipping, talk to your crew medic about what is getting in the way.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -357,8 +357,8 @@
    "card": {
     "how": "Use the hand dynamometer with your stronger hand, elbow at your side. Squeeze as hard as you can for three seconds. Take the best of three.",
     "why": "Grip strength is a quick stand-in for overall muscle strength, which falls in reduced gravity. There is no direct way to measure bone in flight, so strength and exercise stand in for it.",
-    "what": "Below your own range: check your exercise plan is being met. Below 80% of your baseline: tell your crew medic.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "what": "Below your own range: check your exercise plan is being met. Below 80% of your baseline: tell your crew medic now.",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -397,7 +397,7 @@
     "how": "Use the body mass device before breakfast, once a week, in the same clothing.",
     "why": "Crews tend to lose body mass on long missions, often because they eat less than they need. A slow fall is easy to miss week to week.",
     "what": "Below your own range, or drifting down: check your food and fluid logs, and tell your crew medic if it continues.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -425,7 +425,7 @@
     "kind": "number",
     "min": 0,
     "max": 12,
-    "prompt": "Fluid you drank today"
+    "prompt": "Fluid today, including water used in food"
    },
    "target": {
     "low": 2.2,
@@ -440,10 +440,10 @@
     "D"
    ],
    "card": {
-    "how": "At the end of the day, add up what you drank, in litres. Count water, drinks and soups.",
-    "why": "Staying hydrated protects thinking, exercise performance and the kidneys. Thirst is a poor guide in spaceflight.",
-    "what": "A low day: drink before you sleep. A run of low days: tell your crew medic.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "how": "At the end of the day, add up your fluid, in litres. Count water, drinks, soups and the water used to rehydrate food.",
+    "why": "Staying hydrated protects thinking, exercise performance and the kidneys. Thirst can be a poor guide in spaceflight, so aim for your daily target.",
+    "what": "A low day: drink before you sleep. A run of low days: tell your crew medic. Under 1 L for 3 days in a row: tell your crew medic now.",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -482,7 +482,7 @@
     "how": "At the end of the day, enter the energy total from the meal packs you ate, in kilocalories. The pack labels carry the numbers.",
     "why": "Eating less than you need is a known problem on long missions and drives loss of body mass. Every meal has to be carried, so nothing can be made up later.",
     "what": "A low day: eat the next planned meal in full. A run of low days: tell your crew medic.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -532,9 +532,9 @@
    ],
    "card": {
     "how": "Use the blood analyser with a fingertip sample, once a week, at the same time of day.",
-    "why": "Blood changes in spaceflight. Each person's normal is different, which the real crew data in this tool shows.",
+    "why": "Blood changes in spaceflight. Each person's normal is different, which the real crew data in this tool shows. After a change of gravity your own range is reset, so expected changes are not flagged.",
     "what": "Outside your own range: repeat the test. Outside the laboratory range as well: tell your crew medic.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -592,7 +592,7 @@
     "how": "Read automatically from the cabin sensor as a one-hour average. You can also type a reading from a handheld monitor.",
     "why": "Cabin carbon dioxide is linked to headaches and slower thinking. It builds up in a closed habitat.",
     "what": "Above the cabin limit: tell the commander so the air system can be checked, and do a reaction-time check.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -636,7 +636,7 @@
     "how": "Read the running total from your personal dosimeter. It can only go up.",
     "why": "Radiation is one of the five hazards of spaceflight. Dose adds up over a career, so the total matters more than any one day.",
     "what": "The tool shows how much of the career limit you have used. After a solar particle event, log the reading so the flight surgeon can see the step.",
-    "status": "Draft wording, drawn from the team's challenge brief where it covers the topic, awaiting clinician sign-off (CR-03, CR-23)",
+    "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-03, CR-23)",
     "sources": [
      {
       "label": "NASA Human Research Program, 5 Hazards of Human Spaceflight",
@@ -14647,7 +14647,7 @@
   "step": "Log your personal dosimeter reading."
  },
  "privacy": {
-  "status": "Draft policy for the team to confirm (CR-13)",
+  "status": "Approved by our clinical lead, 15 Nov 2026 (CR-13)",
   "rows": [
    {
     "what": "Your readings and trends",

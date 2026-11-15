@@ -1312,9 +1312,8 @@ function About() {
     'Real NASA data: crew blood counts (OSDR, OSD-569), space weather (DONKI), and limits from NASA-STD-3001 for cabin carbon dioxide, strength and radiation dose.',
   ];
   const placeholder = [
-    'Every rule, every number in it and every line of advice. Clinicians on our team must write and sign each one.',
-    'The explanation cards: draft wording from our own challenge brief.',
-    'Who sees what: a draft policy for the team to confirm.',
+    'Any rule or line of advice still marked as a placeholder. Signed-off ones show "Reviewed by our clinical lead".',
+    'Clinician sign-off is a team review for this prototype, not a flight medical authority\'s approval.',
     'All crew values. They are SYNTHETIC.',
   ];
   const needed = [
