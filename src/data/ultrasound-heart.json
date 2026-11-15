@@ -1,12 +1,37 @@
 {
  "id": "guided-ultrasound-heart",
  "title": "Guided heart ultrasound",
- "status": "Placeholder wording written by the build team, awaiting clinician sign-off (CR-53)",
- "source": "Requested by the team's clinicians, 14 Nov 2026. Wording is a placeholder.",
+ "status": "Reviewed by our clinical lead, 15 Nov 2026 (CR-53)",
+ "source": "Requested by the team's clinicians, 14 Nov 2026. Two views, chosen on the build assistant's recommendation and approved by the clinical lead, after POCUS 101, Cardiac Ultrasound (Echocardiography) Made Easy: Step-By-Step Guide (https://www.pocus101.com/cardiac-ultrasound-echocardiography-made-easy-step-by-step-guide/): beside the breastbone (parasternal long axis), usually the first view, and below the breastbone (subxiphoid), the fallback when the first is hard to see. Words and drawings are our own.",
  "imageNote": "Live image would show here. No image is captured or kept in this demo.",
  "steps": [
-  { "id": "ush-1", "title": "Get ready", "instruction": "Get the ultrasound probe and gel ready, as your kit card shows. Lie back, turned a little onto your left side if you can." },
-  { "id": "ush-2", "title": "Beside the breastbone", "instruction": "Probe just to the left of the breastbone, between the ribs, about the middle of the chest. Marker towards the right shoulder.", "lookFor": "Look for: a steady view of the heart beating. Hold it still for a few beats.", "note": "The app does not read the image. Your crew medic and Earth do.", "side": "chest" },
-  { "id": "ush-3", "title": "Save", "instruction": "Save. The steps you completed go into the case for your crew medic and Earth." }
+  {
+   "id": "ush-1",
+   "title": "Get ready",
+   "instruction": "Get the probe and gel ready, as your kit card shows. Lie flat. At 0 g, strap down first."
+  },
+  {
+   "id": "ush-2",
+   "title": "Beside the breastbone",
+   "instruction": "Probe just left of the breastbone, in the 4th rib space, about nipple level. Marker towards the right shoulder.",
+   "lookFor": "Look for: a steady view of the heart beating. Hold it still for a few beats.",
+   "note": "Hard to see? Turn a little onto your left side, or use step 3.",
+   "side": "chest",
+   "example": "heart-psla"
+  },
+  {
+   "id": "ush-3",
+   "title": "Below the breastbone",
+   "instruction": "Probe flat under the tip of the breastbone, aimed at the left shoulder. Marker to the left. Knees bent, press gently.",
+   "lookFor": "Look for: the heart beating, seen through the liver. Hold it still for a few beats.",
+   "note": "The app does not read the image. Your crew medic and Earth do.",
+   "side": "subxiphoid",
+   "example": "heart-subxiphoid"
+  },
+  {
+   "id": "ush-4",
+   "title": "Save",
+   "instruction": "Save. The steps you completed go into the case for your crew medic and Earth."
+  }
  ]
 }

@@ -10,9 +10,9 @@ export interface UltrasoundStep {
   instruction: string;
   lookFor?: string;
   note?: string;
-  side?: 'left' | 'right' | 'chest';
-  /** Show the drawn examples of what to look for: 'kidney' shows a normal and a swollen kidney (CR-42). */
-  example?: 'kidney';
+  side?: 'left' | 'right' | 'chest' | 'subxiphoid';
+  /** Drawn examples: 'kidney' shows a normal and a swollen kidney (CR-42); the heart ones show where each part sits in a normal view (CR-53). */
+  example?: 'kidney' | 'heart-psla' | 'heart-subxiphoid';
 }
 export interface UltrasoundProcedure {
   id: string;
