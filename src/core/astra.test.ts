@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { initialState, parseRules, type Seed, type Setting, type State } from './index.ts';
-import { fluidThreeDay, helloMsg, openPathwayMsg, profileMsg, readInbound, recordModuleAlert, setPatientMsg, vitalsMsg } from './astra.ts';
+import { fluidThreeDay, helloMsg, openPathwayMsg, profileMsg, readInbound, recordModuleAlert, setPatientMsg, vitalsMsg, arrestSignal, ARREST_CONSTRUCT} from './astra.ts';
 
 const rules = parseRules(readFileSync('rules/rules.yaml', 'utf8'));
 const seed = JSON.parse(readFileSync('src/data/seed.json', 'utf8')) as Seed;
@@ -108,5 +108,25 @@ describe('recordModuleAlert', () => {
     expect(recordModuleAlert(s1, a, T + 60_000).moduleAlerts).toHaveLength(2);
     expect(recordModuleAlert(s1, { ...a, construct: 4 }, T + 1000).moduleAlerts).toHaveLength(2);
     expect(recordModuleAlert(s1, { ...a, crewId: 'crew-2' }, T + 1000).moduleAlerts).toHaveLength(2);
+  });
+});
+
+describe('bridge-only alignment with the main app', () => {
+  const msg = (type: string, extra: Record<string, unknown>) => ({ schema: 'astra/1', type, ts: '2026-11-15T00:00:00Z', ...extra });
+  it('reads the module\'s steps, descriptions and answers, and refuses malformed ones', () => {
+    expect(readInbound(msg('astra.step', { construct: 1, step: 2, text: 'Start compressions', status: 'done' }))).toEqual({ type: 'astra.step', construct: 1, step: 2, text: 'Start compressions', status: 'done' });
+    expect(readInbound(msg('astra.description', { text: '  he collapsed  ' }))).toEqual({ type: 'astra.description', text: 'he collapsed' });
+    expect(readInbound(msg('astra.answer', { question: 'q_resp', answer: 'NO', input: 'voice' }))).toEqual({ type: 'astra.answer', question: 'q_resp', answer: 'no', input: 'voice' });
+    expect(readInbound(msg('astra.step', { step: 2 }))).toBeNull();
+    expect(readInbound(msg('astra.description', { text: '   ' }))).toBeNull();
+  });
+  it('offers the guided CPR steps for the arrest checklist, or not responding and not breathing, and not otherwise', () => {
+    expect(ARREST_CONSTRUCT).toBe(1);
+    expect(arrestSignal(readInbound(msg('astra.step', { construct: 1, step: 1, status: 'done' }))!, {})).toBe(true);
+    expect(arrestSignal(readInbound(msg('astra.step', { construct: 12, step: 1, status: 'done' }))!, {})).toBe(false);
+    const breath = readInbound(msg('astra.answer', { question: 'q_breath', answer: 'no' }))!;
+    expect(arrestSignal(breath, { q_resp: 'no' })).toBe(true);
+    expect(arrestSignal(breath, { q_resp: 'yes' })).toBe(false);
+    expect(arrestSignal(readInbound(msg('astra.description', { text: 'smoke' }))!, {})).toBe(false);
   });
 });

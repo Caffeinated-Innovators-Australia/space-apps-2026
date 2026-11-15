@@ -94,7 +94,13 @@ export type AstraInbound =
   | { type: 'astra.ready'; version?: string }
   | { type: 'astra.monitorAlert'; crewId: string; construct: number; pathway: string; tier: string; reasons: string[] }
   | { type: 'astra.profile.changed'; profile: string; label?: string; g?: number; cabinKPa?: number; o2Pct?: number }
-  | { type: 'astra.report'; crewId?: string; report: { id?: string; priority?: string; text?: string } };
+  | { type: 'astra.report'; crewId?: string; report: { id?: string; priority?: string; text?: string } }
+  /** A step ticked, skipped or reopened in one of the module's checklists. */
+  | { type: 'astra.step'; construct: number; step: number; text: string; status: string }
+  /** What the crew member typed or said to describe the emergency, in the module. */
+  | { type: 'astra.description'; text: string }
+  /** A yes/no answer to one of the module's questions. */
+  | { type: 'astra.answer'; question: string; answer: string; input: string };
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
 const str = (x: unknown): string | undefined => (typeof x === 'string' ? x : undefined);
@@ -129,12 +135,45 @@ export function readInbound(data: unknown): AstraInbound | null {
         const r = data.report;
         return { type: 'astra.report', ...(str(data.crewId) ? { crewId: str(data.crewId) } : {}), report: { id: str(r.id), priority: str(r.priority), text: str(r.text) } };
       }
+      case 'astra.step': {
+        const construct = num(data.construct);
+        const step = num(data.step);
+        if (construct === undefined || step === undefined) return null;
+        return { type: 'astra.step', construct, step, text: str(data.text) ?? '', status: str(data.status) ?? '' };
+      }
+      case 'astra.description': {
+        const text = str(data.text);
+        return text && text.trim() ? { type: 'astra.description', text: text.trim().slice(0, 500) } : null;
+      }
+      case 'astra.answer': {
+        const question = str(data.question);
+        const answer = str(data.answer);
+        if (!question || !answer) return null;
+        return { type: 'astra.answer', question, answer: answer.toLowerCase(), input: str(data.input) ?? '' };
+      }
       default:
         return null;
     }
   } catch {
     return null;
   }
+}
+
+/** The module's cardiac arrest checklist. Its own resuscitation steps are replaced, at a tap, by this app's guided CPR steps. */
+export const ARREST_CONSTRUCT = 1;
+
+/**
+ * Whether what the module reported means a cardiac arrest, so the app offers its guided CPR steps (read aloud, pace marker,
+ * strap-down at 0 g, voice control, timed handover). It follows the module's own rule: not responding and not breathing.
+ * `answers` holds the module's yes/no answers seen so far in this session.
+ */
+export function arrestSignal(m: AstraInbound, answers: Record<string, string>): boolean {
+  if (m.type === 'astra.step' || m.type === 'astra.monitorAlert') return m.construct === ARREST_CONSTRUCT;
+  if (m.type === 'astra.answer') {
+    const a = { ...answers, [m.question]: m.answer };
+    return a.q_resp === 'no' && a.q_breath === 'no';
+  }
+  return false;
 }
 
 /** Saves an alert the module raised. The same pathway for the same person within a minute is not saved twice. */
