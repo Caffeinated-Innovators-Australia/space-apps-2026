@@ -88,7 +88,7 @@ describe('rulesAwaitingSignOff', () => {
     for (const x of list) expect(x.source && x.confidence && x.what).toBeTruthy();
     // Signed off by the clinical lead on 15 Nov 2026 (CR-29); every other rule here still awaits sign-off.
     // Signed off by the clinical lead on 15 Nov 2026 (CR-25, CR-29, CR-41, CR-43, CR-58).
-    const signed = ['KS-00', 'KS-01', 'MH-01', 'LM-01', 'SU-01', 'PB-01', 'TR-01', 'CM-01'];
+    const signed = ['KS-00', 'KS-01', 'MH-01', 'LM-01', 'SU-01', 'PB-01', 'TR-01', 'CM-01', 'PR-01'];
     for (const id of signed) expect(list.find((x) => x.id === id)?.placeholder).toBe(false);
     expect(list.filter((x) => !signed.includes(x.id)).every((x) => x.placeholder)).toBe(true);
   });

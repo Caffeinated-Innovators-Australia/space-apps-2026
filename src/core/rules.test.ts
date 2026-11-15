@@ -15,7 +15,7 @@ describe('rules file', () => {
     expect(() => parseRules(text.replace(/^\s+source: "Signed off by the clinical lead on 15 Nov 2026 \(CR-02, CR-12, CR-14, CR-16\)\. The band.*$/m, ''))).toThrow(/no source/);
   });
   it('refuses a rule with no sign-off field', () => {
-    expect(() => parseRules(text.replace(/^    signed_off_by: placeholder$/m, ''))).toThrow(/signed_off_by/);
+    expect(() => parseRules(text.replace(/^    signed_off_by: clinical lead$/m, ''))).toThrow(/signed_off_by/);
   });
 });
 

@@ -70,9 +70,9 @@ prompts:
     when_flagged: [sleep, cabin-co2]
     then_prompt: reaction
     why: "Poor sleep and raised cabin carbon dioxide can both slow thinking. A reaction check shows whether they have."
-    source: "Placeholder rule, awaiting clinician review. The link is described in the team's challenge brief."
+    source: "Approved by the clinical lead on the build assistant's recommendation, 15 Nov 2026 (CR-19, CR-24): poor sleep or cabin carbon dioxide above its range asks for a reaction check. The link is described in the team's challenge brief."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
 
 # Symptom pathways: a pattern of logged symptoms the rules act on. A pathway names a pattern to CHECK FOR
 # and the next steps. It never names a finding. core symptoms open the follow-up questions; core plus
