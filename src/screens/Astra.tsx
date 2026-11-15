@@ -1,7 +1,9 @@
 // Emergency module screen: embeds the team's separate ASTRA prototype in a frame and runs the message bridge to it.
 // AI assistance: drafted with Claude Code (see AI_USE.md).
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { helloMsg, openPathwayMsg, profileMsg, readInbound, recordModuleAlert, setPatientMsg, vitalsMsg, type AstraOutbound } from '../core/astra.ts';
+import { ARREST_CONSTRUCT, arrestSignal, helloMsg, openPathwayMsg, profileMsg, readInbound, recordModuleAlert, setPatientMsg, vitalsMsg, type AstraOutbound } from '../core/astra.ts';
+import { interpret, loadAi, type Interpretation } from '../core/ai.ts';
+import { EmergencyVoice } from '../components/EmergencyVoice.tsx';
 import type { RuleFile, Seed, Setting, State } from '../core/index.ts';
 import './x-as.css';
 
@@ -54,6 +56,14 @@ export function Astra({ state, commit, setting, crewId, seed, rules, go, arg }: 
   const lastProfile = useRef('');
   const stateRef = useRef(state);
   stateRef.current = state;
+  // Bridge-only alignment with the main app (no change to the module's own file):
+  // a cardiac arrest in the module offers this app's guided CPR steps, and what the crew member describes in the module
+  // is also read by this app's small language model (or keywords) to suggest a checklist.
+  // "1:als" comes from the guided CPR steps, for the crew medic's advanced checklist: no offer to go back to basic CPR.
+  const fromCpr = arg !== undefined && arg.trim().endsWith(':als');
+  const [arrest, setArrest] = useState(!fromCpr && arg !== undefined && arg.trim() === String(ARREST_CONSTRUCT));
+  const answers = useRef<Record<string, string>>({});
+  const [aiSuggestion, setAiSuggestion] = useState<{ said: string; got: Interpretation['checklist']; source: Interpretation['source'] } | null>(null);
 
   const target = typeof window !== 'undefined' && window.location.origin !== 'null' ? window.location.origin : '*';
   const send = useCallback((msg: AstraOutbound) => {
@@ -80,7 +90,7 @@ export function Astra({ state, commit, setting, crewId, seed, rules, go, arg }: 
     lastVitals.current = '';
     sendVitals(true);
     send(setPatientMsg(crewId));
-    const n = arg !== undefined && /^\d+$/.test(arg.trim()) ? Number(arg.trim()) : NaN;
+    const n = arg !== undefined && /^\d+(:als)?$/.test(arg.trim()) ? Number(arg.trim().split(':')[0]) : NaN;
     if (Number.isInteger(n)) send(openPathwayMsg(n, crewId));
   };
 
@@ -91,6 +101,15 @@ export function Astra({ state, commit, setting, crewId, seed, rules, go, arg }: 
       const m = readInbound(e.data);
       if (!m) return;
       if (m.type === 'astra.ready') setStatus('ready');
+      if (!fromCpr && arrestSignal(m, answers.current)) setArrest(true);
+      if (m.type === 'astra.answer') answers.current = { ...answers.current, [m.question]: m.answer };
+      if (m.type === 'astra.description') {
+        const s = (() => { try { return loadAi(window.localStorage); } catch { return loadAi(); } })();
+        void interpret(s, { fields: [], symptoms: seed.symptoms.options }, m.text, (url, init) => fetch(url, init)).then((got) => {
+          if (!fromCpr && got.checklist?.construct === ARREST_CONSTRUCT) setArrest(true);
+          setAiSuggestion({ said: m.text, got: got.checklist, source: got.source });
+        });
+      }
       if (m.type === 'astra.monitorAlert' && seed.crew.some((c) => c.id === m.crewId)) {
         const s = stateRef.current;
         const next = recordModuleAlert(s, m, Date.now() + (s.ui.skipMs ?? 0));
@@ -137,6 +156,26 @@ export function Astra({ state, commit, setting, crewId, seed, rules, go, arg }: 
         <p className="x-as-note">Emergency module (ASTRA) · a separate team prototype · not for clinical use</p>
         <p className="x-as-note">It uses its own crew labels and does not model the signal delay: a report it marks delivered has only been queued. Values shown in it are SYNTHETIC.</p>
       </div>
+      {arrest ? (
+        <div className="x-em-banner" role="alert">
+          <svg className="glyph" viewBox="0 0 16 16" width="20" height="20" aria-hidden="true"><rect x="1" y="1" width="14" height="14" /></svg>
+          <div className="x-em-banner-text">
+            <strong>Cardiac arrest: use the guided CPR steps</strong>
+            <span>The app's own steps read each one aloud, keep the pace at 110 a minute, add the strap-down step at 0 g, answer to your voice and time everything for the handover.</span>
+          </div>
+          <div className="x-em-banner-actions"><button type="button" className="x-em-button" onClick={() => go('emergency')}>Open guided CPR steps</button></div>
+        </div>
+      ) : null}
+      {aiSuggestion?.got && aiSuggestion.got.construct !== ARREST_CONSTRUCT ? (
+        <p className="confirm" role="status">
+          From what you described, "{aiSuggestion.said}", the {aiSuggestion.source === 'slm' ? 'small language model' : 'keywords'} also suggest: <strong>{aiSuggestion.got.name}</strong>.{' '}
+          <button type="button" className="btn secondary" onClick={() => send(openPathwayMsg(aiSuggestion.got!.construct, crewId))}>Open it in the module</button>
+        </p>
+      ) : null}
+      <details className="more x-as-voice">
+        <summary>Say what is happening (the app's voice and AI)</summary>
+        <EmergencyVoice symptoms={seed.symptoms.options} onOpen={(c) => (c === ARREST_CONSTRUCT ? go('emergency') : send(openPathwayMsg(c, crewId)))} />
+      </details>
       {status === 'failed' ? (
         <div className="card x-as-failed" role="status">
           <h2 className="title">The emergency module did not open</h2>

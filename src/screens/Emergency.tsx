@@ -289,7 +289,7 @@ export function Emergency({ state, commit, crewId, go, hhmm, setting, seed, rule
     <section className="x-em" aria-labelledby="x-em-h">
       {notice}
       <p className="x-em-other">Not a collapse? <button type="button" className="btn secondary" onClick={() => go('astra')}>Open the emergency checklists</button></p>
-      <EmergencyVoice symptoms={seed.symptoms.options} onOpen={(c) => { record('voice-checklist', `Checklist ${c} opened from what was said`); go('astra', String(c)); }} />
+      <EmergencyVoice symptoms={seed.symptoms.options} onOpen={(c) => { if (c === 1) { record('voice-checklist', 'Cardiac arrest recognised from what was said: these guided steps continued'); return; } record('voice-checklist', `Checklist ${c} opened from what was said`); go('astra', String(c)); }} />
       <h1 id="x-em-h" className="title">Emergency: step {index + 1} of {steps.length}</h1>
       <ol className="x-em-rail" aria-label="Basic life support steps">
         {steps.map((s, i) => {
@@ -351,6 +351,7 @@ export function Emergency({ state, commit, crewId, go, hhmm, setting, seed, rule
             <button type="button" className="chip chip-toggle" aria-pressed={click} onClick={toggleClick}>Soft click: {click ? 'on' : 'off'}</button>
           </div>
         ) : null}
+        {step.id === 'C' || step.id === 'D2' ? <p><button type="button" className="btn secondary" onClick={() => { record('als-checklist', 'Advanced life support checklist opened for the crew medic'); go('astra', '1:als'); }}>Crew medic: advanced life support checklist</button></p> : null}
         {showUntil ? <p className="x-em-until">{protocol.continueUntil!.say} <span className="source">({protocol.continueUntil!.source})</span></p> : null}
         <p className={protocol.status.startsWith('Placeholder') ? 'placeholder' : 'source'}>{protocol.status}</p>
       </div>

@@ -87,7 +87,7 @@ Data shapes (`Seed`, `State`, `Reading`, `CasePack`, `Indicator`, `CrewProfile`,
 
 - A new indicator: add it in `scripts/make_mission_data.py` (id, group, name, unit, valid range, input kind, which direction matters, cadence, `weekDay` if weekly, `mode: 'cumulative'` if it is a running total, any sourced limit, explanation card, an optional `cardNote` saying what the check is not, and a baseline and mission series for each crew member). A new group must also be added to `GROUP_ORDER` in the same script; it shows in the list at once, but a body figure area is added by hand in `src/components/BodyFigure.tsx`. A new input kind (as the near-vision check was) needs its own component on the reading screen. Then run `python3 scripts/make_mission_data.py` to regenerate `src/data/seed.json`. Do not edit `seed.json` by hand. A clinician must supply the range and wording.
 - A new rule: `rules/rules.yaml`, with a `source` and a `signed_off_by` field. A rule that reads one set of vital signs goes under `monitor_alerts`, with the emergency module's pathway number as `construct`.
-- The emergency module: `public/astra/index.html` belongs to its owner and is shipped as it is. Change how our app talks to it in `src/core/astra.ts` only.
+- The emergency module: `public/astra/index.html` belongs to its owner and is shipped as it is. Change how our app talks to it in `src/core/astra.ts` only. How the two are aligned, and what is asked of the module's owner, is in `docs/ASTRA_ALIGNMENT.md`.
 - A new screen: a file in `src/screens/`, added to the route list in `src/App.tsx`.
 - New data from NASA or another agency: fetch it once with a script in `scripts/`, save JSON in `src/data/`, and add it to `REFERENCES.md` and `docs/DATA_DICTIONARY.md`.
 
