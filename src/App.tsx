@@ -936,7 +936,6 @@ function Gap({ state, commit, ui, setting, rules, reading }: Shared & { rules: R
                 </li>
               ))}
             </ul>
-            <span className="placeholder">Placeholder steps</span>
           </div>
           </EarthLoop>
           <div className="card">
@@ -1058,7 +1057,6 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
           </li>
         ))}
       </ul>
-      <span className="placeholder">Placeholder steps</span>
       {canSend ? (
         <div className="btn-row">
           {active.level === 'red' ? <button className="btn" onClick={() => emergencyFor(12)}>Open emergency mode</button> : null}
@@ -1161,7 +1159,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
             <div className="card">
               <div className="card-head"><h2 className="title">Add a test result</h2><SyntheticTag /></div>
               <p aria-live="polite">{logged.length > 0 ? `Urine test strip logged: ${logged.join(', ')}.` : 'Urine test strip: nothing logged yet.'}</p>
-              {testNote(pathway, tests) && <p className="confirm" role="note">Urine strip only: {testNote(pathway, tests)} <span className="placeholder">Placeholder wording</span></p>}
+              {testNote(pathway, tests) && <p className="confirm" role="note">Urine strip only: {testNote(pathway, tests)}</p>}
               <More label="Urine test strip">
                 {pathway.tests.map((x) => (
                   <div key={x.id}>

@@ -70,9 +70,9 @@ prompts:
     when_flagged: [sleep, cabin-co2]
     then_prompt: reaction
     why: "Poor sleep and raised cabin carbon dioxide can both slow thinking. A reaction check shows whether they have."
-    source: "Placeholder rule, awaiting clinician review. The link is described in the team's challenge brief."
+    source: "Approved by the clinical lead on the build assistant's recommendation, 15 Nov 2026 (CR-19, CR-24): poor sleep or cabin carbon dioxide above its range asks for a reaction check. The link is described in the team's challenge brief."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
 
 # Symptom pathways: a pattern of logged symptoms the rules act on. A pathway names a pattern to CHECK FOR
 # and the next steps. It never names a finding. core symptoms open the follow-up questions; core plus
@@ -198,38 +198,105 @@ pathways:
     confidence: Medium
     signed_off_by: clinical lead
 
-  # Thoughts of harming yourself or someone else (CR-44). Act now on one symptom. Shared with the crew medic and the
-  # commander at once: safety comes before privacy here, as in a risk-of-harm situation on Earth.
+  # Single symptoms that need the crew medic now (CR-10), added on the build assistant's recommendation and approved by
+  # the clinical lead. Each names what to check for, never a finding. No emergency mode.
+  - id: LG-01
+    name: "Swollen or painful leg"
+    region: "Leg"
+    core: ["Swollen or painful leg"]
+    supporting: []
+    min_supporting: 0
+    urgent: []
+    context: [exercise]
+    check:
+      title: "Leg: a quick question"
+      why: "You logged {core}."
+    titles:
+      amber: "Leg: tell your crew medic now"
+      red: "Leg: tell your crew medic now"
+    why:
+      amber: "You logged {symptoms}. A blood clot is one cause your crew medic checks for, so they need to see it now. This is a pattern to check, not a diagnosis."
+      red: "You logged {symptoms}. A blood clot is one cause your crew medic checks for, so they need to see it now. This is a pattern to check, not a diagnosis."
+    steps:
+      amber:
+        - "Tell your crew medic now."
+        - "Rest the leg, and do not rub or massage it."
+        - "Record your vital signs."
+        - "Send the case to Earth."
+      red:
+        - "Tell your crew medic now."
+        - "Rest the leg, and do not rub or massage it."
+        - "Record your vital signs."
+        - "Send the case to Earth."
+    source: "Recommended by the build assistant and approved by the clinical lead on 15 Nov 2026 (CR-10)."
+    confidence: Low
+    signed_off_by: clinical lead
+  - id: GI-01
+    name: "Blood in vomit or stool"
+    region: "Stomach and gut"
+    core: ["Blood in vomit or stool"]
+    supporting: []
+    min_supporting: 0
+    urgent: []
+    context: [fluid]
+    check:
+      title: "Stomach and gut: a quick question"
+      why: "You logged {core}."
+    titles:
+      amber: "Stomach and gut: tell your crew medic now"
+      red: "Stomach and gut: tell your crew medic now"
+    why:
+      amber: "You logged {symptoms}. Your crew medic needs to know now. This is a pattern to check, not a diagnosis."
+      red: "You logged {symptoms}. Your crew medic needs to know now. This is a pattern to check, not a diagnosis."
+    steps:
+      amber:
+        - "Tell your crew medic now."
+        - "Record your vital signs."
+        - "Note how much blood, its colour, and when."
+        - "Send the case to Earth."
+      red:
+        - "Tell your crew medic now."
+        - "Record your vital signs."
+        - "Note how much blood, its colour, and when."
+        - "Send the case to Earth."
+    source: "Recommended by the build assistant and approved by the clinical lead on 15 Nov 2026 (CR-10)."
+    confidence: Low
+    signed_off_by: clinical lead
+  # The mental health red pathway (CR-10, CR-44): thoughts of suicide, of harming yourself or someone else, or having
+  # harmed yourself. Act now on one symptom. Shared with the crew medic and the commander at once: safety comes before
+  # privacy here, as in a risk-of-harm situation on Earth.
   - id: MH-01
-    name: "Thoughts of harm"
-    region: "Mind and sleep"
-    core: ["Thoughts of harming myself", "Thoughts of harming someone else"]
+    name: "Mental health red pathway"
+    region: "Mental health"
+    core: ["Thoughts of suicide", "Thoughts of harming myself", "Have harmed myself", "Thoughts of harming someone else"]
     supporting: []
     min_supporting: 0
     urgent: []
     context: [mood, sleep]
     share_now: true
     privacy_note: "Shared with your crew medic and the commander now. Safety comes before privacy here."
-    ask_after: { indicator: mood, at_or_below: 2, ask: "Have you had any thoughts of harming yourself or someone else?" }
+    ask_after: { indicator: mood, at_or_below: 2, ask: "Have you had any thoughts of suicide, or of harming yourself or someone else?" }
     check:
-      title: "Mind and sleep: a quick question"
+      title: "Mental health: a quick question"
       why: "You logged {core}."
     titles:
-      amber: "Mind and sleep: needs action now"
-      red: "Mind and sleep: needs action now"
+      amber: "Mental health: needs action now"
+      red: "Mental health: needs action now"
     why:
-      amber: "You logged thoughts of harming yourself or someone else. This needs a person to talk to now."
-      red: "You logged thoughts of harming yourself or someone else. This needs a person to talk to now."
+      amber: "You logged {symptoms}. This needs a person with you, and someone to talk to, now."
+      red: "You logged {symptoms}. This needs a person with you, and someone to talk to, now."
     steps:
       amber:
         - "Tell your crew medic now. The commander is told as well."
         - "Stay with a crewmate. Do not stay alone."
+        - "Move anything that could be used to cause harm out of reach."
         - "Send the case to Earth for a private call with the flight surgeon."
       red:
         - "Tell your crew medic now. The commander is told as well."
         - "Stay with a crewmate. Do not stay alone."
+        - "Move anything that could be used to cause harm out of reach."
         - "Send the case to Earth for a private call with the flight surgeon."
-    source: "Asked for by the clinical lead on 15 Nov 2026 (CR-44)."
+    source: "Asked for by the clinical lead on 15 Nov 2026 (CR-10, CR-44). Suicide and having harmed yourself added, and the step to move anything that could cause harm out of reach, on the build assistant's recommendation, approved by the clinical lead."
     confidence: Low
     signed_off_by: clinical lead
 
@@ -364,12 +431,15 @@ vitals_prompt:
 emergency_symptoms:
   id: EMS-01
   title: "Press Emergency now"
-  symptoms: ["Chest pain", "Short of breath", "Collapse"]
+  symptoms: ["Chest pain", "Short of breath", "Collapse", "Slurred speech or face drooping", "Numbness or weakness", "Seizure"]
   # Which checklist in the emergency module each symptom opens. A symptom with none opens the built-in Emergency steps.
   checklists:
     "Chest pain": { construct: 5, label: "Open chest pain checklist" }
     "Short of breath": { construct: 2, label: "Open breathing checklist" }
-  why: "Chest pain, shortness of breath and collapse are treated as an emergency until a clinician says otherwise."
-  source: "List from the team's clinicians (review of the build, 15 Nov 2026), signed off by the clinical lead on 15 Nov 2026 (CR-59)."
+    "Slurred speech or face drooping": { construct: 6, label: "Open neurological checklist" }
+    "Numbness or weakness": { construct: 6, label: "Open neurological checklist" }
+    "Seizure": { construct: 6, label: "Open neurological checklist" }
+  why: "Chest pain, shortness of breath, collapse, signs of a possible stroke (slurred speech, a drooping face, numbness or weakness) and a seizure are treated as an emergency until a clinician says otherwise."
+  source: "List from the team's clinicians (review of the build, 15 Nov 2026), signed off by the clinical lead on 15 Nov 2026 (CR-59). Stroke signs and seizure added on the build assistant's recommendation, approved by the clinical lead on 15 Nov 2026 (CR-10)."
   confidence: High
   signed_off_by: clinical lead

@@ -259,15 +259,46 @@ describe('batch 1 of the open items (CR-26, CR-27, CR-28, CR-31, CR-54)', () => 
 describe('thoughts of harm (MH-01, CR-44)', () => {
   const mh = rules.pathways.find((p) => p.id === 'MH-01')!;
   it('is Act now on one symptom, with the agreed steps and the commander told', () => {
-    for (const l of ['Thoughts of harming myself', 'Thoughts of harming someone else']) {
+    for (const l of ['Thoughts of suicide', 'Thoughts of harming myself', 'Have harmed myself', 'Thoughts of harming someone else']) {
       const p = pathwayStatuses(log(initialState(seed), 'crew-4', l), seed, rules, 'crew-4').find((x) => x.pathway.id === 'MH-01')!;
       expect(p.level).toBe('amber');
       expect(pathwayAlerts(log(initialState(seed), 'crew-4', l), seed, rules, 'crew-4').find((x) => x.pathwayId === 'MH-01')?.tier).toBe('red');
-      expect(p.title).toBe('Mind and sleep: needs action now');
+      expect(p.title).toBe('Mental health: needs action now');
+      expect(p.steps).toContain('Move anything that could be used to cause harm out of reach.');
       expect(p.steps[0]).toBe('Tell your crew medic now. The commander is told as well.');
     }
     expect(mh.share_now).toBe(true);
     expect(mh.privacy_note).toContain('commander');
-    expect(mh.ask_after).toEqual({ indicator: 'mood', at_or_below: 2, ask: 'Have you had any thoughts of harming yourself or someone else?' });
+    expect(mh.ask_after).toEqual({ indicator: 'mood', at_or_below: 2, ask: 'Have you had any thoughts of suicide, or of harming yourself or someone else?' });
+  });
+});
+
+describe('the symptom list and its areas (CR-10, CR-51)', () => {
+  it('has every symptom in exactly one area, and every mental health red flag opens MH-01', () => {
+    const zones = seed.symptomZones!.zones;
+    const inZones = zones.flatMap((z) => z.symptoms);
+    expect(new Set(inZones).size).toBe(inZones.length);
+    expect([...inZones].sort()).toEqual([...seed.symptoms.options].sort());
+    expect(seed.symptoms.options).toHaveLength(49);
+    const mind = zones.find((z) => z.id === 'mind')!.symptoms;
+    for (const s of rules.pathways.find((p) => p.id === 'MH-01')!.core) expect(mind).toContain(s);
+  });
+});
+
+describe('new alerts for single symptoms (CR-10)', () => {
+  it('treats stroke signs and seizure as Press Emergency now, opening the neurological checklist', () => {
+    for (const l of ['Slurred speech or face drooping', 'Numbness or weakness', 'Seizure']) {
+      expect(emergencySymptoms(log(initialState(seed), 'crew-4', l), rules, 'crew-4')?.symptoms).toEqual([l]);
+      expect(rules.emergency_symptoms!.checklists![l].construct).toBe(6);
+    }
+  });
+  it('makes a swollen or painful leg, and blood in vomit or stool, Act now with the crew medic told now', () => {
+    for (const [l, id] of [['Swollen or painful leg', 'LG-01'], ['Blood in vomit or stool', 'GI-01']]) {
+      const s = log(initialState(seed), 'crew-4', l);
+      expect(pathwayAlerts(s, seed, rules, 'crew-4').find((x) => x.pathwayId === id)?.tier).toBe('red');
+      const p = pathwayStatuses(s, seed, rules, 'crew-4').find((x) => x.pathway.id === id)!;
+      expect(p.steps[0]).toBe('Tell your crew medic now.');
+      expect(p.why).toContain('not a diagnosis');
+    }
   });
 });

@@ -2,14 +2,14 @@
  "status": "Placeholder lists and record types, awaiting clinician review (CR-52)",
  "note": "Record only. Nothing here raises an alert or sets a result until a clinician writes a rule for it.",
  "areas": [
-  { "id": "mind", "label": "Mind and sleep", "short": "Mind and sleep", "group": "Mind and sleep", "symptoms": ["Low mood", "Tired", "Headache", "Confused"], "records": [] },
-  { "id": "eyes", "label": "Eyes", "short": "Eyes", "group": "Eyes", "symptoms": ["Blurred vision"], "records": ["amsler", "retinal-scan", "eye-pressure", "visual-field"] },
+  { "id": "mind", "label": "Mind and sleep", "short": "Mind and sleep", "group": "Mind and sleep", "symptoms": ["Low mood", "Tired", "Headache", "Confused", "Anxious or panicky", "Cannot sleep", "Feeling hopeless", "Hearing or seeing things others do not", "Thoughts of suicide", "Thoughts of harming myself", "Have harmed myself", "Thoughts of harming someone else"], "records": [] },
+  { "id": "eyes", "label": "Eyes", "short": "Eyes", "group": "Eyes", "symptoms": ["Blurred vision", "Eye pain"], "records": ["amsler", "retinal-scan", "eye-pressure", "visual-field"] },
   { "id": "lungs", "label": "Lungs and breathing", "short": "Lungs", "symptoms": ["Short of breath", "Chest pain", "Cough", "Sore throat"], "records": [] },
-  { "id": "heart", "label": "Heart", "short": "Heart", "group": "Heart", "together": true, "symptoms": ["Chest pain", "Collapse", "Dizzy on standing"], "records": ["ecg", "hrv"] },
-  { "id": "gut", "label": "Stomach and gut", "short": "Gut", "symptoms": ["Nauseous", "Vomiting", "Diarrhoea", "Constipated", "Belly pain"], "records": ["bowels"] },
+  { "id": "heart", "label": "Heart", "short": "Heart", "group": "Heart", "together": true, "symptoms": ["Chest pain", "Collapse", "Dizzy on standing", "Racing or irregular heartbeat", "Feeling faint", "Swollen or painful leg"], "records": ["ecg", "hrv"] },
+  { "id": "gut", "label": "Stomach and gut", "short": "Gut", "symptoms": ["Nauseous", "Vomiting", "Diarrhoea", "Constipated", "Belly pain", "Blood in vomit or stool"], "records": ["bowels"] },
   { "id": "blood", "label": "Blood, immune and hormones", "short": "Blood and immune", "group": "Blood", "symptoms": ["Fever or chills", "Sore throat", "Cold sore"], "records": ["wcc", "cortisol", "vbg-ph", "vbg-lactate"] },
-  { "id": "skin", "label": "Skin", "short": "Skin", "symptoms": ["Rash", "Itchy skin", "Cut slow to heal", "Cold sore"], "records": [] },
-  { "id": "muscle", "label": "Muscle and bone", "short": "Muscle and bone", "group": "Muscle and bone", "symptoms": ["Muscle or joint pain", "Stiffness"], "records": ["msk-pain"] }
+  { "id": "skin", "label": "Skin", "short": "Skin", "symptoms": ["Rash", "Itchy skin", "Cut slow to heal", "Cold sore", "Burn"], "records": [] },
+  { "id": "muscle", "label": "Muscle and bone", "short": "Muscle and bone", "group": "Muscle and bone", "symptoms": ["Muscle or joint pain", "Stiffness", "Swollen or painful leg"], "records": ["msk-pain"] }
  ],
  "kinds": [
   { "id": "ecg", "label": "ECG (heart tracing)", "how": "Take the tracing on the ECG device, then log that it was done. No tracing is kept in this demo.", "optionLabel": "Type", "options": ["6-lead", "12-lead"], "note": true },
