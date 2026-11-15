@@ -15,7 +15,7 @@ import { AdvisoryPill, AlertCard, LimitArrow, More, ReadingTile, Ring, Synthetic
 import {
   acknowledge, assessReading, caseContent, casePackContent, confirmation, crewById, crewGoal, dayPlan, daySummary, demoValue, exportOutbox, history, indicatorById,
   fromMin, initialState, insights, latestReading, limitsFor, parseRules, personalBand, plausible, RANK, recordReading, reportNothing, sendCase, settingById, streak, tierFor,
-  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, lifeThreats, toMin,
+  logPain, logPathwayTest, pathwayAlerts, pathwayCaseContent, pathwayStatuses, pathwayTier, sendPathwayCase, testNote, togglePathwayStep, toggleStep, toggleSymptom, lifeThreats, toMin, vitalsPrompt,
   type Assessment, type DaySummary, type Indicator, type PathwayStatus, type Reading as SavedReading, type RuleFile, type Seed, type Setting, type State, type Tier,
 } from './core/index.ts';
 import osd from './data/osd569_cbc.json';
@@ -249,6 +249,19 @@ export function App() {
         </footer>
       </div>
     </TierWords.Provider>
+  );
+}
+
+/** Asks for a set of vital signs after fever or chills is logged with none taken since (VP-01, CR-58). */
+function VitalsPromptNote({ state, rules, crewId }: { state: State; rules: RuleFile; crewId: string }) {
+  const p = vitalsPrompt(state, rules, crewId);
+  if (!p) return null;
+  return (
+    <p className="confirm" role="note">
+      <strong>{p.title}.</strong> {p.why}{' '}
+      <button className="btn secondary" onClick={() => go('vitals')}>Open vital signs</button>
+      {p.placeholder ? <> <span className="placeholder">Placeholder wording, awaiting clinician sign-off</span></> : null}
+    </p>
   );
 }
 
@@ -540,6 +553,7 @@ function Home({ state, commit, ui, setting, crewId, rules, view }: Shared & { ru
     ...day.flagged.filter((x) => !(setting.habitat === false && x.indicator.environment)).map((x) => ({ key: x.reading!.id, tier: x.assessment!.tier as Tier | 'advisory', name: x.indicator.name, sub: x.indicator.environment ? 'Cabin reading' : x.assessment!.deltaText, val: `${shown(x.indicator, x.reading!.value)} ${x.indicator.unit}`, arrow: <LimitArrow tier={x.assessment!.tier} delta={x.assessment!.delta} />, go: () => go('result', x.reading!.id) })),
     ...pathways.map((p) => ({ key: p.key, tier: (pathwayTier(p) ?? 'advisory') as Tier | 'advisory', name: p.pathway.region, sub: p.level === 'check' ? '3 quick questions' : p.title.includes(': ') ? cap(p.title.split(': ')[1]) : p.title, val: '', arrow: null, go: () => go('pathway', p.pathway.id) })),
     ...vitalsAlerts(state, rules, crewId, setting.gravityBand).map((v) => ({ key: v.key, tier: 'red' as Tier | 'advisory', name: 'Vital signs', sub: v.title, val: '', arrow: null, go: () => go('vitals') })),
+    ...(vitalsPrompt(state, rules, crewId) ? [{ key: 'vitals-prompt', tier: 'advisory' as const, name: 'Vital signs', sub: vitalsPrompt(state, rules, crewId)!.title, val: '', arrow: null, go: () => go('vitals') }] : []),
     ...(promptOpen ? [{ key: 'prompt', tier: 'advisory' as const, name: indicatorById(seed, day.prompt!.indicatorId).name, sub: 'Asked for today', val: '', arrow: null, go: () => go('reading', day.prompt!.indicatorId) }] : []),
   ].sort((a, b) => (b.tier === 'advisory' ? -1 : RANK[b.tier]) - (a.tier === 'advisory' ? -1 : RANK[a.tier]));
   const raised = issues.filter((x) => x.tier !== 'advisory');
@@ -1010,6 +1024,7 @@ function PathwayScreen({ state, commit, ui, setting, crewId, rules, pathwayId }:
   return (
     <>
       <Context setting={setting} crewId={crewId} />
+      <VitalsPromptNote state={state} rules={rules} crewId={crewId} />
       {vitalsAlerts(state, rules, crewId, setting.gravityBand).map((v) => (
         <p key={v.key} className="confirm" role="note">
           <TierPill tier="red" /> A vital signs alert is also active: {v.title}. It is a separate alert; only a fever in it counts toward this pattern.{' '}

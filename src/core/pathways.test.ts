@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import seedJson from '../data/seed.json';
 import { acknowledge, caseContent, exportOutbox, initialState, toggleSymptom } from './actions.ts';
-import { emergencySymptoms, logPain, logPathwayTest, pathwayAlerts, pathwayStatuses, sendPathwayCase, testNote, togglePathwayStep } from './pathways.ts';
+import { emergencySymptoms, logPain, logPathwayTest, pathwayAlerts, pathwayStatuses, sendPathwayCase, testNote, togglePathwayStep, vitalsPrompt } from './pathways.ts';
 import { recordVitals } from './vitals.ts';
 import { parseRules } from './rules.ts';
 import type { Seed, State } from './types.ts';
@@ -51,7 +51,7 @@ describe('kidney stone pathway (KS-01)', () => {
     expect(p.why).toContain('pain in side or lower back and blood in urine');
     expect(p.why).toContain('not a diagnosis');
     expect(p.steps[0]).toBe('Tell your crew medic.');
-    expect(p.placeholder).toBe(true);
+    expect(p.placeholder).toBe(false);
   });
   it('is urgent when fever or being unable to pass urine is logged on top', () => {
     const s = log(initialState(seed), 'crew-4', 'Pain in side or lower back', 'Fever or chills');
@@ -102,7 +102,7 @@ describe('kidney stone pathway (KS-01)', () => {
     expect(acknowledge(s, key).acknowledged).toContain(key);
   });
   it('refuses a pathway with no source or sign-off field', () => {
-    expect(() => parseRules(text.replace(/    source: "Placeholder rule, awaiting clinician review. The symptom pattern[^\n]*\n/, ''))).toThrow(/KS-01 has no source/);
+    expect(() => parseRules(text.replace(/    source: "Signed off by the clinical lead on 15 Nov 2026 \(CR-25[^\n]*\n/, ''))).toThrow(/KS-01 has no source/);
   });
   it('warns early, before any symptom, when fluid has been low for two logged days (CR-29), and names NASA as the source of the risk', () => {
     const p = pathwayStatuses(initialState(seed), seed, rules, 'crew-1')[0];
@@ -189,5 +189,22 @@ describe('urine strip notes (CR-41)', () => {
     for (const blood of ['Not present', 'Not done']) expect(testNote(ks, { 'urine-strip': blood, 'urine-nitrite': 'Positive', 'urine-leuk': 'Positive' })).toBe('Nitrite and leucocytes present: possible infection.');
     expect(testNote(ks, { 'urine-strip': 'Present', 'urine-nitrite': 'Negative', 'urine-leuk': 'Negative' })).toBe('Blood present, no signs of infection.');
     expect(testNote(ks, { 'urine-strip': 'Present', 'urine-nitrite': 'Positive', 'urine-leuk': 'Negative' })).toBeUndefined();
+  });
+});
+
+describe('asks for vital signs after fever or chills is logged (VP-01, CR-58)', () => {
+  const vitals = (st: State, at: number) => recordVitals(st, { crewId: 'crew-4', values: { temp: 37, hr: 80, sbp: 120, dbp: 80, rr: 14 }, at });
+  it('asks when fever or chills is logged with no set taken since, and stops once a set is recorded', () => {
+    const s = log(initialState(seed), 'crew-4', 'Fever or chills');
+    const p = vitalsPrompt(s, rules, 'crew-4');
+    expect(p?.title).toBe('Record your vital signs');
+    expect(p?.why).toContain('You logged fever or chills.');
+    expect(vitalsPrompt(vitals(s, 5000), rules, 'crew-4')).toBeNull();
+    expect(vitalsPrompt(s, rules, 'crew-1')).toBeNull();
+  });
+  it('asks again if the symptom is logged after the last set', () => {
+    const s = log(vitals(initialState(seed), 500), 'crew-4', 'Fever or chills');
+    expect(vitalsPrompt(s, rules, 'crew-4')).not.toBeNull();
+    expect(vitalsPrompt(log(initialState(seed), 'crew-4', 'Nauseous'), rules, 'crew-4')).toBeNull();
   });
 });

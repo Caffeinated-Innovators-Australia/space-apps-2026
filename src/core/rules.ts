@@ -96,6 +96,8 @@ export interface RuleFile {
   monitor_alerts: MonitorAlertRule[];
   /** Absent when the file has none. */
   emergency_symptoms?: EmergencySymptomRule;
+  /** Symptoms that ask for a set of vital signs when logged without one taken since (CR-58). */
+  vitals_prompt?: Signed & { id: string; symptoms: string[]; title: string; why: string };
 }
 
 export interface Band { low: number; high: number; mean: number; sd: number }
@@ -206,6 +208,11 @@ export function parseRules(text: string): RuleFile {
     for (const b of w.background) if (!b.text || !b.source || !b.link) throw new Error(`Pathway ${id}: every background line needs its source and link.`);
   }
   for (const t of TIERS) if (!Array.isArray(f.steps?.[t]) || f.steps[t].length === 0) throw new Error(`Every tier needs at least one next step: none for ${t}.`);
+  if (f.vitals_prompt) {
+    const v = f.vitals_prompt;
+    signed(v, v.id ?? 'vitals prompt');
+    if (!v.id || !v.title || !v.why || !Array.isArray(v.symptoms) || v.symptoms.length === 0) throw new Error('Vitals prompt: needs an id, symptoms, a title and the why wording.');
+  }
   if (f.emergency_symptoms) {
     const e = f.emergency_symptoms;
     signed(e, e.id ?? 'emergency symptoms');

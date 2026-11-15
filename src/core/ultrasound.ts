@@ -11,6 +11,8 @@ export interface UltrasoundStep {
   lookFor?: string;
   note?: string;
   side?: 'left' | 'right' | 'chest';
+  /** Show the drawn examples of what to look for: 'kidney' shows a normal and a swollen kidney (CR-42). */
+  example?: 'kidney';
 }
 export interface UltrasoundProcedure {
   id: string;

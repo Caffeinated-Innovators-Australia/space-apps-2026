@@ -283,7 +283,7 @@ export function Emergency({ state, commit, crewId, go, hhmm, setting }: Emergenc
           </div>
         ) : null}
         {showUntil ? <p className="x-em-until">{protocol.continueUntil!.say} <span className="source">({protocol.continueUntil!.source})</span></p> : null}
-        <p className="placeholder">{protocol.status}</p>
+        <p className={protocol.status.startsWith('Placeholder') ? 'placeholder' : 'source'}>{protocol.status}</p>
       </div>
 
       <div className="x-em-nav">

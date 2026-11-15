@@ -24,7 +24,16 @@
 .x-us-mark rect { fill: var(--procedure); stroke: var(--ink); stroke-width: 2; }
 .x-us-mark path { stroke: var(--procedure); stroke-width: 4; stroke-linecap: round; }
 
+.x-us-examples { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.x-us-examples ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 640px) { .x-us-examples ul { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.x-us-examples li { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; min-width: 0; }
+.x-us-kidney { width: 100%; max-width: 160px; height: auto; border-radius: 6px; }
+.x-us-grade { font-size: 16px; font-weight: 700; color: var(--ink); }
+.x-us-grade-say { font-size: 15px; color: var(--ink); }
+
 .x-us-image { border: 2px dashed var(--line-strong); border-radius: 8px; padding: 24px 16px; text-align: center; font-size: 16px; color: var(--ink-muted); background: var(--surface-200); }
+.x-us-step .source { overflow-wrap: anywhere; }
 .x-us-undo { align-self: flex-start; font-family: var(--font-sans); }
 
 .x-us-nav { display: flex; gap: 12px; align-items: stretch; flex-wrap: wrap; }

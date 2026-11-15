@@ -44,6 +44,61 @@ function Torso({ side }: { side?: 'left' | 'right' | 'chest' }) {
   );
 }
 
+/** Greys stand for an ultrasound image: bright is white, fluid is black. Fixed greys, so they read the same in both themes. */
+const KIDNEY_GRADES = [
+  { id: 'normal', name: 'Normal', say: 'Bright centre' },
+  { id: 'mild', name: 'Mild', say: 'Small dark pool in the centre' },
+  { id: 'moderate', name: 'Moderate', say: 'Dark spaces branch out' },
+  { id: 'severe', name: 'Severe', say: 'Large dark space, thin outer rim' },
+] as const;
+
+/** One drawn kidney, long view, for a grade. Simple shapes drawn in code, not a real scan. */
+function KidneyPanel({ grade }: { grade: (typeof KIDNEY_GRADES)[number]['id'] }) {
+  const calyces = [[-26, -12], [-10, -17], [10, -17], [26, -12], [-26, 12], [-10, 17], [10, 17], [26, 12]];
+  return (
+    <svg viewBox="0 0 120 100" className="x-us-kidney" aria-hidden="true">
+      <path d="M60 4 L114 30 A64 64 0 0 1 114 96 L6 96 A64 64 0 0 1 6 30 Z" fill="#1c1c1c" />
+      <ellipse cx="60" cy="58" rx="44" ry="26" fill={grade === 'severe' ? '#1c1c1c' : '#6e6e6e'} stroke="#b8b8b8" strokeWidth={grade === 'severe' ? 2 : 3} />
+      {grade === 'normal' || grade === 'mild' ? <ellipse cx="60" cy="58" rx="22" ry="10" fill="#e6e6e6" /> : null}
+      {grade === 'mild' ? <ellipse cx="60" cy="58" rx="9" ry="5" fill="#000" /> : null}
+      {grade === 'moderate' ? (
+        <g>
+          <ellipse cx="60" cy="58" rx="33" ry="18" fill="#e6e6e6" />
+          <g fill="#000" stroke="#000">
+            <ellipse cx="60" cy="58" rx="9" ry="5" />
+            {calyces.map(([dx, dy]) => <g key={`${dx}${dy}`}><path d={`M60 58 L${60 + dx * 0.9} ${58 + dy * 0.75}`} strokeWidth="3" strokeLinecap="round" /><circle cx={60 + dx * 0.9} cy={58 + dy * 0.75} r="4.5" /></g>)}
+          </g>
+        </g>
+      ) : null}
+      {grade === 'severe' ? (
+        <g fill="#000">
+          <ellipse cx="60" cy="58" rx="22" ry="13" />
+          {calyces.map(([dx, dy]) => <circle key={`${dx}${dy}`} cx={60 + dx * 1.15} cy={58 + dy * 0.9} r="9" />)}
+        </g>
+      ) : null}
+    </svg>
+  );
+}
+
+/** Drawn examples of a normal and a swollen kidney, to show what "look for" means. The app never reads the real image. */
+function KidneyExamples() {
+  return (
+    <figure className="x-us-examples">
+      <figcaption className="x-us-name">What a swollen kidney looks like (drawings, not real scans)</figcaption>
+      <ul role="list" aria-label="Drawn kidney examples: normal, then mild, moderate and severe swelling">
+        {KIDNEY_GRADES.map((g) => (
+          <li key={g.id}>
+            <KidneyPanel grade={g.id} />
+            <span className="x-us-grade">{g.name}</span>
+            <span className="x-us-grade-say">{g.say}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="caption">White is bright, black is fluid. How swollen it is, is for your crew medic and Earth to judge.</p>
+    </figure>
+  );
+}
+
 export function Ultrasound({ state, commit, setting, crewId, go, hhmm, returnTo, view }: UltrasoundProps) {
   const proc = ultrasoundProcedure(view);
   const steps = proc.steps;
@@ -102,6 +157,7 @@ export function Ultrasound({ state, commit, setting, crewId, go, hhmm, returnTo,
         {step.side ? <p className="caption">Drawn from the front: the person's left side is on your right.</p> : null}
         {step.lookFor ? <p className="x-us-look">{step.lookFor}</p> : null}
         {step.note ? <p className="x-us-note">{step.note}</p> : null}
+        {step.example === 'kidney' ? <KidneyExamples /> : null}
         {step.side ? <div className="x-us-image" role="note">{proc.imageNote}</div> : null}
         <p><span className="placeholder">{proc.status}</span></p>
         <p className="source">Source: {proc.source}</p>

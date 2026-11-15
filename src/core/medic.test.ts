@@ -87,7 +87,8 @@ describe('rulesAwaitingSignOff', () => {
     expect(list.map((x) => x.id)).toEqual(expect.arrayContaining(['LM-01', 'CM-01', 'PR-01', 'KS-01', 'KS-00']));
     for (const x of list) expect(x.source && x.confidence && x.what).toBeTruthy();
     // Signed off by the clinical lead on 15 Nov 2026 (CR-29); every other rule here still awaits sign-off.
-    expect(list.find((x) => x.id === 'KS-00')?.placeholder).toBe(false);
-    expect(list.filter((x) => x.id !== 'KS-00').every((x) => x.placeholder)).toBe(true);
+    // Signed off by the clinical lead on 15 Nov 2026 (CR-25, CR-29, CR-41, CR-43, CR-58).
+    for (const id of ['KS-00', 'KS-01']) expect(list.find((x) => x.id === id)?.placeholder).toBe(false);
+    expect(list.filter((x) => !['KS-00', 'KS-01'].includes(x.id)).every((x) => x.placeholder)).toBe(true);
   });
 });

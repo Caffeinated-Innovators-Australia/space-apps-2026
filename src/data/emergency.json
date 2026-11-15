@@ -6,7 +6,7 @@
     "url": "https://www.anzcor.org/",
     "read": "2026-11-14"
   },
-  "status": "Placeholder wording, awaiting clinician review",
+  "status": "Reviewed by our clinical lead, 15 Nov 2026",
   "continueUntil": {
     "say": "Keep CPR going until the person responds or breathes normally.",
     "source": "ANZCOR Basic Life Support flowchart (reviewed August 2023), bottom panel"

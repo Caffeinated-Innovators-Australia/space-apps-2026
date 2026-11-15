@@ -13,7 +13,7 @@ The story, set by the team lead on 14 November 2026: **the first 20 seconds are 
 | 0:00 to 0:01.6 | Mars | Team card: team name, "Four clinicians and an aerospace engineer", and the challenge | none |
 | 0:01.6 to 0:03 | Mars | Title card: "Crew health check. Care that starts before the expert arrives." [Project name: team to choose] | none |
 | 0:03 to 0:04.6 | Mars | Today as Jo: one status mark, one tile, the body figure | "Day 87 on Mars. Earth is 18 minutes away." |
-| 0:04.6 to 0:07.4 | Mars | The early warning opened, with "Why this alert?" showing its NASA source | "Three days of low fluid. It flags kidney stone risk early. Source: NASA." |
+| 0:04.6 to 0:07.4 | Mars | The early warning opened, with "Why this alert?" showing its NASA source | "Two days of low fluid. It flags kidney stone risk early. Source: NASA." |
 | 0:07.4 to 0:11.8 | Mars | "Feeling off?": Kidneys and urine, two symptoms, then the result | "Then pain in her side. Three taps, and the rules say: crew medic." |
 | 0:11.8 to 0:15 | Mars | The case is sent and the countdown starts at 36:00 | "No answer from Earth for 36 minutes. The crew starts now." |
 | 0:15 to 0:16.8 | Mars | The Earth inbox: the handover and the doctor's reply | "On Earth, the doctor reads the handover and replies." |
@@ -31,7 +31,7 @@ It uses one real photograph of the Simpson Desert by Ian Cochrane (CC BY 2.0, cr
 | Time | On screen | Voice-over |
 |---|---|---|
 | 0:00 to 0:05.4 | Red sand, slow push in. Title: "DAY 214" | "Day 214. I'm on Mars. Earth is 18 minutes away." |
-| 0:05.4 to 0:07.8 | "1 needs you" and the tile "Kidneys and urine, low fluid for 3 days" | "Three low-fluid days." |
+| 0:05.4 to 0:07.8 | "1 needs you" and the tile "Kidneys and urine, low fluid for 2 days" | "Two low-fluid days." |
 | 0:07.8 to 0:10.9 | The early warning card, marked SYNTHETIC and "Not a diagnosis" | "The app flags kidney stone risk before I feel it." |
 | 0:10.9 to 0:12.9 | "Pain in side or lower back" is selected, then "Fever or chills"; the status turns Urgent | "Pain, then fever." |
 | 0:12.9 to 0:16 | "What to do now", then the urine test strip with blood marked "Present" | "It guides my ultrasound, checks my urine, and starts emergency mode." |

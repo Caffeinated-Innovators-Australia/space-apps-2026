@@ -65,7 +65,8 @@ describe('isbar', () => {
     expect(all).toContain('6 out of 10 at T');
     expect(all).toContain('Blood: Not recorded');
     expect(all).toContain('Rule KS-01');
-    expect(all).toContain('Placeholder, awaiting clinician review.');
+    // KS-01 is signed off by the clinical lead (15 Nov 2026), so the case carries no placeholder note.
+    expect(all).not.toContain('Placeholder, awaiting clinician review.');
     expect(all).toContain('Tier: tier-red');
     expect(all).not.toMatch(/undefined|NaN|\[object/);
     expect(h[3].lines.at(-1)).toBe(NOT_A_DIAGNOSIS);

@@ -2,7 +2,7 @@
   "id": "guided-ultrasound",
   "title": "Guided ultrasound",
   "status": "Placeholder wording, awaiting clinician sign-off",
-  "source": "Team's clinical lead, build pack v3.3. The swollen kidney description (CR-42) was drafted by the build assistant from standard ultrasound teaching and awaits the clinical lead's check against Radiopaedia, Hydronephrosis (https://radiopaedia.org/articles/hydronephrosis). Placeholder.",
+  "source": "Team's clinical lead, build pack v3.3. The swollen kidney description, the empty-bladder rescan and the drawn examples (CR-42) follow Radiopaedia, Hydronephrosis (https://radiopaedia.org/articles/hydronephrosis), as supplied by the clinical lead, in our own words. Placeholder.",
   "imageNote": "Live image would show here. No image is captured or kept in this demo.",
   "steps": [
     {
@@ -16,14 +16,16 @@
       "instruction": "Probe on the left side, just below the ribs. Marker towards the head.",
       "lookFor": "Look for: a swollen kidney: dark, branching fluid spaces in its normally bright centre.",
       "note": "Compare with the right side in step 3.",
-      "side": "left"
+      "side": "left",
+      "example": "kidney"
     },
     {
       "id": "us-3",
       "title": "Right side",
       "instruction": "Probe on the right side, just below the ribs. Marker towards the head.",
-      "lookFor": "Look for: the same view as step 2. Is the dark centre bigger on one side than the other?",
-      "side": "right"
+      "lookFor": "Look for: the same view as step 2. Is the dark centre bigger on one side? If both look swollen, empty your bladder and scan both again.",
+      "side": "right",
+      "example": "kidney"
     },
     {
       "id": "us-4",

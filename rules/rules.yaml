@@ -77,7 +77,7 @@ prompts:
 # Symptom pathways: a pattern of logged symptoms the rules act on. A pathway names a pattern to CHECK FOR
 # and the next steps. It never names a finding. core symptoms open the follow-up questions; core plus
 # min_supporting supporting symptoms is amber; any urgent symptom on top is red.
-# Every symptom, tier and step below is a PLACEHOLDER awaiting clinician review (CR-25 to CR-28).
+# KS-01 and KS-00 are signed off by the clinical lead (15 Nov 2026). CR-26 to CR-28 remain open.
 pathways:
   - id: KS-01
     name: "Possible kidney stone"
@@ -87,7 +87,7 @@ pathways:
     min_supporting: 1
     urgent: ["Fever or chills", "Confused", "Cannot pass urine"]
     # A measured fever in the latest vital signs counts as "Fever or chills" (CR-58). 38.0 °C is the fever line in
-    # ANZCOR Guideline 9.2.3 (approved December 2025) and the same value SEP-01 uses. Awaiting the clinical lead's confirmation.
+    # ANZCOR Guideline 9.2.3 (approved December 2025) and the same value SEP-01 uses. Confirmed by the clinical lead, 15 Nov 2026.
     from_vitals:
       "Fever or chills": { temp: ">= 38" }
     context: [fluid, exercise]
@@ -121,7 +121,7 @@ pathways:
       - id: urine-sg
         label: "Specific gravity"
         options: ["1.005", "1.010", "1.015", "1.020", "1.025", "1.030", "Not done"]
-    # One plain line shown when the strip results match exactly. Wording from the clinical lead, a placeholder until signed off.
+    # One plain line shown when the strip results match. Wording confirmed by the clinical lead, 15 Nov 2026 (CR-41).
     # Only the earliest note whose results all match is shown, so the most specific is listed at the top (CR-41).
     test_notes:
       - when: { urine-strip: "Present", urine-nitrite: "Positive", urine-leuk: "Positive" }
@@ -140,7 +140,7 @@ pathways:
       amber: "You logged {symptoms}. Together these match the pattern your crew medic checks for a kidney stone. This is a pattern to check, not a diagnosis."
       red: "You logged {symptoms}. With {urgent}, the pattern your crew medic checks for a kidney stone needs action now. This is a pattern to check, not a diagnosis."
     steps:
-      # Step wording from the team's clinical lead (build pack v3.3). Placeholder until signed off. No drug names or doses.
+      # Step wording from the team's clinical lead (build pack v3.3), signed off 15 Nov 2026 (CR-43). No drug names or doses.
       amber:
         - "Tell your crew medic."
         - "Run the urine test strip."
@@ -165,9 +165,9 @@ pathways:
       - text: "NASA reports: “A total of 43 stone events in 29 crewmembers have been recorded by NASA since 2016.” One episode has been reported during spaceflight itself."
         source: "NASA OCHMO Medical Technical Brief MTB-003, Urinary Health, Rev A, page 6"
         link: "https://www.nasa.gov/wp-content/uploads/2025/01/ochmo-mtb-003-urinary-health.pdf#page=6"
-    source: "Placeholder rule, awaiting clinician review. The symptom pattern follows public guidance (healthdirect Australia, Kidney stones; NIDDK, Kidney stones: symptoms and causes). The risk is NASA's: Risk of Renal Stone Formation."
+    source: "Signed off by the clinical lead on 15 Nov 2026 (CR-25, CR-41, CR-43, CR-58). The symptom pattern follows public guidance (healthdirect Australia, Kidney stones; NIDDK, Kidney stones: symptoms and causes). The fever line is ANZCOR Guideline 9.2.3. The risk is NASA's: Risk of Renal Stone Formation."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
 
 steps:
   green:
@@ -229,6 +229,17 @@ monitor_alerts:
     source: "Placeholder thresholds from the team's clinical lead (build pack v3.3), awaiting sign-off."
     confidence: Low
     signed_off_by: placeholder
+
+# Symptoms that ask for a set of vital signs when logged with no set taken since (CR-58), so the monitor alerts
+# (such as SEP-01) can run on measured values. Shown on Today and on the pathway screen until a set is recorded.
+vitals_prompt:
+  id: VP-01
+  symptoms: ["Fever or chills"]
+  title: "Record your vital signs"
+  why: "You logged {symptom}. Record your vital signs now, so the sepsis check can run on measured values."
+  source: "Asked for by the clinical lead on 15 Nov 2026 (CR-58). Wording drafted by the build assistant, awaiting approval."
+  confidence: Low
+  signed_off_by: placeholder
 
 # Symptoms that mean "press Emergency now" the moment one is logged. No pattern, no second symptom, no wait.
 # The app shows a red banner on every screen until the symptom is cleared. It names no condition.

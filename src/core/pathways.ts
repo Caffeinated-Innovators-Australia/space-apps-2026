@@ -257,3 +257,17 @@ export function emergencySymptoms(state: State, rules: RuleFile, crewId: string)
   if (logged.length === 0) return null;
   return { ruleId: rule.id, title: rule.title, why: rule.why, source: rule.source, confidence: rule.confidence, placeholder: rule.signed_off_by.trim().toLowerCase() === 'placeholder', symptoms: logged.map((s) => s.label), since: Math.min(...logged.map((s) => s.at)) };
 }
+
+/**
+ * Asks for a set of vital signs when a listed symptom (such as fever or chills) is logged and no set has been
+ * taken since (CR-58), so the monitor alerts can run on measured values. Null when nothing is asked.
+ */
+export function vitalsPrompt(state: State, rules: RuleFile, crewId: string) {
+  const rule = rules.vitals_prompt;
+  if (!rule) return null;
+  const last = latestVitals(state, crewId)?.at ?? -Infinity;
+  const due = state.symptoms.filter((s) => s.crewId === crewId && rule.symptoms.includes(s.label) && s.at > last);
+  if (due.length === 0) return null;
+  const labels = [...new Set(due.map((s) => s.label))];
+  return { ruleId: rule.id, title: rule.title, why: rule.why.replace('{symptom}', list(labels)), source: rule.source, confidence: rule.confidence, placeholder: rule.signed_off_by.trim().toLowerCase() === 'placeholder', symptoms: labels };
+}

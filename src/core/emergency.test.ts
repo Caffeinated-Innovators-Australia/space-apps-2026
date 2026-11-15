@@ -9,10 +9,10 @@ const protocol = JSON.parse(readFileSync('src/data/emergency.json', 'utf8')) as 
 const blank = (): State => ({ version: 2, readings: [], symptoms: [], nothingToReport: [], outbox: [], ui: { crewId: 'crew-1', settingId: 'mars', theme: 'day', doseLogged: false, clock: '08:00', slipped: false } });
 
 describe('protocol data', () => {
-  it('has the seven DRSABCD steps in order, each with short wording and marked as a placeholder', () => {
+  it('has the seven DRSABCD steps in order, each with short wording, reviewed by the clinical lead (CR-32)', () => {
     expect(protocol.steps.map((s) => s.letter).join('')).toBe('DRSABCD');
     expect(new Set(protocol.steps.map((s) => s.id)).size).toBe(7);
-    expect(protocol.status).toBe('Placeholder wording, awaiting clinician review');
+    expect(protocol.status).toBe('Reviewed by our clinical lead, 15 Nov 2026');
     for (const s of protocol.steps) expect(s.say.split(/\s+/).length).toBeLessThan(14);
   });
   it('every number carries its source', () => {
