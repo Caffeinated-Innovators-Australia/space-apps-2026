@@ -2,8 +2,8 @@
 # Every rule needs a source, a confidence label and a signed_off_by field, or the app refuses to load.
 # signed_off_by is a clinician ROLE (never a name), or the word "placeholder".
 #
-# STATUS: every rule, number and line of wording below is a PLACEHOLDER awaiting clinician review, unless its
-# signed_off_by names a clinician role.
+# STATUS: a rule whose signed_off_by names a clinician role is signed off; every other rule, number and line of
+# wording below is a PLACEHOLDER awaiting clinician review.
 # The numbers are common statistical conventions, not clinical thresholds. Nothing here is clinical advice.
 # See CLINICIAN_REVIEW.md (CR-02, CR-04, CR-12, CR-14, CR-16) and docs/EVIDENCE.md.
 version: "0.2"
@@ -27,33 +27,33 @@ rules:
     kind: limit
     tier: red
     why: "Your {indicator} is {value} {unit}. That is {direction} than your own expected range of {bandLow} to {bandHigh} {unit}, and beyond the {limitLabel} of {limit} {unit}."
-    source: "Placeholder rule, awaiting clinician review. The limit itself is sourced: see the indicator."
+    source: "Signed off by the clinical lead on 15 Nov 2026 (CR-02, CR-12, CR-14, CR-16). The limit itself is sourced: see the indicator."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
   - id: SU-01
     kind: sustained
     tier: red
     count: 3
     why: "Your last {count} readings of {indicator} were all {direction} than your own expected range of {bandLow} to {bandHigh} {unit}. One reading can be a slip. Three in a row is a pattern."
-    source: "Placeholder rule, awaiting clinician review. Three consecutive readings is a statistical convention."
+    source: "Signed off by the clinical lead on 15 Nov 2026 (CR-02, CR-12, CR-14, CR-16). Three consecutive readings is a statistical convention."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
   - id: PB-01
     kind: level
     tier: amber
     why: "Your {indicator} is {value} {unit}. That is {direction} than your own expected range of {bandLow} to {bandHigh} {unit}."
-    source: "Placeholder rule, awaiting clinician review. The band is your own baseline mean plus or minus 2 standard deviations."
+    source: "Signed off by the clinical lead on 15 Nov 2026 (CR-02, CR-12, CR-14, CR-16). The band is your own baseline mean plus or minus 2 standard deviations."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
   - id: TR-01
     kind: trend
     tier: amber
     window: 7
     shift_sd: 1
     why: "Your {indicator} has drifted. Your last {window} readings average {trendMean} {unit}, against your baseline of {baselineMean} {unit}. Each reading alone can look fine while the trend does not."
-    source: "Placeholder rule, awaiting clinician review. A seven-reading average that moves one standard deviation is a statistical convention."
+    source: "Signed off by the clinical lead on 15 Nov 2026 (CR-02, CR-12, CR-14, CR-16). A seven-reading average that moves one standard deviation is a statistical convention."
     confidence: Low
-    signed_off_by: placeholder
+    signed_off_by: clinical lead
 
 # Day-level rules: they look across indicators for one person on one day.
 combined:
@@ -61,9 +61,9 @@ combined:
   min_flags: 2
   title: "Several signals have moved together"
   why: "{count} of today's check-ins are outside their usual range: {list}. They are shown together so that none is read alone."
-  source: "Placeholder rule, awaiting clinician review."
+  source: "Signed off by the clinical lead on 15 Nov 2026 (CR-16): two or more flags shown together at the highest tier among them."
   confidence: Low
-  signed_off_by: placeholder
+  signed_off_by: clinical lead
 
 prompts:
   - id: PR-01
@@ -77,7 +77,7 @@ prompts:
 # Symptom pathways: a pattern of logged symptoms the rules act on. A pathway names a pattern to CHECK FOR
 # and the next steps. It never names a finding. core symptoms open the follow-up questions; core plus
 # min_supporting supporting symptoms is amber; any urgent symptom on top is red.
-# KS-01 and KS-00 are signed off by the clinical lead (15 Nov 2026). CR-26 to CR-28 remain open.
+# KS-01 and KS-00 are signed off by the clinical lead (15 Nov 2026).
 pathways:
   - id: KS-01
     name: "Possible kidney stone"

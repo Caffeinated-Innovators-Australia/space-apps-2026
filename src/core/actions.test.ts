@@ -120,7 +120,8 @@ describe('action layer', () => {
     expect(sendCase(sent.state, { readingId: co2.reading.id, settingId: 'mars-base', at: 4000 }).state.outbox).toHaveLength(1);
     const c = casePackContent(sent.state, seed, rules, sent.pack.id);
     expect(c.assessment.tier).toBe('red');
-    expect(c.assessment.rules[0].placeholder).toBe(true);
+    // The tier rules are signed off by the clinical lead (15 Nov 2026, CR-02).
+    expect(c.assessment.rules[0].placeholder).toBe(false);
     expect(c.otherSignalsToday.map((x) => x.indicator)).toContain('Sleep');
     expect(c.stepsDone).toEqual(['Confirm with a second sensor.']);
     expect(c.symptoms[0].label).toBe('Headache');

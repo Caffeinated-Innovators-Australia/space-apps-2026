@@ -12,7 +12,7 @@ describe('rules file', () => {
     for (const t of ['green', 'amber', 'red'] as const) expect(rules.steps[t].length).toBeGreaterThan(0);
   });
   it('refuses a rule with no source (AT-08)', () => {
-    expect(() => parseRules(text.replace(/^\s+source: "Placeholder rule, awaiting clinician review. The band.*$/m, ''))).toThrow(/no source/);
+    expect(() => parseRules(text.replace(/^\s+source: "Signed off by the clinical lead on 15 Nov 2026 \(CR-02, CR-12, CR-14, CR-16\)\. The band.*$/m, ''))).toThrow(/no source/);
   });
   it('refuses a rule with no sign-off field', () => {
     expect(() => parseRules(text.replace(/^    signed_off_by: placeholder$/m, ''))).toThrow(/signed_off_by/);
@@ -71,11 +71,11 @@ describe('tiering (AT-03)', () => {
     expect(a.tier).toBe('red');
     expect(a.why).toContain('NASA cabin limit of 3.0 mmHg');
   });
-  it('explains in plain words with no unfilled gaps, and marks placeholders', () => {
+  it('explains in plain words with no unfilled gaps, and marks sign-off', () => {
     const a = assess(rules, { ...base, history: [6.5, 6.5, 6.4, 6.5, 6.4, 6.4], value: 5.9 });
     expect(a.why + a.title + a.steps.join(' ')).not.toMatch(/[{}]/);
-    expect(a.placeholder).toBe(true);
-    expect(a.reviewedBy).toBeNull();
+    expect(a.placeholder).toBe(false);
+    expect(a.reviewedBy).toBe('clinical lead');
     expect(a.deltaText).toBe('−1.1 h vs your baseline');
   });
 });
